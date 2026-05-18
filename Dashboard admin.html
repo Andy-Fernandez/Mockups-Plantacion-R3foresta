@@ -111,11 +111,11 @@ tailwind.config = {
     <div class="legend">
       <b>Reglas clave del dashboard</b>
       <ul>
-        <li>Las métricas son <b>derivadas</b> de los eventos append-only — nunca editables aquí.</li>
-        <li><b>Supervivencia</b> se recalcula al cierre de cada periodo de monitoreo.</li>
-        <li>El <b>donut de estados</b> incluye campañas en BORRADOR y CANCELADA pero las desprioriza visualmente.</li>
-        <li>La <b>actividad reciente</b> agrega plantaciones, asignaciones, cambios de estado y eventos de vivero.</li>
-        <li>FAB <b>"Nueva campaña"</b> solo aparece para roles con permiso <code>CREATE_CAMPANA</code>.</li>
+        <li>El dashboard muestra <b>campañas paraguas</b>, no sub-campañas. Cada row resume cuántas hijas tiene y en qué estado.</li>
+        <li>El <b>avance</b> de un paraguas es la suma de plantados / suma de metas de sus sub-campañas — no se edita aquí.</li>
+        <li>La <b>actividad reciente</b> lleva breadcrumb <code>Campaña › Sub-campaña</code> para no perder el origen del evento.</li>
+        <li>"Sin coordinador" en una row indica que <b>al menos una sub-campaña</b> no tiene responsable asignado.</li>
+        <li>El <b>donut de estados</b> sigue siendo del paraguas; los estados de sub-campaña se ven al entrar al detalle.</li>
       </ul>
     </div>
   </aside>

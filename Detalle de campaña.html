@@ -58,8 +58,8 @@ tailwind.config = {
 <div class="stage">
   <aside class="sidebar">
     <p class="eyebrow">R3foresta · Plantación</p>
-    <h1>Detalle de campaña</h1>
-    <p class="lead">Vista de gestión: KPIs, mapa, equipo, lotes y acciones (pausar / completar / cancelar).</p>
+    <h1>Detalle de campaña paraguas</h1>
+    <p class="lead">Vista de coordinación: agregado del programa, lista de sub-campañas y recursos comprometidos. Las acciones operativas (pausar, reanudar, asignar) viven en cada sub-campaña.</p>
 
     <div class="block">
       <h3>Campaña activa</h3>
@@ -84,7 +84,7 @@ tailwind.config = {
       <h3>Pestaña</h3>
       <div class="seg" id="seg-tab">
         <button data-val="resumen" class="on">Resumen</button>
-        <button data-val="equipo">Equipo</button>
+        <button data-val="equipo">Recursos</button>
         <button data-val="lotes">Lotes</button>
         <button data-val="mapa">Mapa</button>
       </div>
@@ -94,20 +94,19 @@ tailwind.config = {
       <h3>Capas</h3>
       <div class="opt-list" id="opt-overlay">
         <button data-val="more">Menú de acciones <span class="tag" id="tag-more">OFF</span></button>
-        <button data-val="pausar">Modal pausar <span class="tag" id="tag-pausar">OFF</span></button>
-        <button data-val="completar">Modal completar <span class="tag" id="tag-completar">OFF</span></button>
+        <button data-val="completar">Modal cerrar <span class="tag" id="tag-completar">OFF</span></button>
         <button data-val="cancelar">Modal cancelar <span class="tag" id="tag-cancelar">OFF</span></button>
       </div>
     </div>
 
     <div class="legend">
-      <b>Reglas del detalle</b>
+      <b>Reglas del paraguas</b>
       <ul>
-        <li>Las acciones (pausar / completar / cancelar) <b>requieren motivo</b> y quedan en auditoría.</li>
-        <li><b>Pausar</b> bloquea registrar plantaciones; las personas pueden seguir consultando.</li>
-        <li>El <b>polígono</b> y los <b>pines</b> son la fuente de verdad geo — la lista de eventos es derivada.</li>
-        <li>Equipo: las contribuciones se calculan desde eventos, nunca se editan manualmente.</li>
-        <li>Una campaña <b>COMPLETADA</b> sigue siendo consultable pero ya no recibe eventos nuevos.</li>
+        <li>La <b>meta</b> y los <b>plantados</b> del paraguas se <b>derivan</b> sumando sus sub-campañas.</li>
+        <li>El <b>pausar / reanudar / asignar equipo / asignar lotes</b> vive en cada sub-campaña, no aquí.</li>
+        <li>Una campaña paraguas solo se <b>cierra</b> cuando todas sus sub-campañas están COMPLETADAS.</li>
+        <li><b>Cancelar</b> el paraguas cancela también todas sus sub-campañas (doble confirmación).</li>
+        <li>El mapa muestra <b>un polígono por sub-campaña</b>, coloreado por su estado.</li>
       </ul>
     </div>
 
@@ -205,7 +204,6 @@ function App() {
         if (tag) tag.textContent = on ? 'ON' : 'OFF';
       };
       setTag('tag-more', t.moreOpen);
-      setTag('tag-pausar', t.modal === 'pausar');
       setTag('tag-completar', t.modal === 'completar');
       setTag('tag-cancelar', t.modal === 'cancelar');
       [...node.querySelectorAll('button[data-val]')].forEach(b => {

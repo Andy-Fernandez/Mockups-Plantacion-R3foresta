@@ -131,8 +131,25 @@ function EstadosBreakdown({ data, total, onTap }) {
   );
 }
 
+// Resumen breve de hijas: "8 sub-campañas · 3 activas · 2 pend."
+function subcampanasResumen(c) {
+  const dist = c.distribucionEstados || {};
+  const total = c.subcampanasCount || 0;
+  const sufijo = total === 1 ? 'sub-campaña' : 'sub-campañas';
+  const piezas = [];
+  if (dist.ACTIVA)            piezas.push(`${dist.ACTIVA} activa${dist.ACTIVA > 1 ? 's' : ''}`);
+  if (dist.PAUSADA)           piezas.push(`${dist.PAUSADA} pausada${dist.PAUSADA > 1 ? 's' : ''}`);
+  if (dist.PENDIENTE)         piezas.push(`${dist.PENDIENTE} pend.`);
+  if (dist.EN_CONFIGURACION)  piezas.push(`${dist.EN_CONFIGURACION} en config`);
+  if (dist.CONFIGURADA)       piezas.push(`${dist.CONFIGURADA} config.`);
+  if (dist.COMPLETADA && total === dist.COMPLETADA) piezas.push('completada');
+  return `${total} ${sufijo}${piezas.length ? ' · ' + piezas.join(' · ') : ''}`;
+}
+
 function CampanaRow({ c, onTap }) {
-  const pct = Math.round((c.plantados / c.meta) * 100);
+  const pct = c.avancePct || 0;
+  const resumenHijas = subcampanasResumen(c);
+  const tieneCoordPend = c.coordinadoresPendientes > 0;
   return (
     <button onClick={() => onTap && onTap(c)} className="block w-full text-left rounded-2xl bg-white p-3.5 shadow-soft ring-1 ring-black/5 hover:ring-brand-300 active:scale-[0.995] transition">
       <div className="flex items-start gap-2">
@@ -152,22 +169,34 @@ function CampanaRow({ c, onTap }) {
         </div>
         <Icon name="chevron-right" className="h-4 w-4 text-slate-400 flex-shrink-0 mt-0.5" />
       </div>
-      <div className="mt-3">
+
+      {/* Resumen jerárquico: conteo de hijas por estado */}
+      <p className="mt-2 text-[11px] font-extrabold text-brand-700">
+        <Icon name="trees" className="inline h-3 w-3 mr-1 -mt-0.5 text-brand-500" />
+        {resumenHijas}
+      </p>
+
+      <div className="mt-2">
         <div className="flex items-baseline justify-between">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Avance</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Avance agregado</p>
           <p className="text-[11px] font-extrabold tabular-nums text-brand-800">
-            {c.plantados.toLocaleString('es-BO')}<span className="text-slate-400"> / {c.meta.toLocaleString('es-BO')}</span>
+            {(c.plantados || 0).toLocaleString('es-BO')}<span className="text-slate-400"> / {(c.meta || 0).toLocaleString('es-BO')}</span>
             <span className="ml-1.5 text-brand-500">{pct}%</span>
           </p>
         </div>
         <div className="mt-1"><Progress pct={pct} tone={c.estado === 'PAUSADA' ? 'amber' : 'brand'} height={6} /></div>
       </div>
+
       <div className="mt-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-100 text-[10px] font-extrabold text-brand-700">{c.coordinadoraIniciales}</span>
-          <p className="text-[11px] font-semibold text-slate-500 truncate">{c.coordinadora}</p>
-        </div>
-        <p className="text-[10px] font-bold text-slate-400 flex-shrink-0">{c.equipoCount} pers. · {c.lotesCount} lotes</p>
+        <p className="text-[10.5px] font-bold text-slate-500 flex-shrink-0">
+          {c.equipoCount || 0} pers. · {c.lotesCount || 0} lotes · {c.hectareas || 0} ha
+        </p>
+        {tieneCoordPend && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-amber-800 ring-1 ring-amber-100">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+            {c.coordinadoresPendientes} sin coord.
+          </span>
+        )}
       </div>
     </button>
   );
@@ -180,6 +209,8 @@ function ActividadRow({ a }) {
     EQUIPO:     { icon: 'users',        tone: 'bg-blue-50 text-blue-700' },
     PAUSA:      { icon: 'pause',        tone: 'bg-amber-50 text-amber-800' },
   }[a.kind] || { icon: 'dot', tone: 'bg-slate-50 text-slate-700' };
+  const camp = CAMPANAS_ADMIN.find(c => c.id === a.campanaId);
+  const sub  = SUBCAMPANAS_ADMIN.find(s => s.id === a.subcampanaId);
   return (
     <li className="flex items-start gap-3 px-3 py-2.5">
       <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-2xl ${kindMeta.tone}`}>
@@ -187,7 +218,17 @@ function ActividadRow({ a }) {
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-extrabold leading-tight text-brand-800">{a.label}</p>
-        <p className="mt-0.5 text-[11px] font-semibold text-slate-500 truncate">{a.campana}</p>
+        {camp && (
+          <p className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-slate-500 truncate">
+            <span className="truncate">{camp.nombre}</span>
+            {sub && (
+              <>
+                <Icon name="chevron-right" className="h-3 w-3 flex-shrink-0 text-slate-400" />
+                <span className="truncate text-brand-700">{sub.nombre}</span>
+              </>
+            )}
+          </p>
+        )}
       </div>
       <p className="text-[10.5px] font-bold text-slate-400 whitespace-nowrap pt-0.5">{a.tiempo}</p>
     </li>
