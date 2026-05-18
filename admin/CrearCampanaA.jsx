@@ -269,7 +269,7 @@ function SubcampanaConfiguredExampleCard({ comunidad, fechaInicio, fechaFin }) {
     <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-4 shadow-soft ring-1 ring-emerald-100/80">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700">Ejemplo configurado</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700"></p>
           <p className="mt-1 text-[16px] font-extrabold leading-tight text-brand-800">{comunidad?.nombre || 'Comunidad ejemplo'}</p>
           <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{comunidad?.municipio || 'Municipio ejemplo'}</p>
         </div>
@@ -312,6 +312,7 @@ function GestionSubcampanasScreen({
   comunidadesDisponibles,
   comunidadQuery,
   pickerOpen,
+  ejemploOverride,
   onComunidadQuery,
   onTogglePicker,
   onAddSubcampana,
@@ -320,7 +321,11 @@ function GestionSubcampanasScreen({
 }) {
   const query = comunidadQuery.trim().toLowerCase();
   const comunidadesAgregadas = new Set(subcampanas.map((s) => s.comunidadId));
-  const showConfiguredExample = !subcampanas.some((s) => s.estado === 'CONFIGURADA' || s.estado === 'ACTIVA');
+  const autoShowExample = !subcampanas.some((s) => s.estado === 'CONFIGURADA' || s.estado === 'ACTIVA');
+  const showConfiguredExample =
+    ejemploOverride === 'si' ? true :
+    ejemploOverride === 'no' ? false :
+    autoShowExample;
   const resultados = query.length < 2
     ? []
     : comunidadesDisponibles.filter((c) =>

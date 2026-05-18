@@ -102,6 +102,15 @@ tailwind.config = {
       </div>
     </div>
 
+    <div class="block" id="block-ejemplo">
+      <h3>Ejemplo configurado</h3>
+      <div class="seg" id="seg-ejemplo">
+        <button data-val="auto">Auto</button>
+        <button data-val="si">Mostrar</button>
+        <button data-val="no" class="on">Ocultar</button>
+      </div>
+    </div>
+
     <div class="block" id="block-zona">
       <h3>Zona dibujada</h3>
       <div class="seg" id="seg-zona">
@@ -185,7 +194,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "view": "general",
   "paso": 1,
   "tipo": "ARBORIZACION",
-  "confirmacion": "idle"
+  "confirmacion": "idle",
+  "ejemplo": "no"
 }/*EDITMODE-END*/;
 
 const COMUNIDADES_DISPONIBLES = [
@@ -326,10 +336,11 @@ function App() {
       wire('seg-view',          'view',          t.view),
       wire('seg-paso',          'paso',          t.paso, v => parseInt(v, 10)),
       wire('seg-tipo',          'tipo',          t.tipo),
+      wire('seg-ejemplo',       'ejemplo',       t.ejemplo),
       wire('seg-confirmacion',  'confirmacion',  t.confirmacion),
     ];
     return () => offs.forEach(o => o && o());
-  }, [t.view, t.paso, t.tipo, t.confirmacion, setTweak]);
+  }, [t.view, t.paso, t.tipo, t.confirmacion, t.ejemplo, setTweak]);
 
   React.useEffect(() => {
     const node = document.getElementById('seg-zona');
@@ -461,6 +472,7 @@ function App() {
           comunidadesDisponibles={COMUNIDADES_DISPONIBLES}
           comunidadQuery={subcampanaQuery}
           pickerOpen={pickerOpen}
+          ejemploOverride={t.ejemplo}
           onComunidadQuery={setSubcampanaQuery}
           onTogglePicker={() => setPickerOpen((v) => !v)}
           onAddSubcampana={onAddSubcampana}
@@ -499,6 +511,9 @@ function App() {
         <TweakRadio label="Tipo" value={t.tipo}
                     options={['ARBORIZACION','REFORESTACION','FORESTACION']}
                     onChange={(v) => setTweak('tipo', v)} />
+        <TweakRadio label="Ejemplo configurado" value={t.ejemplo}
+                    options={['auto','si','no']}
+                    onChange={(v) => setTweak('ejemplo', v)} />
         <TweakToggle label="Zona dibujada" value={tieneZonaActiva}
                      onChange={(v) => updateActiveSubcampana({ tieneZona: v })} />
         <TweakRadio label="Confirmación" value={t.confirmacion}
