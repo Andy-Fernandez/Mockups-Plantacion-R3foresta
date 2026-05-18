@@ -182,7 +182,7 @@ function CGHeader({ onBack }) {
         </p>
         <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">Campaña general</h1>
         <p className="mt-1 text-[13px] font-medium text-white/80 leading-snug">
-          Define los datos marco. Las comunidades y su configuración vivirán en el siguiente nivel.
+          Completa los datos principales.
         </p>
       </div>
     </header>
@@ -208,13 +208,6 @@ function CrearCampanaGeneralScreen({
         <CGHeader onBack={onBack} />
 
         <div className="px-5 pt-4 space-y-4 flex-1">
-          <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
-            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Esqueleto actual</p>
-            <p className="mt-1 text-sm font-semibold leading-relaxed text-brand-800">
-              Aquí solo se crean los datos compartidos de la campaña. El siguiente paso será gestionar sub-campañas por comunidad.
-            </p>
-          </div>
-
           <CCStepDatos
             tipo={tipo}
             nombre={nombre}
@@ -494,7 +487,7 @@ function CCStepDatos({
         </div>
 
         <div>
-          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Organización responsable</label>
+          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Organización asociada</label>
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
             <Icon name="briefcase" className="h-4 w-4 text-slate-400" />
             <input type="text" value={organizacion} onChange={(e) => onChange('organizacion', e.target.value)} placeholder="Fundación R3foresta"
@@ -503,8 +496,8 @@ function CCStepDatos({
         </div>
 
         <div>
-          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Descripción general</label>
-          <textarea value={descripcion} onChange={(e) => onChange('descripcion', e.target.value)} rows={3} placeholder="Objetivo y alcance general de la campaña"
+          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Descripción</label>
+          <textarea value={descripcion} onChange={(e) => onChange('descripcion', e.target.value)} rows={3} placeholder="Objetivo de la campaña"
             className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-brand-800 placeholder:font-medium placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100" />
         </div>
 
@@ -523,13 +516,6 @@ function CCStepDatos({
               {fechaFin}
             </div>
           </div>
-        </div>
-
-        <div className="rounded-2xl bg-brand-50 px-3 py-3">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Siguiente nivel</p>
-          <p className="mt-1 text-sm font-extrabold text-brand-800 leading-snug">
-            Las comunidades y sus coordinadores se configurarán después como sub-campañas.
-          </p>
         </div>
       </div>
     </div>

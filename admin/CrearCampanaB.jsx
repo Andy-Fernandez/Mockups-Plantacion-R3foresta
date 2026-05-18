@@ -148,15 +148,15 @@ function CCStepResumen({ tipo, nombre, organizacion, descripcion, fechaInicio, f
         <div className="flex items-start gap-3 px-3 py-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon name="briefcase" className="h-4 w-4" /></div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Organización responsable</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Organización asociada</p>
             <p className="text-sm font-extrabold text-brand-800 leading-tight">{organizacion}</p>
           </div>
         </div>
         <div className="flex items-start gap-3 px-3 py-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon name="note" className="h-4 w-4" /></div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Descripción general</p>
-            <p className="text-sm font-semibold text-brand-800 leading-relaxed">{descripcion || 'Sin descripción general registrada.'}</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Descripción</p>
+            <p className="text-sm font-semibold text-brand-800 leading-relaxed">{descripcion || 'Sin descripción registrada.'}</p>
           </div>
         </div>
         <div className="flex items-start gap-3 px-3 py-2.5">
