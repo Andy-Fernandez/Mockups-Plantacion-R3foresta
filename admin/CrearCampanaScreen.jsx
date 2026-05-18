@@ -18,19 +18,19 @@ function CrearCampanaScreen({
     subcampanaActiva.fechaInicio <= subcampanaActiva.fechaFin &&
     subcampanaActiva.fechaInicio >= fechaInicioISO &&
     subcampanaActiva.fechaFin <= fechaFinISO;
-  const showSubcampanaContextCard = paso === 1 || !subcampanaReady;
 
   const canNext = (() => {
-    if (paso === 1) return tieneZona;
-    if (paso === 2) return meta > 0 && especies.reduce((a, e) => a + e.pct, 0) === 100;
-    if (paso === 3) return true;
-    if (paso === 4) return true; // optional but encouraged
-    if (paso === 5) return subcampanaReady;
+    if (paso === 1) return subcampanaReady;
+    if (paso === 2) return tieneZona;
+    if (paso === 3) return meta > 0 && especies.reduce((a, e) => a + e.pct, 0) === 100;
+    if (paso === 4) return true;
+    if (paso === 5) return true; // optional but encouraged
+    if (paso === 6) return subcampanaReady;
     return true;
   })();
 
   const goNext = () => {
-    if (paso < 5) onPaso(paso + 1);
+    if (paso < 6) onPaso(paso + 1);
     else onConfirmacion('guardando');
   };
   const goBack = () => {
@@ -47,7 +47,7 @@ function CrearCampanaScreen({
         <CCHeader paso={paso} onBack={goBack} subcampanaNombre={subcampanaActiva?.comunidadNombre} />
 
         <div className="px-5 pt-4 space-y-4 flex-1">
-          {showSubcampanaContextCard && (
+          {paso === 1 && (
             <SubcampanaContextCard
               campanaNombre={nombre}
               subcampana={subcampanaActiva}
@@ -58,26 +58,26 @@ function CrearCampanaScreen({
               onFechaChange={onSubcampanaFecha}
             />
           )}
-          {paso === 1 && (
+          {paso === 2 && (
             <CCStepZona
               tieneZona={tieneZona} hectareas={hectareas}
               onMarcar={() => onTieneZona(true)}
               onLimpiar={() => onTieneZona(false)} />
           )}
-          {paso === 2 && (
+          {paso === 3 && (
             <CCStepEspecies meta={meta} especies={especies} onMeta={onMeta} onTogglePct={onTogglePct} />
           )}
-          {paso === 3 && (
+          {paso === 4 && (
             <CCStepLotes
               lotesIds={lotesIds}
               onToggleLote={onToggleLote} />
           )}
-          {paso === 4 && (
+          {paso === 5 && (
             <CCStepEquipo
               equipoIds={equipoIds}
               onTogglePersona={onTogglePersona} />
           )}
-          {paso === 5 && (
+          {paso === 6 && (
             <CCStepResumen
               tipo={tipo} nombre={nombre} organizacion={organizacion} descripcion={descripcion}
               fechaInicio={subcampanaActiva?.fechaInicio ? formatSubcampanaDate(subcampanaActiva.fechaInicio) : fechaInicio}
@@ -89,7 +89,7 @@ function CrearCampanaScreen({
 
         <div className="px-5">
           <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-5 bg-gradient-to-t from-[#eef2ed] via-[#eef2ed]/95 to-transparent">
-            {paso === 5 && (
+            {paso === 6 && (
               <button onClick={() => onConfirmacion('guardando')} className="mb-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-brand-700 shadow-soft ring-1 ring-black/5 hover:ring-brand-300 transition">
                 Guardar como BORRADOR
               </button>
@@ -99,8 +99,8 @@ function CrearCampanaScreen({
               disabled={!canNext}
               className={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white shadow-soft transition active:scale-[0.99]
                 ${!canNext ? 'bg-slate-400/70 cursor-not-allowed' :
-                  paso === 5 ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-brand-600 hover:bg-brand-700'}`}>
-              {paso === 5 ? (
+                  paso === 6 ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-brand-600 hover:bg-brand-700'}`}>
+              {paso === 6 ? (
                 <React.Fragment>
                   <Icon name="check-circle" className="h-5 w-5" />
                   Publicar campaña ACTIVA

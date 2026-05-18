@@ -244,7 +244,7 @@ function hasSubcampanaFechasValidas(subcampana) {
 }
 
 function deriveSubcampanaEstado(subcampana) {
-  const completa = subcampana.progresoPaso >= 5 && !!subcampana.coordinadorId && hasSubcampanaFechasValidas(subcampana);
+  const completa = subcampana.progresoPaso >= 6 && !!subcampana.coordinadorId && hasSubcampanaFechasValidas(subcampana);
   if (subcampana.estado === 'ACTIVA') return 'ACTIVA';
   if (completa) return 'CONFIGURADA';
   if (subcampana.progresoPaso > 0 || subcampana.coordinadorId || subcampana.fechaInicio || subcampana.fechaFin) return 'EN_CONFIGURACION';
@@ -254,11 +254,12 @@ function deriveSubcampanaEstado(subcampana) {
 const pasoToProgress = (paso) => paso;
 
 const STEP_NOTES = {
-  1: { title: 'Zona', body: 'La sub-campaña define su propio polígono. Aquí ya no se está editando la campaña general, sino la comunidad activa.' },
-  2: { title: 'Especies y meta', body: 'Cada comunidad puede tener un mix distinto. Este paso ya representa configuración por sub-campaña.' },
-  3: { title: 'Lotes', body: 'Selecciona los lotes y el saldo disponible para esta comunidad. Luego el equipo se configura por separado.' },
-  4: { title: 'Equipo', body: 'Asigna personas a esta sub-campaña. El coordinador y las fechas ya se gestionan arriba como parte del contexto propio de la comunidad.' },
-  5: { title: 'Revisa y publica', body: 'Resumen de la sub-campaña activa, todavía montado sobre el wizard heredado mientras terminamos el esqueleto.' },
+  1: { title: 'Coordinador y fechas', body: 'Primero define el responsable y el rango de trabajo de la sub-campaña.' },
+  2: { title: 'Zona', body: 'La sub-campaña define su propio polígono. Aquí ya no se está editando la campaña general, sino la comunidad activa.' },
+  3: { title: 'Especies y meta', body: 'Cada comunidad puede tener un mix distinto. Este paso ya representa configuración por sub-campaña.' },
+  4: { title: 'Lotes', body: 'Selecciona los lotes y el saldo disponible para esta comunidad.' },
+  5: { title: 'Equipo', body: 'Asigna personas a esta sub-campaña.' },
+  6: { title: 'Revisa y publica', body: 'Resumen final de la sub-campaña antes de publicarla.' },
 };
 
 function App() {
@@ -280,14 +281,14 @@ function App() {
   const lotesIdsActiva = subcampanaActiva?.lotesIds ?? [];
 
   React.useEffect(() => {
-    const labels = ['', 'Zona', 'Especies y meta', 'Plantas y lotes', 'Equipo', 'Revisión final'];
+    const labels = ['', 'Coordinador y fechas', 'Zona', 'Especies y meta', 'Plantas y lotes', 'Equipo', 'Revisión final'];
     const label = document.getElementById('stage-label');
     if (label) {
       label.textContent = t.view === 'general'
         ? 'Campaña general · Cabecera'
         : t.view === 'subcampanas'
         ? 'Sub-campañas · Gestión'
-        : `Wizard heredado · Paso ${t.paso} de 5 · ${labels[t.paso]}`;
+        : `Wizard heredado · Paso ${t.paso} de 6 · ${labels[t.paso]}`;
     }
     const note = document.getElementById('step-note');
     if (note) {
@@ -484,7 +485,7 @@ function App() {
                     options={['general','subcampanas','wizard']}
                     onChange={(v) => setTweak('view', v)} />
         <TweakSection label="Wizard" />
-        <TweakSelect label="Paso" value={String(t.paso)} options={['1','2','3','4','5']}
+        <TweakSelect label="Paso" value={String(t.paso)} options={['1','2','3','4','5','6']}
                      onChange={(v) => setTweak('paso', parseInt(v, 10))} />
         <TweakRadio label="Tipo" value={t.tipo}
                     options={['ARBORIZACION','REFORESTACION','FORESTACION']}

@@ -1,20 +1,22 @@
-// Crear campaña — wizard de 5 pasos
-// Pasos: 1·Tipo y datos · 2·Zona en mapa · 3·Especies y meta · 4·Equipo y lotes · 5·Resumen
+// Crear campaña — wizard de 6 pasos
+// Pasos: 1·Coordinador y fechas · 2·Zona en mapa · 3·Especies y meta · 4·Lotes · 5·Equipo · 6·Resumen
 
 const CC_STEPS = [
-  { n: 1, label: 'Zona' },
-  { n: 2, label: 'Especies' },
-  { n: 3, label: 'Lotes' },
-  { n: 4, label: 'Equipo' },
-  { n: 5, label: 'Final' },
+  { n: 1, label: 'Contexto' },
+  { n: 2, label: 'Zona' },
+  { n: 3, label: 'Especies' },
+  { n: 4, label: 'Lotes' },
+  { n: 5, label: 'Equipo' },
+  { n: 6, label: 'Final' },
 ];
 
 const CC_TITLES = {
-  1: 'Define la zona',
-  2: 'Especies y meta',
-  3: 'Plantas y lotes',
-  4: 'Asigna equipo',
-  5: 'Revisa y publica',
+  1: 'Coordinador y fechas',
+  2: 'Define la zona',
+  3: 'Especies y meta',
+  4: 'Plantas y lotes',
+  5: 'Asigna equipo',
+  6: 'Revisa y publica',
 };
 
 const SUBCAMPANA_COORDINADORES = PERSONAS.filter((p) => p.rol.toLowerCase().includes('coordin'));
@@ -101,12 +103,16 @@ function SubcampanaContextCard({
     <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Sub-campaña activa</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Configuración base</p>
           <p className="mt-1 text-[17px] font-extrabold leading-tight text-brand-800">{subcampana.comunidadNombre}</p>
           <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{campanaNombre}</p>
         </div>
         <SubcampanaStatusBadge estado={subcampana.estado} />
       </div>
+
+      <p className="mt-3 text-[11px] font-semibold text-slate-500">
+        Define primero quién coordina esta sub-campaña y en qué rango trabajará.
+      </p>
 
       <div className="mt-3 grid grid-cols-1 gap-2">
         <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
@@ -410,7 +416,7 @@ function GestionSubcampanasScreen({
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
                       <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Progreso</p>
-                      <p className="mt-1 text-sm font-extrabold text-brand-800">{s.progresoPaso}/5 pasos</p>
+                      <p className="mt-1 text-sm font-extrabold text-brand-800">{s.progresoPaso}/6 pasos</p>
                     </div>
                     <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
                       <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Coordinador</p>
