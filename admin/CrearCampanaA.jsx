@@ -262,6 +262,44 @@ function SubcampanaStatusBadge({ estado }) {
   );
 }
 
+function SubcampanaConfiguredExampleCard({ comunidad, fechaInicio, fechaFin }) {
+  const coordinadorEjemplo = SUBCAMPANA_COORDINADORES[0]?.nombre || 'Coordinadora ejemplo';
+
+  return (
+    <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white p-4 shadow-soft ring-1 ring-emerald-100/80">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700">Ejemplo configurado</p>
+          <p className="mt-1 text-[16px] font-extrabold leading-tight text-brand-800">{comunidad?.nombre || 'Comunidad ejemplo'}</p>
+          <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{comunidad?.municipio || 'Municipio ejemplo'}</p>
+        </div>
+        <SubcampanaStatusBadge estado="CONFIGURADA" />
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="rounded-2xl bg-white px-3 py-2.5 ring-1 ring-emerald-100">
+          <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Progreso</p>
+          <p className="mt-1 text-sm font-extrabold text-brand-800">6/6 pasos</p>
+        </div>
+        <div className="rounded-2xl bg-white px-3 py-2.5 ring-1 ring-emerald-100">
+          <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Coordinador</p>
+          <p className="mt-1 text-sm font-extrabold text-brand-800">{coordinadorEjemplo}</p>
+        </div>
+      </div>
+
+      <div className="mt-2 rounded-2xl bg-white px-3 py-2.5 ring-1 ring-emerald-100">
+        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Fechas</p>
+        <p className="mt-1 text-sm font-extrabold text-brand-800">{fechaInicio} → {fechaFin}</p>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-extrabold text-white shadow-soft">
+        <Icon name="check-circle" className="h-4 w-4" />
+        Lista para entrar al detalle
+      </div>
+    </div>
+  );
+}
+
 function GestionSubcampanasScreen({
   tipo,
   nombre,
@@ -282,6 +320,7 @@ function GestionSubcampanasScreen({
 }) {
   const query = comunidadQuery.trim().toLowerCase();
   const comunidadesAgregadas = new Set(subcampanas.map((s) => s.comunidadId));
+  const showConfiguredExample = !subcampanas.some((s) => s.estado === 'CONFIGURADA' || s.estado === 'ACTIVA');
   const resultados = query.length < 2
     ? []
     : comunidadesDisponibles.filter((c) =>
@@ -387,6 +426,20 @@ function GestionSubcampanasScreen({
               </div>
             )}
           </div>
+
+          {showConfiguredExample && (
+            <div className="space-y-2">
+              <div>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Así se verá al completar</p>
+                <p className="mt-1 text-[11px] font-semibold text-slate-500">Una referencia rápida de una sub-campaña ya configurada.</p>
+              </div>
+              <SubcampanaConfiguredExampleCard
+                comunidad={comunidadesDisponibles[0]}
+                fechaInicio={fechaInicio}
+                fechaFin={fechaFin}
+              />
+            </div>
+          )}
 
           {subcampanas.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-brand-100 bg-white px-5 py-8 text-center shadow-soft">
