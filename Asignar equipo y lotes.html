@@ -53,6 +53,15 @@ tailwind.config = {
   .stage-title { display:flex; align-items:baseline; justify-content:space-between; max-width: 420px; margin: 0 auto 14px; padding: 0 6px; }
   .stage-title h2 { font-size: 13.5px; font-weight: 800; color: #0f3b23; letter-spacing:.04em; margin:0 }
   .stage-title span { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+  @media (max-width: 767px) {
+    html, body { background: #eef2ed; }
+    body { padding: 0; display: block; }
+    .stage { max-width: none; gap: 0; }
+    .sidebar, .stage-title, .phone-notch { display: none; }
+    .phone-wrap { display: block; }
+    .phone { width: 100vw; height: 100dvh; border-radius: 0; background: #eef2ed; box-shadow: none; }
+    .phone-screen { inset: 0; border-radius: 0; }
+  }
 </style>
 </head>
 <body>
