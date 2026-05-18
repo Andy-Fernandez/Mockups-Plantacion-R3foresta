@@ -819,9 +819,7 @@ function DetalleCampanaScreen({ campanaId, estadoOverride, tab, onTab, moreOpen,
   }
 
   const onAbrirSub = (s) => {
-    // Pantalla detalle de sub-campaña aún no existe en mock; visualmente
-    // mostramos un alert simple. La Fase 3 conectará a DetalleSubcampana.html.
-    window.alert(`Abriría detalle de sub-campaña:\n${s.nombre}\n\n(Fase 3 conectará esta pantalla.)`);
+    window.location.href = `Detalle sub-campaña.html?subcampanaId=${encodeURIComponent(s.id)}`;
   };
   const onNuevaSub = () => { window.location.href = 'Crear campaña.html'; };
 
