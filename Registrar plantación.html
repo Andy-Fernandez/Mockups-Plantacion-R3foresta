@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Registrar plantación · R3foresta</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',
+          500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f',
+        },
+      },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  html, body { background: #d8e0d3; min-height: 100%; font-family: 'Manrope', system-ui, sans-serif; margin:0; }
+  body { padding: 28px 16px 80px; display:flex; justify-content:center; }
+
+  .stage { display:grid; grid-template-columns: 1fr; gap:28px; max-width: 1180px; width:100%; }
+  @media (min-width: 980px) { .stage { grid-template-columns: 360px 1fr; align-items: start; } }
+
+  /* ─── Sidebar (design notes) ────────────────────────────────── */
+  .sidebar { background:#fff; border-radius: 24px; padding: 22px 22px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.05); position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; }
+  .sidebar .eyebrow { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+  .sidebar h1 { font-size: 22px; font-weight: 800; color: #0f3b23; letter-spacing: -.02em; margin: 4px 0 0; }
+  .sidebar p.lead { font-size: 13px; color: #1f613b; margin-top: 6px; font-weight:500; line-height:1.45; }
+  .sidebar .block { margin-top: 18px; }
+  .sidebar .block h3 { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#1f613b; margin:0 0 8px; }
+  .seg { display:flex; gap:4px; padding:4px; background:#f0f6f2; border-radius:14px; flex-wrap:wrap; }
+  .seg button { flex:1 1 50px; padding:8px 6px; font-size:11px; font-weight:800; color:#0f3b23; background:transparent; border:0; border-radius:10px; cursor:default; letter-spacing:.03em; transition: background .15s, color .15s; min-width: 44px; }
+  .seg button.on { background:#0f3b23; color:#fff }
+
+  /* Step pill row with numbers */
+  .steps-row { display:flex; gap:4px; padding:4px; background:#f0f6f2; border-radius:14px; }
+  .steps-row button { display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; padding:6px 2px; font-size:9px; font-weight:800; color:#1f613b; background:transparent; border:0; border-radius:10px; cursor:default; letter-spacing:.02em; transition: background .15s, color .15s; text-transform:uppercase; }
+  .steps-row button strong { font-size: 13px; }
+  .steps-row button.on { background:#0f3b23; color:#fff }
+
+  .opt-list { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .opt-list button { display:flex; align-items:center; justify-content:space-between; gap:8px; padding: 10px 12px; font-size:12px; font-weight:800; color:#0f3b23; background:#f6faf6; border:1px solid #d9e8dd; border-radius:12px; cursor:default; text-align:left; }
+  .opt-list button.on { background:#0f3b23; color:#fff; border-color:#0f3b23 }
+  .opt-list .tag { font-size:9.5px; font-weight:800; letter-spacing:.12em; padding:2px 8px; border-radius:9999px; background:#d9e8dd; color:#0f3b23 }
+  .opt-list button.on .tag { background:rgba(255,255,255,.18); color:#fff }
+
+  .legend { margin-top: 18px; padding-top:14px; border-top:1px solid #e5ebe2; font-size: 11px; color: #475569; line-height:1.5 }
+  .legend b { color:#0f3b23 }
+  .legend ul { padding-left: 16px; margin: 6px 0 0; }
+  .legend li { margin: 3px 0; }
+  .step-note { margin-top: 14px; padding: 12px 14px; background: #f6faf6; border:1px solid #d9e8dd; border-radius: 14px; font-size: 11.5px; color:#0f3b23; line-height: 1.5 }
+  .step-note b { color:#164d2f; font-weight: 800 }
+  .step-note .num { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:9999px; background:#0f3b23; color:#fff; font-size:10px; font-weight:800; margin-right:6px; vertical-align: 1px; }
+
+  /* ─── Phone frame ───────────────────────────────────────────── */
+  .phone-wrap { display:flex; justify-content:center; }
+  .phone {
+    width: 400px; height: 860px; border-radius: 46px; background: #f6f7f3;
+    box-shadow: 0 30px 80px rgba(8,30,19,.18), inset 0 0 0 10px #1a1d1a;
+    position: relative; overflow: hidden;
+  }
+  .phone-screen { position:absolute; inset:10px; border-radius: 36px; overflow:hidden; background:#eef2ed; }
+  .phone-notch { position:absolute; top:14px; left:50%; transform:translateX(-50%); width:104px; height:28px; background:#0c0e0c; border-radius:18px; z-index:50; }
+  .scroller { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; }
+  .scroller::-webkit-scrollbar { width: 6px; }
+  .scroller::-webkit-scrollbar-thumb { background:#cbd5c5; border-radius:9999px; }
+  .nav-mount { position:absolute; inset:auto 0 0 0; pointer-events:none; z-index:45; }
+  .nav-mount > * { pointer-events:auto; }
+
+  /* Title above the phone */
+  .stage-title { display:flex; align-items:baseline; justify-content:space-between; max-width: 420px; margin: 0 auto 14px; padding: 0 6px; }
+  .stage-title h2 { font-size: 13.5px; font-weight: 800; color: #0f3b23; letter-spacing:.04em; margin:0 }
+  .stage-title span { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <aside class="sidebar">
+    <p class="eyebrow">R3foresta · Plantación</p>
+    <h1>Registrar plantación</h1>
+    <p class="lead">Flujo mobile-first del operario en campo —
+      6 pasos cortos, foto + GPS obligatorios, validación inmediata.</p>
+
+    <div class="block">
+      <h3>Paso del wizard</h3>
+      <div class="steps-row" id="seg-paso">
+        <button data-val="1" class="on"><strong>1</strong>Campaña</button>
+        <button data-val="2"><strong>2</strong>Foto</button>
+        <button data-val="3"><strong>3</strong>Especies</button>
+        <button data-val="4"><strong>4</strong>Equipo</button>
+        <button data-val="5"><strong>5</strong>Notas</button>
+        <button data-val="6"><strong>6</strong>Final</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Campaña activa</h3>
+      <div class="opt-list" id="opt-campana">
+        <button data-val="CAM-2026-014" class="on">Arborización La Paz 2026 <span class="tag">ARBORIZACION</span></button>
+        <button data-val="CAM-2026-007">Reforestación Hampaturi F1 <span class="tag">REFORESTACION</span></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Estado GPS</h3>
+      <div class="seg" id="seg-gps">
+        <button data-val="capturado" class="on">Capturado</button>
+        <button data-val="capturando">Activando</button>
+        <button data-val="sin-senal">Sin señal</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Fotos capturadas</h3>
+      <div class="seg" id="seg-fotos">
+        <button data-val="0">0</button>
+        <button data-val="1" class="on">1</button>
+        <button data-val="2">2</button>
+        <button data-val="3">3</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Cantidad por especie</h3>
+      <div class="seg" id="seg-cantidades">
+        <button data-val="vacio">Vacío</button>
+        <button data-val="parcial" class="on">Parcial</button>
+        <button data-val="excede">Excede %</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Conexión</h3>
+      <div class="seg" id="seg-conexion">
+        <button data-val="online" class="on">Online</button>
+        <button data-val="sync">Sync</button>
+        <button data-val="offline">Offline</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Confirmación</h3>
+      <div class="seg" id="seg-confirmacion">
+        <button data-val="idle" class="on">Inactiva</button>
+        <button data-val="guardando">Guardando</button>
+        <button data-val="exito">Éxito</button>
+      </div>
+    </div>
+
+    <div class="step-note" id="step-note">
+      <span class="num">1</span><b>Selección de campaña.</b>
+      El operario solo ve campañas <b>ACTIVAS</b> donde está designado.
+      Tarjeta muestra meta vs plantados y árboles asignados para hoy.
+    </div>
+
+    <div class="legend">
+      <b>Reglas de negocio clave</b>
+      <ul>
+        <li><b>Foto + GPS son obligatorios.</b> El GPS se adjunta automáticamente a cada foto al momento de capturar.</li>
+        <li><b>El % máximo por especie es guía, no bloqueo</b> — el operario puede pasarse pero ve aviso visual.</li>
+        <li>El registro <b>descuenta del saldo</b> de los lotes asignados a la campaña (FIFO en backend).</li>
+        <li>Co-responsables: aparece el evento en su historial también; <b>cuenta una sola vez</b> en el total de la campaña.</li>
+        <li>Sin señal → cola local. Visible para el operario; cuando vuelve la red, sincroniza automático.</li>
+        <li>Eventos <b>append-only</b>. Editar = nuevo evento de corrección.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div>
+    <div class="stage-title">
+      <h2 id="stage-label">Paso 1 de 6 · Selección de campaña</h2>
+      <span>Mobile · 400×860</span>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="scroller" id="scroller">
+            <div id="root"></div>
+          </div>
+          <div class="nav-mount" id="nav-mount"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="plantacion/Icon.jsx"></script>
+<script type="text/babel" src="plantacion/BottomNav.jsx"></script>
+<script type="text/babel" src="plantacion/tweaks-panel.jsx"></script>
+<script type="text/babel" src="plantacion/PlantacionData.jsx"></script>
+<script type="text/babel" src="plantacion/PlantacionSteps.jsx"></script>
+<script type="text/babel" src="plantacion/PlantacionStepsB.jsx"></script>
+<script type="text/babel" src="plantacion/RegistrarPlantacionScreen.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "paso": 5,
+  "campanaId": "CAM-2026-014",
+  "gps": "capturado",
+  "fotos": 2,
+  "cantidades": "parcial",
+  "conexion": "online",
+  "confirmacion": "idle"
+}/*EDITMODE-END*/;
+
+const STEP_NOTES = {
+  1: { title: 'Selección de campaña',
+       body: 'El operario solo ve campañas <b>ACTIVAS</b> donde está designado. Tarjeta muestra meta vs plantados y árboles asignados para hoy.' },
+  2: { title: 'Captura de foto + GPS',
+       body: '<b>Obligatorio.</b> GPS se enlaza a cada foto automáticamente. Sin GPS, no se puede avanzar — el operario debe moverse a un punto con cielo abierto.' },
+  3: { title: 'Especies y cantidades',
+       body: 'Solo aparecen las especies del <b>mix planificado</b> de la campaña. El % máximo es <b>guía</b>: el operario puede excederlo, pero ve advertencia visual.' },
+  4: { title: 'Co-responsables (opcional)',
+       body: 'Selección múltiple del equipo de la campaña. El evento aparece en el historial de cada uno, pero solo <b>cuenta una vez</b> en el total de la campaña.' },
+  5: { title: 'Observaciones (opcional)',
+       body: 'Nota libre. Sugerencias rápidas para acelerar entrada en campo. Sin formato — texto plano.' },
+  6: { title: 'Confirmar y registrar',
+       body: 'Resumen completo + mini-mapa con la nueva ubicación. Si <b>offline</b>, se guarda en cola y sincroniza al volver la red. Evento <b>append-only</b>.' },
+};
+
+function getCounts(kind, campana) {
+  if (!campana) return {};
+  const especies = campana.mixPlanificado.map(m => m.especie);
+  if (kind === 'vacio')   return Object.fromEntries(especies.map(e => [e, 0]));
+  if (kind === 'parcial') {
+    // ~70 trees split mostly into first 2 species at ~planned ratio
+    return Object.fromEntries(especies.map((e, i) => [e, [28, 30, 12][i] ?? 0]));
+  }
+  if (kind === 'excede') {
+    // Push one species way over its planned %
+    return Object.fromEntries(especies.map((e, i) => [e, [55, 8, 5][i] ?? 0]));
+  }
+  return Object.fromEntries(especies.map(e => [e, 0]));
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [equipo, setEquipo] = React.useState(['op-2', 'op-3']);
+  const [observaciones, setObservaciones] = React.useState('Suelo húmedo, condiciones óptimas');
+
+  const campana = CAMPANAS.find(c => c.id === t.campanaId) || CAMPANAS[0];
+  const counts = React.useMemo(() => getCounts(t.cantidades, campana), [t.cantidades, t.campanaId]);
+
+  // Stage label sync.
+  React.useEffect(() => {
+    const labels = ['', 'Selección de campaña', 'Foto y GPS', 'Especies plantadas', 'Co-responsables', 'Observaciones', 'Confirmar y registrar'];
+    const label = document.getElementById('stage-label');
+    if (label) label.textContent = `Paso ${t.paso} de 6 · ${labels[t.paso]}`;
+    const note = document.getElementById('step-note');
+    if (note && STEP_NOTES[t.paso]) {
+      note.innerHTML = `<span class="num">${t.paso}</span><b>${STEP_NOTES[t.paso].title}.</b> ${STEP_NOTES[t.paso].body}`;
+    }
+  }, [t.paso]);
+
+  // Wire sidebar buttons to tweaks.
+  React.useEffect(() => {
+    const wire = (root, key, current, transform = v => v) => {
+      const node = document.getElementById(root);
+      if (!node) return () => {};
+      const onClick = (e) => {
+        const btn = e.target.closest('button[data-val]');
+        if (!btn) return;
+        setTweak(key, transform(btn.dataset.val));
+      };
+      node.addEventListener('click', onClick);
+      [...node.querySelectorAll('button[data-val]')].forEach(b => {
+        b.classList.toggle('on', transform(b.dataset.val) === current);
+      });
+      return () => node.removeEventListener('click', onClick);
+    };
+    const offs = [
+      wire('seg-paso',         'paso',          t.paso, v => parseInt(v, 10)),
+      wire('opt-campana',      'campanaId',     t.campanaId),
+      wire('seg-gps',          'gps',           t.gps),
+      wire('seg-fotos',        'fotos',         t.fotos, v => parseInt(v, 10)),
+      wire('seg-cantidades',   'cantidades',    t.cantidades),
+      wire('seg-conexion',     'conexion',      t.conexion),
+      wire('seg-confirmacion', 'confirmacion',  t.confirmacion),
+    ];
+    return () => offs.forEach(o => o && o());
+  }, [t.paso, t.campanaId, t.gps, t.fotos, t.cantidades, t.conexion, t.confirmacion, setTweak]);
+
+  // Keep scroller pinned to top on paso change.
+  React.useEffect(() => {
+    const sc = document.getElementById('scroller');
+    if (sc) sc.scrollTop = 0;
+  }, [t.paso, t.campanaId]);
+
+  return (
+    <React.Fragment>
+      <RegistrarPlantacionScreen
+        paso={t.paso} onPaso={(v) => setTweak('paso', v)}
+        campanaId={t.campanaId} onCampanaId={(v) => setTweak('campanaId', v)}
+        fotos={t.fotos} onFotos={(v) => setTweak('fotos', v)}
+        gps={t.gps} onGps={(v) => setTweak('gps', v)}
+        counts={counts}
+        onCounts={() => { /* tweak-driven; no live edit */ }}
+        equipo={equipo} onEquipo={setEquipo}
+        observaciones={observaciones} onObservaciones={setObservaciones}
+        conexion={t.conexion}
+        confirmacion={t.confirmacion}
+        onConfirmacion={(v) => setTweak('confirmacion', v)}
+      />
+      {/* Bottom-nav hidden durante el flujo wizard — patrón estándar PWA para
+          flujos focalizados de captura. El operario sale por el "Volver" del header. */}
+
+      <TweaksPanel>
+        <TweakSection label="Paso del wizard" />
+        <TweakSelect label="Paso" value={String(t.paso)}
+                     options={['1','2','3','4','5','6']}
+                     onChange={(v) => setTweak('paso', parseInt(v, 10))} />
+
+        <TweakSection label="Campaña y datos" />
+        <TweakSelect label="Campaña" value={t.campanaId}
+                     options={['CAM-2026-014', 'CAM-2026-007']}
+                     onChange={(v) => setTweak('campanaId', v)} />
+        <TweakRadio  label="GPS" value={t.gps}
+                     options={['capturado', 'capturando', 'sin-senal']}
+                     onChange={(v) => setTweak('gps', v)} />
+        <TweakSlider label="Fotos" value={t.fotos} min={0} max={3} step={1}
+                     onChange={(v) => setTweak('fotos', v)} />
+        <TweakRadio  label="Cantidades" value={t.cantidades}
+                     options={['vacio', 'parcial', 'excede']}
+                     onChange={(v) => setTweak('cantidades', v)} />
+
+        <TweakSection label="Estados globales" />
+        <TweakRadio  label="Conexión" value={t.conexion}
+                     options={['online', 'sync', 'offline']}
+                     onChange={(v) => setTweak('conexion', v)} />
+        <TweakRadio  label="Confirmación" value={t.confirmacion}
+                     options={['idle', 'guardando', 'exito']}
+                     onChange={(v) => setTweak('confirmacion', v)} />
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Recolección card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*:before,*:after{box-sizing:border-box}
+  body{padding:18px;background:var(--bg-canvas);margin:0;font-family:var(--font-body);color:var(--brand-700)}
+  .card{
+    background:#fff;border-radius:22px;padding:16px;
+    box-shadow:var(--shadow-soft);box-shadow:0 10px 30px rgba(0,0,0,.06), inset 0 0 0 1px rgba(0,0,0,.05);
+  }
+  .top{display:flex;gap:12px;align-items:flex-start}
+  .body{flex:1;min-width:0}
+  .code{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--brand-500);text-transform:uppercase;margin-bottom:4px}
+  .name{font-size:20px;font-weight:800;color:#1e293b;line-height:1.1;margin:0 0 2px;letter-spacing:-.01em}
+  .sci{font-size:13.5px;font-style:italic;color:#94a3b8;margin:0 0 12px}
+  .row{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;font-weight:600;color:#475569;line-height:1.4;margin-top:6px}
+  .row svg{width:16px;height:16px;color:var(--brand-500);flex:0 0 16px;margin-top:1px}
+  .thumb{
+    width:88px;height:88px;flex:0 0 88px;
+    border-radius:16px;background:url('../assets/germinacion.jpg') center/cover;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+  }
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .pill{
+    display:inline-flex;align-items:center;
+    font-size:11.5px;font-weight:700;padding:5px 12px;border-radius:9999px;
+  }
+  .esqueje{background:#fffbeb;color:#b45309;box-shadow:inset 0 0 0 1px #fef3c7}
+  .validado{background:#dcfce7;color:#166534;box-shadow:inset 0 0 0 1px #bbf7d0}
+  .cerrado{background:#f1f5f9;color:#475569;box-shadow:inset 0 0 0 1px #e2e8f0}
+  .evid{background:#f1f5f9;color:#475569;box-shadow:inset 0 0 0 1px #e2e8f0}
+</style></head><body>
+<article class="card">
+  <div class="top">
+    <div class="body">
+      <div class="code">REC-2026-070</div>
+      <h3 class="name">Sambucus</h3>
+      <p class="sci">Sambucus</p>
+      <div class="row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7l-8-4Z"/><path d="M12 12 4 8"/><path d="M12 12v9"/><path d="m12 12 8-4"/></svg>
+        <span>0 Unidades</span>
+      </div>
+      <div class="row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/></svg>
+        <span>03/05/2026</span>
+      </div>
+      <div class="row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-4.5 6-10a6 6 0 1 0-12 0c0 5.5 6 10 6 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
+        <span>[ borrador ] - Calle Max Navarro Ordoñez, Urbanización S. Pareamo, Sur, La Paz, Pedro Domingo Murillo, La Paz, Bolivia</span>
+      </div>
+    </div>
+    <div class="thumb"></div>
+  </div>
+  <div class="pills">
+    <span class="pill esqueje">ESQUEJE</span>
+    <span class="pill validado">VALIDADO</span>
+    <span class="pill cerrado">CERRADO</span>
+    <span class="pill evid">Evidencias: 2</span>
+  </div>
+</article>
+</body></html>

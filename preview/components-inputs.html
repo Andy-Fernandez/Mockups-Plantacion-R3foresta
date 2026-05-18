@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Form inputs</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  *,*:before,*:after{box-sizing:border-box}
+  body{padding:20px 24px;background:#fff;margin:0;font-family:var(--font-body);color:var(--brand-700)}
+  .stack{display:flex;flex-direction:column;gap:18px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .field{min-width:0}
+  label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--brand-500);margin:0 0 6px 2px}
+  input,select{
+    display:block;width:100%;
+    background:#fff;
+    border:1px solid var(--hairline-slate);
+    border-radius:14px;
+    padding:11px 14px;
+    font:500 14px var(--font-body);
+    color:var(--brand-700);
+    outline:none;
+    transition:border-color .15s, box-shadow .15s;
+    appearance:none;-webkit-appearance:none;
+  }
+  select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f613b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    background-size:16px;
+    padding-right:38px;
+  }
+  input:focus,select:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(31,97,59,.14)}
+  .seg{display:flex;background:#f1f5f9;padding:4px;border-radius:9999px;gap:4px;border:1px solid #e2e8f0}
+  .seg button{
+    flex:1;border:0;background:transparent;
+    font:700 12px var(--font-body);
+    padding:9px 14px;border-radius:9999px;
+    color:var(--fg-3);cursor:pointer;letter-spacing:.04em;
+    transition:background .15s, color .15s;
+  }
+  .seg .on{background:#fff;color:var(--brand-700);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+</style></head><body>
+<div class="stack">
+  <div class="grid">
+    <div class="field"><label>Nombre</label><input value="Camila Rojas"></div>
+    <div class="field"><label>Especie</label><select><option>Anadenanthera colubrina</option></select></div>
+  </div>
+  <div class="field">
+    <label>Tipo de material</label>
+    <div class="seg"><button class="on">SEMILLA</button><button>ESQUEJE</button></div>
+  </div>
+</div>
+</body></html>

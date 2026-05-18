@@ -1,0 +1,240 @@
+/* R3foresta — Colors, Type, and base tokens.
+ *
+ * Source of truth: tailwind.config.js + src/index.css + product surfaces in pwa-r3foresta.
+ * Use these CSS vars in any HTML mock that doesn't ship Tailwind.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* ─── Brand greens (from tailwind.config.js → theme.extend.colors.brand) ─── */
+  --brand-50:  #f0f6f2;
+  --brand-100: #d9e8dd;
+  --brand-500: #1f613b;
+  --brand-600: #164d2f;
+  --brand-700: #0f3b23;
+  --brand-800: #0c2e1c;
+  --brand-900: #08140f;
+
+  /* Surface (from index.css body) */
+  --bg-canvas: #f6f7f3;
+  --bg-canvas-dim: #eef1eb;
+  --bg-canvas-tint: #f2f7ef;
+  --bg-radial: radial-gradient(circle at 30% 20%, #f2f7ef 0, #f6f7f3 40%, #eef1eb 100%);
+
+  /* Auth / hero photographic surface */
+  --bg-night-1: #081c13;
+  --bg-night-2: #0c2a1e;
+  --bg-night-3: #08140f;
+  --glow-emerald: rgba(52, 211, 153, 0.20); /* emerald-400/20 */
+  --glow-lime:    rgba(217, 249, 157, 0.15); /* lime-200/15 */
+
+  /* Accent greens used in product (not in tailwind config but seen in code) */
+  --accent-leaf: #0f8351;   /* RecoleccionesScreen header */
+  --accent-emerald: #34d399;
+
+  /* Semantic — material badges */
+  --semilla-bg: #ecfdf5;    /* emerald-50 */
+  --semilla-fg: #047857;    /* emerald-700 */
+  --semilla-ring: #d1fae5;  /* emerald-100 */
+  --esqueje-bg: #fffbeb;    /* amber-50 */
+  --esqueje-fg: #b45309;    /* amber-700 */
+  --esqueje-ring: #fef3c7;  /* amber-100 */
+
+  /* Semantic — state badges */
+  --state-validated-bg:   #dcfce7;  /* green-100 */
+  --state-validated-fg:   #166534;  /* green-800 */
+  --state-pending-bg:     #fef3c7;  /* amber-100 */
+  --state-pending-fg:     #92400e;  /* amber-800 */
+  --state-rejected-bg:    #fee2e2;  /* red-100 */
+  --state-rejected-fg:    #991b1b;  /* red-800 */
+  --state-draft-bg:       #f1f5f9;  /* slate-100 */
+  --state-draft-fg:       #334155;  /* slate-700 */
+  --state-open-bg:        #dbeafe;  /* blue-100 */
+  --state-open-fg:        #1e40af;  /* blue-800 */
+  --state-closed-bg:      #e2e8f0;  /* slate-200 */
+  --state-closed-fg:      #475569;  /* slate-600 */
+
+  /* Semantic — feedback */
+  --warn-bg: #fffbeb;       /* amber-50 */
+  --warn-border: #fde68a;   /* amber-200 */
+  --warn-fg: #92400e;       /* amber-800 */
+  --warn-icon-bg: #fde68a;  /* amber-200 */
+  --warn-icon-fg: #b45309;  /* amber-700 */
+  --error-bg: #fef2f2;      /* red-50 */
+  --error-border: #ef4444;  /* red-500 */
+  --error-fg: #b91c1c;      /* red-700 */
+
+  /* Neutrals */
+  --fg-1: #0f3b29;          /* Body text on light */
+  --fg-2: #334155;          /* slate-700 */
+  --fg-3: #64748b;          /* slate-500 */
+  --fg-4: #94a3b8;          /* slate-400 */
+  --fg-on-dark: #ffffff;
+  --fg-on-dark-muted: rgba(255, 255, 255, 0.85);
+  --fg-on-dark-faint: rgba(255, 255, 255, 0.70);
+  --hairline: rgba(0, 0, 0, 0.05); /* ring-1 ring-black/5 */
+  --hairline-slate: #e2e8f0;        /* slate-200 input borders */
+  --hairline-brand: #d9e8dd;        /* brand-100 outline pills */
+
+  /* ─── Typography ─── */
+  --font-display: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: var(--font-display);
+
+  /* Weights actually in use across the codebase */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  /* Letter-spacing tropes — eyebrow text */
+  --tracking-eyebrow-sm: 0.20em;  /* tracking-[0.2em] */
+  --tracking-eyebrow-md: 0.22em;
+  --tracking-eyebrow-lg: 0.28em;
+
+  /* Size ramp (Tailwind defaults the project uses) */
+  --text-xs:   12px;  /* eyebrows, badges, helper text */
+  --text-sm:   14px;  /* body small, list rows */
+  --text-base: 16px;  /* form inputs, CTAs */
+  --text-lg:   18px;  /* card titles, button labels */
+  --text-xl:   20px;  /* metric numerals */
+  --text-2xl:  24px;  /* hero titles, screen titles */
+  --text-3xl:  30px;  /* big screen header (Recolecciones h1) */
+
+  /* Radii */
+  --radius-sm:   8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;   /* rounded-2xl */
+  --radius-xl:  24px;   /* rounded-3xl */
+  --radius-2xl: 28px;   /* auth hero */
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.06);
+  --shadow-nav:  0 20px 50px rgba(8, 30, 19, 0.30);
+  --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.20);
+
+  /* Spacing scale (Tailwind 4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  /* Motion */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+}
+
+/* ─── Semantic element styles (use as a quickstart for HTML mocks) ─── */
+html, body {
+  font-family: var(--font-body);
+  color: var(--fg-1);
+  background: var(--bg-radial);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.r3-eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow-sm);
+  color: var(--brand-500);
+}
+
+.r3-h1 {
+  font-size: var(--text-3xl);
+  font-weight: var(--fw-extrabold);
+  letter-spacing: -0.01em;
+  color: var(--fg-on-dark);
+  line-height: 1.05;
+}
+
+.r3-h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--fw-semibold);
+  color: var(--brand-700);
+  letter-spacing: -0.01em;
+}
+
+.r3-h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--fw-bold);
+  color: var(--brand-700);
+}
+
+.r3-h4 {
+  font-size: var(--text-base);
+  font-weight: var(--fw-semibold);
+  color: var(--brand-700);
+}
+
+.r3-body {
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--brand-700);
+  line-height: 1.45;
+}
+
+.r3-helper {
+  font-size: var(--text-xs);
+  font-weight: var(--fw-medium);
+  color: var(--brand-500);
+}
+
+.r3-sci {
+  font-style: italic;
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+}
+
+.r3-metric {
+  font-size: var(--text-xl);
+  font-weight: var(--fw-semibold);
+  color: var(--brand-700);
+  letter-spacing: -0.01em;
+}
+
+.r3-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  font-weight: var(--fw-semibold);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.r3-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft), inset 0 0 0 1px var(--hairline);
+  padding: 16px;
+}
+
+.r3-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--brand-600);
+  color: #fff;
+  font-weight: var(--fw-extrabold);
+  font-size: var(--text-lg);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-soft);
+  border: 0;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default), transform var(--duration-fast) var(--ease-default);
+}
+.r3-btn-primary:hover { background: var(--brand-700); }
+.r3-btn-primary:active { transform: scale(0.99); }

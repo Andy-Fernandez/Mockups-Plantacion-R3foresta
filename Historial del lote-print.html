@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Historial del lote · R3foresta · Print</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',
+          500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f',
+        },
+      },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  /* ─── Screen preview ─── */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #eef2ed;
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: #0f3b23;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cover {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 36px 40px 28px;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.05);
+  }
+  .cover .eyebrow { font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:#1f613b; margin:0 }
+  .cover h1 { font-size: 32px; font-weight: 800; color:#0f3b23; letter-spacing:-.02em; margin: 6px 0 6px; line-height:1.1 }
+  .cover p.lead { font-size: 14px; color:#1f613b; margin:0; font-weight: 500; line-height: 1.45; max-width: 560px; }
+  .cover .meta { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .cover .meta div { background: #f0f6f2; border-radius: 14px; padding: 12px 14px; }
+  .cover .meta div p:first-child { margin: 0; font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#1f613b }
+  .cover .meta div p:last-child { margin: 4px 0 0; font-size: 13px; font-weight: 800; color: #0f3b23; }
+  .cover .notes { margin-top: 18px; padding-top: 14px; border-top: 1px solid #e5ebe2; font-size: 12px; color: #475569; line-height: 1.5; }
+  .cover .notes b { color: #0f3b23 }
+  .cover .notes ul { padding-left: 18px; margin: 6px 0 0 }
+  .cover .notes li { margin: 3px 0 }
+
+  .page-label {
+    max-width: 460px;
+    margin: 28px auto 10px;
+    padding: 0 6px;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .page-label h2 { font-size: 13px; font-weight: 800; color:#0f3b23; margin: 0; letter-spacing: .04em; }
+  .page-label span { font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+
+  /* Print "frame" wraps each design page — a clean white card with rounded corners. */
+  .screen-frame {
+    width: 448px;
+    margin: 0 auto;
+    background: #eef2ed;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  }
+  /* Neutralize sticky in print so tabs flow with content. */
+  .screen-frame .sticky { position: static !important; }
+  /* Inside the print, the AuditoriaSection on page 2 is already expanded — keep it intact. */
+
+  body { padding: 36px 16px 60px }
+
+  /* ─── Print rules ─── */
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 8mm;
+    }
+    html, body { background: #fff !important; }
+    body { padding: 0; margin: 0; }
+    .cover {
+      box-shadow: none;
+      border-radius: 0;
+      max-width: none;
+      padding: 0 0 8mm;
+    }
+    .cover .meta div { background: #f0f6f2 !important; }
+    .page-label { max-width: none; margin: 8mm 0 4mm; }
+    .screen-frame {
+      box-shadow: none;
+      border-radius: 0;
+      width: 100%;
+      max-width: 460px;
+      background: #fff;
+    }
+    /* Page breaks between sections */
+    .print-break { break-before: page; page-break-before: always; }
+    /* Don't split cards across pages */
+    article, section, li, .r3-card { break-inside: avoid; page-break-inside: avoid; }
+    /* Tighten timeline within print */
+    ol > li { break-inside: avoid; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <p class="eyebrow">R3foresta · Vivero · Design spec</p>
+  <h1>Historial del lote</h1>
+  <p class="lead">Pestaña operativa dentro del detalle de un lote de vivero. Muestra la trazabilidad
+    completa desde la recolección de origen hasta el cierre del ciclo, sin saturar al operario.</p>
+
+  <div class="meta">
+    <div>
+      <p>Plataforma</p>
+      <p>PWA · móvil · 448&nbsp;px</p>
+    </div>
+    <div>
+      <p>Idioma</p>
+      <p>Español · BO</p>
+    </div>
+    <div>
+      <p>Eventos</p>
+      <p>INICIO · EMBOLSADO · ADAPTABILIDAD · MERMA · DESPACHO · CIERRE_AUTOMATICO</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>Principios de la pantalla</b>
+    <ul>
+      <li>El saldo vivo nace en <b>EMBOLSADO</b>, no en INICIO — la pantalla refuerza la diferencia con un callout dedicado.</li>
+      <li><b>Adaptabilidad</b> no mueve saldo; se muestra como cambio de ambiente, no de stock.</li>
+      <li>Evidencia obligatoria en INICIO, EMBOLSADO, MERMA y DESPACHO; thumbnail + contador “+N” en cada tarjeta.</li>
+      <li>Eventos <i>append-only</i> — sin afordances de editar ni borrar.</li>
+      <li>Detalle técnico / auditoría colapsado por defecto; expandible bajo demanda.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="page-label print-break">
+  <h2>Lote VIV-000123-REC-000045 · ACTIVO · Resumen</h2>
+  <span>Página A</span>
+</div>
+<div class="screen-frame" id="mount-active-resumen"></div>
+
+<div class="page-label print-break">
+  <h2>Lote VIV-000123-REC-000045 · ACTIVO · Historial</h2>
+  <span>Página B</span>
+</div>
+<div class="screen-frame" id="mount-active-historial"></div>
+
+<div class="page-label print-break">
+  <h2>Lote VIV-000123-REC-000045 · FINALIZADO · Cierre mixto · Resumen</h2>
+  <span>Página C</span>
+</div>
+<div class="screen-frame" id="mount-closed-resumen"></div>
+
+<div class="page-label print-break">
+  <h2>Lote VIV-000123-REC-000045 · FINALIZADO · Historial + Auditoría</h2>
+  <span>Página D</span>
+</div>
+<div class="screen-frame" id="mount-closed-historial"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="historial/Icon.jsx"></script>
+<script type="text/babel" src="historial/HistorialData.jsx"></script>
+<script type="text/babel" src="historial/HistorialEvents.jsx"></script>
+<script type="text/babel" src="historial/HistorialResumen.jsx"></script>
+<script type="text/babel" src="historial/HistorialScreen.jsx"></script>
+
+<script type="text/babel">
+function PrintWrap({ variant, audit, initialTab }) {
+  return (
+    <HistorialScreen
+      variant={variant}
+      audit={audit}
+      initialTab={initialTab}
+      openGallery={null}
+      openFilters={false}
+      onCloseGallery={() => {}}
+      onCloseFilters={() => {}}
+      onOpenGallery={() => {}}
+      onOpenFilters={() => {}}
+      onToggleAudit={() => {}}
+    />
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('mount-active-resumen'))
+  .render(<PrintWrap variant="ACTIVO" audit={false} initialTab="resumen" />);
+ReactDOM.createRoot(document.getElementById('mount-active-historial'))
+  .render(<PrintWrap variant="ACTIVO" audit={false} initialTab="historial" />);
+ReactDOM.createRoot(document.getElementById('mount-closed-resumen'))
+  .render(<PrintWrap variant="MIXTO"  audit={false} initialTab="resumen" />);
+ReactDOM.createRoot(document.getElementById('mount-closed-historial'))
+  .render(<PrintWrap variant="MIXTO"  audit={true}  initialTab="historial" />);
+
+// Auto-print once fonts + Babel-rendered DOM settle.
+(async () => {
+  try { await document.fonts.ready; } catch (e) {}
+  const wait = () => new Promise(r => setTimeout(r, 200));
+  const ids = ['mount-active-resumen','mount-active-historial','mount-closed-resumen','mount-closed-historial'];
+  for (let i = 0; i < 30; i++) {
+    if (ids.every(id => document.getElementById(id).children.length > 0)) break;
+    await wait();
+  }
+  await new Promise(r => setTimeout(r, 800));
+  if (!window.__SKIP_PRINT) window.print();
+})();
+</script>
+</body>
+</html>

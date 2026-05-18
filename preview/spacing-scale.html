@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Spacing scale</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{padding:18px;background:#fff;margin:0;font-family:var(--font-body);color:var(--brand-700)}
+  .row{display:flex;flex-direction:column;gap:6px}
+  .item{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600}
+  .bar{height:14px;background:var(--brand-500);border-radius:4px}
+  .name{width:38px;color:var(--fg-3);font-weight:500}
+  .px{width:48px;color:var(--fg-3);font-weight:500}
+</style></head><body>
+<div class="row">
+  <div class="item"><span class="name">1</span><span class="bar" style="width:4px"></span><span class="px">4px</span></div>
+  <div class="item"><span class="name">2</span><span class="bar" style="width:8px"></span><span class="px">8px</span></div>
+  <div class="item"><span class="name">3</span><span class="bar" style="width:12px"></span><span class="px">12px</span></div>
+  <div class="item"><span class="name">4</span><span class="bar" style="width:16px"></span><span class="px">16px · default gap</span></div>
+  <div class="item"><span class="name">5</span><span class="bar" style="width:20px"></span><span class="px">20px · container pad</span></div>
+  <div class="item"><span class="name">6</span><span class="bar" style="width:24px"></span><span class="px">24px</span></div>
+  <div class="item"><span class="name">7</span><span class="bar" style="width:28px"></span><span class="px">28px · section</span></div>
+  <div class="item"><span class="name">8</span><span class="bar" style="width:32px"></span><span class="px">32px</span></div>
+</div>
+</body></html>

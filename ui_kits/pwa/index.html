@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>R3foresta · PWA UI Kit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',
+          500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f',
+        },
+      },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  html, body { background: #d8e0d3; min-height: 100%; font-family: 'Manrope', system-ui, sans-serif; }
+  body { display:flex; justify-content:center; align-items:flex-start; padding: 32px 16px; }
+  .stage { display:grid; grid-template-columns: 1fr; gap:24px; max-width: 1080px; width:100%; }
+  @media (min-width: 900px) { .stage { grid-template-columns: 380px 1fr; } }
+  .phone {
+    width: 380px; height: 800px; border-radius: 44px; background: #f6f7f3;
+    box-shadow: 0 30px 80px rgba(8,30,19,.18), inset 0 0 0 10px #1a1d1a;
+    position: relative; overflow: hidden; margin: 0 auto;
+  }
+  .phone-screen { position:absolute; inset:10px; border-radius: 34px; overflow:hidden; background: radial-gradient(circle at 30% 20%, #f2f7ef 0, #f6f7f3 40%, #eef1eb 100%); }
+  .phone-notch { position:absolute; top:14px; left:50%; transform:translateX(-50%); width:104px; height:28px; background:#0c0e0c; border-radius:18px; z-index:50; }
+  .scroller { width: 100%; height: 100%; overflow-y: auto; }
+  .scroller::-webkit-scrollbar { width: 6px; } .scroller::-webkit-scrollbar-thumb { background:#cbd5c5; border-radius:9999px; }
+  .nav-mount { position:absolute; inset:auto 0 0 0; pointer-events:none; z-index:45; }
+  .nav-mount > * { pointer-events:auto; }
+  .sidebar { background:#fff; border-radius: 24px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.05); }
+  .sidebar h1 { font-size: 22px; font-weight: 800; color: #0f3b23; letter-spacing: -.02em; }
+  .sidebar p.lead { font-size: 13px; color: #1f613b; margin-top: 6px; font-weight:500; line-height:1.4; }
+  .pill-nav { display:flex; flex-direction:column; gap: 4px; margin-top: 18px; }
+  .pill-nav button { display:flex; align-items:center; justify-content:space-between; gap:10px; text-align:left; padding: 12px 14px; border-radius: 14px; font-weight:700; font-size:13.5px; color:#0f3b23; background:transparent; border:0; cursor:pointer; transition: background .15s; }
+  .pill-nav button:hover { background:#f0f6f2; }
+  .pill-nav button.on { background:#0f3b23; color:#fff; }
+  .pill-nav .meta { font-size: 11px; font-weight: 600; opacity:.7; }
+  .pill-nav button.on .meta { opacity:.85 }
+  .legend { margin-top: 22px; padding-top:18px; border-top:1px solid #e5ebe2; font-size: 11.5px; color: #475569; line-height:1.5 }
+  .legend b { color:#0f3b23 }
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="sidebar">
+    <h1>R3foresta · PWA</h1>
+    <p class="lead">High-fidelity recreation of the four core screens. Click pills to switch; phone scrolls.</p>
+    <div class="pill-nav" id="nav"></div>
+    <div class="legend">
+      <p><b>Stack source:</b> R3foresta/pwa-r3foresta · React 19 · Tailwind v3.</p>
+      <p style="margin-top:8px"><b>Mock only:</b> no real WebAuthn, no real API. Login button "logs you in" after 600 ms.</p>
+      <p style="margin-top:8px"><b>Tap the green</b> "Fases en progreso" tiles or recolección cards to drill down.</p>
+    </div>
+  </aside>
+
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="scroller" id="scroller">
+        <div id="root"></div>
+      </div>
+      <div class="nav-mount" id="nav-mount"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Icon.jsx"></script>
+<script type="text/babel" src="BottomNav.jsx"></script>
+<script type="text/babel" src="HomeScreen.jsx"></script>
+<script type="text/babel" src="LoginScreen.jsx"></script>
+<script type="text/babel" src="RecoleccionesScreen.jsx"></script>
+<script type="text/babel" src="ViveroListScreen.jsx"></script>
+<script type="text/babel" src="ViveroDetailScreen.jsx"></script>
+<script type="text/babel" src="ViveroEventInicio.jsx"></script>
+
+<script type="text/babel">
+const SCREENS = [
+  { key: 'login', label: 'Login', meta: 'Auth' },
+  { key: 'home', label: 'Home', meta: 'Dashboard' },
+  { key: 'recolecciones', label: 'Recolecciones', meta: 'Lista' },
+  { key: 'vivero', label: 'Vivero', meta: 'Lotes' },
+  { key: 'viveroDetail', label: 'Vivero · detalle', meta: 'Timeline' },
+  { key: 'viveroInicio', label: 'Evento · Inicio', meta: 'Wizard 5 pasos' },
+];
+
+function App() {
+  const [screen, setScreen] = React.useState('login');
+  const [openedLote, setOpenedLote] = React.useState(null);
+  const [profileIncomplete, setProfileIncomplete] = React.useState(true);
+
+  React.useEffect(() => {
+    const nav = document.getElementById('nav');
+    nav.innerHTML = '';
+    SCREENS.forEach(s => {
+      const b = document.createElement('button');
+      b.innerHTML = `<span>${s.label}</span><span class="meta">${s.meta}</span>`;
+      if (s.key === screen) b.className = 'on';
+      b.onclick = () => setScreen(s.key);
+      nav.appendChild(b);
+    });
+    document.getElementById('scroller').scrollTop = 0;
+  }, [screen]);
+
+  const handleNav = (target) => {
+    if (target === 'recolecciones') setScreen('recolecciones');
+    else if (target === 'vivero') { setOpenedLote(null); setScreen('vivero'); }
+    else if (target === 'home') setScreen('home');
+    else if (target === 'planting' || target === 'map' || target === 'profile' || target === 'scan' || target === 'report') setScreen('home');
+    else setScreen(target);
+  };
+
+  const handleOpenRecoleccion = (lote) => {
+    setOpenedLote({ codigo: lote.codigo.replace('R-', 'V-'), especie: lote.especie, comun: lote.comun });
+    setScreen('viveroDetail');
+  };
+
+  const handleOpenLote = (lote) => {
+    setOpenedLote(lote);
+    setScreen('viveroDetail');
+  };
+
+  const showNav = screen !== 'login';
+  const activeTab = screen === 'home' ? 'home'
+    : screen === 'recolecciones' ? 'recolecciones'
+    : (screen === 'vivero' || screen === 'viveroDetail') ? 'vivero'
+    : '';
+
+  return (
+    <div className="relative" data-screen-label={screen}>
+      {screen === 'login' && <LoginScreen onLogin={() => setScreen('home')} />}
+      {screen === 'home' && <HomeScreen onNav={handleNav} profileIncomplete={profileIncomplete} />}
+      {screen === 'recolecciones' && <RecoleccionesScreen onNav={handleNav} onOpen={handleOpenRecoleccion} />}
+      {screen === 'vivero' && <ViveroListScreen onNav={handleNav} onOpen={handleOpenLote} />}
+      {screen === 'viveroDetail' && <ViveroDetailScreen onNav={(t) => t === 'recolecciones' ? setScreen('vivero') : t === 'viveroInicio' ? setScreen('viveroInicio') : handleNav(t)} lote={openedLote} />}
+      {screen === 'viveroInicio' && <ViveroEventInicio onNav={(t) => t === 'viveroDetail' ? setScreen('viveroDetail') : handleNav(t)} />}
+      {showNav && ReactDOM.createPortal(
+        <BottomNav active={activeTab} onNav={handleNav} />,
+        document.getElementById('nav-mount')
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

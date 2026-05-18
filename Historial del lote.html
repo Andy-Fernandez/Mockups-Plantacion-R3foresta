@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Historial del lote · R3foresta</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',
+          500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f',
+        },
+      },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  html, body { background: #d8e0d3; min-height: 100%; font-family: 'Manrope', system-ui, sans-serif; margin:0; }
+  body { padding: 28px 16px 80px; display:flex; justify-content:center; }
+
+  .stage { display:grid; grid-template-columns: 1fr; gap:28px; max-width: 1180px; width:100%; }
+  @media (min-width: 980px) { .stage { grid-template-columns: 360px 1fr; align-items: start; } }
+
+  /* ─── Sidebar (design notes) ────────────────────────────────── */
+  .sidebar { background:#fff; border-radius: 24px; padding: 22px 22px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.05); position: sticky; top: 20px; }
+  .sidebar .eyebrow { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+  .sidebar h1 { font-size: 22px; font-weight: 800; color: #0f3b23; letter-spacing: -.02em; margin: 4px 0 0; }
+  .sidebar p.lead { font-size: 13px; color: #1f613b; margin-top: 6px; font-weight:500; line-height:1.45; }
+  .sidebar .block { margin-top: 18px; }
+  .sidebar .block h3 { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#1f613b; margin:0 0 8px; }
+  .seg { display:flex; gap:4px; padding:4px; background:#f0f6f2; border-radius:14px; }
+  .seg button { flex:1; padding:8px 6px; font-size:11px; font-weight:800; color:#0f3b23; background:transparent; border:0; border-radius:10px; cursor:default; letter-spacing:.03em; transition: background .15s, color .15s }
+  .seg button.on { background:#0f3b23; color:#fff }
+  .opt-list { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .opt-list button { display:flex; align-items:center; justify-content:space-between; gap:8px; padding: 10px 12px; font-size:12px; font-weight:800; color:#0f3b23; background:#f6faf6; border:1px solid #d9e8dd; border-radius:12px; cursor:default; text-align:left; }
+  .opt-list button.on { background:#0f3b23; color:#fff; border-color:#0f3b23 }
+  .opt-list .tag { font-size:9.5px; font-weight:800; letter-spacing:.12em; padding:2px 8px; border-radius:9999px; background:#d9e8dd; color:#0f3b23 }
+  .opt-list button.on .tag { background:rgba(255,255,255,.18); color:#fff }
+  .legend { margin-top: 18px; padding-top:14px; border-top:1px solid #e5ebe2; font-size: 11px; color: #475569; line-height:1.5 }
+  .legend b { color:#0f3b23 }
+  .legend ul { padding-left: 16px; margin: 6px 0 0; }
+  .legend li { margin: 2px 0; }
+
+  /* ─── Phone frame ───────────────────────────────────────────── */
+  .phone-wrap { display:flex; justify-content:center; }
+  .phone {
+    width: 400px; height: 860px; border-radius: 46px; background: #f6f7f3;
+    box-shadow: 0 30px 80px rgba(8,30,19,.18), inset 0 0 0 10px #1a1d1a;
+    position: relative; overflow: hidden;
+  }
+  .phone-screen { position:absolute; inset:10px; border-radius: 36px; overflow:hidden; background:#eef2ed; }
+  .phone-notch { position:absolute; top:14px; left:50%; transform:translateX(-50%); width:104px; height:28px; background:#0c0e0c; border-radius:18px; z-index:50; }
+  .scroller { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; }
+  .scroller::-webkit-scrollbar { width: 6px; }
+  .scroller::-webkit-scrollbar-thumb { background:#cbd5c5; border-radius:9999px; }
+  .nav-mount { position:absolute; inset:auto 0 0 0; pointer-events:none; z-index:45; }
+  .nav-mount > * { pointer-events:auto; }
+
+  /* Hide horizontal scrollbar in filter chips row */
+  .scroller .overflow-x-auto::-webkit-scrollbar { display:none }
+
+  /* Title above the phone */
+  .stage-title { display:flex; align-items:baseline; justify-content:space-between; max-width: 420px; margin: 0 auto 14px; padding: 0 6px; }
+  .stage-title h2 { font-size: 13.5px; font-weight: 800; color: #0f3b23; letter-spacing:.04em; margin:0 }
+  .stage-title span { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <aside class="sidebar">
+    <p class="eyebrow">R3foresta · Vivero</p>
+    <h1>Historial del lote</h1>
+    <p class="lead">Vista operativa de la trazabilidad de un lote de vivero —
+      desde su recolección de origen hasta su cierre.</p>
+
+    <div class="block">
+      <h3>Pestaña activa</h3>
+      <div class="seg" id="seg-pestana">
+        <button data-val="resumen" class="on">Resumen</button>
+        <button data-val="historial">Historial</button>
+        <button data-val="evidencia">Evidencia</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Estado del lote</h3>
+      <div class="seg" id="seg-estado">
+        <button data-val="ACTIVO" class="on">ACTIVO</button>
+        <button data-val="FINALIZADO">FINALIZADO</button>
+      </div>
+    </div>
+
+    <div class="block" id="block-motivo" style="display:none">
+      <h3>Motivo de cierre</h3>
+      <div class="opt-list" id="opt-motivo">
+        <button data-val="DESPACHO_TOTAL" class="on">Despacho total <span class="tag">DESPACHO</span></button>
+        <button data-val="PERDIDA_TOTAL">Pérdida total <span class="tag">MERMA</span></button>
+        <button data-val="MIXTO">Cierre mixto <span class="tag">DESPACHO + MERMA</span></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Subetapa actual</h3>
+      <div class="seg" id="seg-subetapa">
+        <button data-val="SOMBRA" class="on">Sombra</button>
+        <button data-val="MEDIA_SOMBRA">Media</button>
+        <button data-val="SOL_DIRECTO">Sol</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Capas en pantalla</h3>
+      <div class="opt-list" id="opt-overlay">
+        <button data-val="auditExpanded">Auditoría desplegada <span class="tag" id="tag-audit">OFF</span></button>
+        <button data-val="galleryOpen">Modal galería <span class="tag" id="tag-gallery">OFF</span></button>
+        <button data-val="filtersOpen">Más filtros <span class="tag" id="tag-filters">OFF</span></button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <b>Notas de diseño</b>
+      <ul>
+        <li>El saldo vivo nace en <b>EMBOLSADO</b>, no en INICIO — la pantalla refuerza la diferencia.</li>
+        <li><b>Adaptabilidad</b> no mueve saldo; se muestra como cambio de ambiente, no de stock.</li>
+        <li><b>Evidencia</b> obligatoria en INICIO, EMBOLSADO, MERMA y DESPACHO.</li>
+        <li>Eventos <i>append-only</i> · sin editar ni borrar.</li>
+        <li>Detalle técnico colapsado por defecto — no contamina la lectura operativa.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div>
+    <div class="stage-title">
+      <h2 id="stage-label">Lote VIV-000123-REC-000045 · ACTIVO</h2>
+      <span>Mobile · 400×860</span>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="scroller" id="scroller">
+            <div id="root"></div>
+          </div>
+          <div class="nav-mount" id="nav-mount"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="historial/Icon.jsx"></script>
+<script type="text/babel" src="historial/BottomNav.jsx"></script>
+<script type="text/babel" src="historial/tweaks-panel.jsx"></script>
+<script type="text/babel" src="historial/HistorialData.jsx"></script>
+<script type="text/babel" src="historial/HistorialEvents.jsx"></script>
+<script type="text/babel" src="historial/HistorialResumen.jsx"></script>
+<script type="text/babel" src="historial/HistorialScreen.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "pestana": "resumen",
+  "loteEstado": "ACTIVO",
+  "motivoCierre": "DESPACHO_TOTAL",
+  "subetapa": "SOMBRA",
+  "auditExpanded": false,
+  "galleryOpen": false,
+  "filtersOpen": false
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  // Map tweak state to HistorialScreen props.
+  const variant = t.loteEstado === 'ACTIVO' ? 'ACTIVO' : t.motivoCierre;
+
+  // Override subetapa actual on the lote object (mutate copy).
+  const baseLote = LOTE_VARIANTS[variant] || LOTE_VARIANTS.ACTIVO;
+  const lote = { ...baseLote, subetapa: t.subetapa };
+  // We need to push this back via a small variant override layer.
+  const variantsOverride = React.useMemo(() => ({ ...LOTE_VARIANTS, [variant]: lote }), [variant, t.subetapa]);
+
+  // Stash override on window so HistorialScreen picks it up.
+  React.useEffect(() => { window.LOTE_VARIANTS = variantsOverride; }, [variantsOverride]);
+
+  // For gallery — open first event with photos.
+  const sampleEvent = React.useMemo(() => BASE_EVENTS.find(e => e.fotos && e.fotos.length > 1), []);
+  const [activeGallery, setActiveGallery] = React.useState(null);
+
+  React.useEffect(() => {
+    setActiveGallery(t.galleryOpen ? sampleEvent : null);
+  }, [t.galleryOpen]);
+
+  // Sync stage title.
+  React.useEffect(() => {
+    const label = document.getElementById('stage-label');
+    if (label) {
+      const motivo = t.loteEstado === 'FINALIZADO' ? ` · ${MOTIVO_CIERRE_LABEL[t.motivoCierre]}` : '';
+      label.textContent = `Lote VIV-000123-REC-000045 · ${t.loteEstado}${motivo}`;
+    }
+  }, [t.loteEstado, t.motivoCierre]);
+
+  // Wire sidebar buttons to tweaks.
+  React.useEffect(() => {
+    const wire = (root, key, current, single = true) => {
+      const node = document.getElementById(root);
+      if (!node) return () => {};
+      const onClick = (e) => {
+        const btn = e.target.closest('button[data-val]');
+        if (!btn) return;
+        const val = btn.dataset.val;
+        if (key === 'overlay') {
+          // boolean toggle
+          setTweak(val, !t[val]);
+        } else {
+          setTweak(key, val);
+        }
+      };
+      node.addEventListener('click', onClick);
+      // paint state
+      [...node.querySelectorAll('button[data-val]')].forEach(b => {
+        if (key === 'overlay') {
+          b.classList.toggle('on', !!t[b.dataset.val]);
+        } else {
+          b.classList.toggle('on', b.dataset.val === current);
+        }
+      });
+      return () => node.removeEventListener('click', onClick);
+    };
+    const off1 = wire('seg-pestana',   'pestana',       t.pestana);
+    const off2 = wire('seg-estado',    'loteEstado',    t.loteEstado);
+    const off3 = wire('opt-motivo',    'motivoCierre',  t.motivoCierre);
+    const off4 = wire('seg-subetapa',  'subetapa',      t.subetapa);
+    const off5 = wire('opt-overlay',   'overlay',       null);
+
+    // Update overlay tags
+    document.getElementById('tag-audit').textContent   = t.auditExpanded ? 'ON' : 'OFF';
+    document.getElementById('tag-gallery').textContent = t.galleryOpen   ? 'ON' : 'OFF';
+    document.getElementById('tag-filters').textContent = t.filtersOpen   ? 'ON' : 'OFF';
+
+    // Show/hide motivo block
+    document.getElementById('block-motivo').style.display = t.loteEstado === 'FINALIZADO' ? '' : 'none';
+
+    return () => { off1(); off2(); off3(); off4(); off5(); };
+  }, [t.pestana, t.loteEstado, t.motivoCierre, t.subetapa, t.auditExpanded, t.galleryOpen, t.filtersOpen, setTweak]);
+
+  // Keep scroller pinned to top on variant change to make changes visible.
+  React.useEffect(() => {
+    const sc = document.getElementById('scroller');
+    if (sc) sc.scrollTop = 0;
+  }, [t.loteEstado, t.motivoCierre]);
+
+  return (
+    <React.Fragment>
+      <HistorialScreen
+        variant={variant}
+        audit={t.auditExpanded}
+        initialTab={t.pestana}
+        openGallery={activeGallery}
+        openFilters={t.filtersOpen}
+        onCloseGallery={() => setTweak('galleryOpen', false)}
+        onCloseFilters={() => setTweak('filtersOpen', false)}
+        onOpenGallery={(e) => { setActiveGallery(e); setTweak('galleryOpen', true); }}
+        onOpenFilters={() => setTweak('filtersOpen', true)}
+        onToggleAudit={() => setTweak('auditExpanded', !t.auditExpanded)}
+      />
+      {ReactDOM.createPortal(
+        <BottomNav active="vivero" onNav={() => {}} />,
+        document.getElementById('nav-mount')
+      )}
+
+      <TweaksPanel>
+        <TweakSection label="Pestaña activa" />
+        <TweakRadio label="Vista" value={t.pestana}
+                    options={['resumen', 'historial', 'evidencia']}
+                    onChange={(v) => setTweak('pestana', v)} />
+
+        <TweakSection label="Estado del lote" />
+        <TweakRadio label="Estado" value={t.loteEstado}
+                    options={['ACTIVO', 'FINALIZADO']}
+                    onChange={(v) => setTweak('loteEstado', v)} />
+        {t.loteEstado === 'FINALIZADO' && (
+          <TweakSelect label="Motivo de cierre" value={t.motivoCierre}
+                       options={['DESPACHO_TOTAL', 'PERDIDA_TOTAL', 'MIXTO']}
+                       onChange={(v) => setTweak('motivoCierre', v)} />
+        )}
+        <TweakSelect label="Subetapa actual" value={t.subetapa}
+                     options={['SOMBRA', 'MEDIA_SOMBRA', 'SOL_DIRECTO']}
+                     onChange={(v) => setTweak('subetapa', v)} />
+
+        <TweakSection label="Capas / modales" />
+        <TweakToggle label="Auditoría desplegada" value={t.auditExpanded}
+                     onChange={(v) => setTweak('auditExpanded', v)} />
+        <TweakToggle label="Modal galería abierta" value={t.galleryOpen}
+                     onChange={(v) => setTweak('galleryOpen', v)} />
+        <TweakToggle label="Bottom sheet filtros" value={t.filtersOpen}
+                     onChange={(v) => setTweak('filtersOpen', v)} />
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

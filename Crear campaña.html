@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Crear campaña · R3foresta</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: { brand: {50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f'} },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  html, body { background: #d8e0d3; min-height: 100%; font-family: 'Manrope', system-ui, sans-serif; margin:0; }
+  body { padding: 28px 16px 80px; display:flex; justify-content:center; }
+  .stage { display:grid; grid-template-columns: 1fr; gap:28px; max-width: 1180px; width:100%; }
+  @media (min-width: 980px) { .stage { grid-template-columns: 360px 1fr; align-items: start; } }
+  .sidebar { background:#fff; border-radius: 24px; padding: 22px 22px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.05); position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; }
+  .sidebar .eyebrow { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+  .sidebar h1 { font-size: 22px; font-weight: 800; color: #0f3b23; letter-spacing: -.02em; margin: 4px 0 0; }
+  .sidebar p.lead { font-size: 13px; color: #1f613b; margin-top: 6px; font-weight:500; line-height:1.45; }
+  .sidebar .block { margin-top: 18px; }
+  .sidebar .block h3 { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#1f613b; margin:0 0 8px; }
+  .steps-row { display:flex; gap:4px; padding:4px; background:#f0f6f2; border-radius:14px; }
+  .steps-row button { display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; padding:6px 2px; font-size:9px; font-weight:800; color:#1f613b; background:transparent; border:0; border-radius:10px; cursor:default; letter-spacing:.02em; transition: background .15s, color .15s; text-transform:uppercase; }
+  .steps-row button strong { font-size: 13px; }
+  .steps-row button.on { background:#0f3b23; color:#fff }
+  .seg { display:flex; gap:4px; padding:4px; background:#f0f6f2; border-radius:14px; flex-wrap:wrap; }
+  .seg button { flex:1 1 50px; padding:8px 6px; font-size:11px; font-weight:800; color:#0f3b23; background:transparent; border:0; border-radius:10px; cursor:default; letter-spacing:.03em; min-width: 44px; }
+  .seg button.on { background:#0f3b23; color:#fff }
+  .legend { margin-top: 18px; padding-top:14px; border-top:1px solid #e5ebe2; font-size: 11px; color: #475569; line-height:1.5 }
+  .legend b { color:#0f3b23 }
+  .legend ul { padding-left: 16px; margin: 6px 0 0; }
+  .legend li { margin: 3px 0; }
+  .step-note { margin-top: 14px; padding: 12px 14px; background: #f6faf6; border:1px solid #d9e8dd; border-radius: 14px; font-size: 11.5px; color:#0f3b23; line-height: 1.5 }
+  .step-note b { color:#164d2f; font-weight: 800 }
+  .step-note .num { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:9999px; background:#0f3b23; color:#fff; font-size:10px; font-weight:800; margin-right:6px; vertical-align: 1px; }
+  .nav-link { display:flex; align-items:center; justify-content:space-between; padding: 9px 12px; font-size: 12px; font-weight: 800; color:#0f3b23; background:#fff; border:1px solid #d9e8dd; border-radius: 12px; text-decoration:none; }
+  .nav-link:hover { background:#f0f6f2; border-color:#8fb89e }
+
+  .phone-wrap { display:flex; justify-content:center; }
+  .phone { width: 400px; height: 860px; border-radius: 46px; background: #f6f7f3; box-shadow: 0 30px 80px rgba(8,30,19,.18), inset 0 0 0 10px #1a1d1a; position: relative; overflow: hidden; }
+  .phone-screen { position:absolute; inset:10px; border-radius: 36px; overflow:hidden; background:#eef2ed; }
+  .phone-notch { position:absolute; top:14px; left:50%; transform:translateX(-50%); width:104px; height:28px; background:#0c0e0c; border-radius:18px; z-index:50; }
+  .scroller { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; }
+  .scroller::-webkit-scrollbar { width: 6px; }
+  .scroller::-webkit-scrollbar-thumb { background:#cbd5c5; border-radius:9999px; }
+  .stage-title { display:flex; align-items:baseline; justify-content:space-between; max-width: 420px; margin: 0 auto 14px; padding: 0 6px; }
+  .stage-title h2 { font-size: 13.5px; font-weight: 800; color: #0f3b23; letter-spacing:.04em; margin:0 }
+  .stage-title span { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="sidebar">
+    <p class="eyebrow">R3foresta · Plantación</p>
+    <h1>Crear campaña</h1>
+    <p class="lead">Wizard de 5 pasos para configurar una campaña de plantación. Borrador editable hasta publicar.</p>
+
+    <div class="block">
+      <h3>Paso del wizard</h3>
+      <div class="steps-row" id="seg-paso">
+        <button data-val="1" class="on"><strong>1</strong>Datos</button>
+        <button data-val="2"><strong>2</strong>Zona</button>
+        <button data-val="3"><strong>3</strong>Especies</button>
+        <button data-val="4"><strong>4</strong>Equipo</button>
+        <button data-val="5"><strong>5</strong>Final</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Tipo de campaña</h3>
+      <div class="seg" id="seg-tipo">
+        <button data-val="ARBORIZACION" class="on">Arborización</button>
+        <button data-val="REFORESTACION">Reforestación</button>
+        <button data-val="FORESTACION">Forestación</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Zona dibujada</h3>
+      <div class="seg" id="seg-zona">
+        <button data-val="no">Sin marcar</button>
+        <button data-val="si" class="on">Polígono</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Tab asignación (paso 4)</h3>
+      <div class="seg" id="seg-tab">
+        <button data-val="equipo" class="on">Equipo</button>
+        <button data-val="lotes">Lotes</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Confirmación</h3>
+      <div class="seg" id="seg-confirmacion">
+        <button data-val="idle" class="on">Inactiva</button>
+        <button data-val="guardando">Guardando</button>
+        <button data-val="exito">Éxito</button>
+      </div>
+    </div>
+
+    <div class="step-note" id="step-note">
+      <span class="num">1</span><b>Datos básicos.</b>
+      Tipo (arborización/reforestación/forestación), nombre, zona, fechas y coordinadora a cargo. La coordinadora se autorrellena con el usuario actual si tiene el permiso.
+    </div>
+
+    <div class="legend">
+      <b>Reglas de creación</b>
+      <ul>
+        <li>El wizard guarda <b>auto-borrador</b> después de cada paso. Salir no pierde el progreso.</li>
+        <li>Suma de especies debe ser <b>100%</b> para avanzar al paso 5.</li>
+        <li>El polígono se persiste como <b>GeoJSON</b>. Densidad sugerida = meta / hectáreas.</li>
+        <li>Asignar equipo y lotes es <b>opcional al crear</b>; se puede completar después.</li>
+        <li>Al publicar, la campaña pasa de <code>BORRADOR</code> → <code>ACTIVA</code> y notifica al equipo.</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3>Pantallas relacionadas</h3>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+        <a href="Dashboard admin.html" class="nav-link">← Dashboard admin</a>
+        <a href="Detalle de campaña.html" class="nav-link">Detalle de campaña →</a>
+      </div>
+    </div>
+  </aside>
+
+  <div>
+    <div class="stage-title">
+      <h2 id="stage-label">Wizard · Paso 1 de 5</h2>
+      <span>Mobile · 400×860</span>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="scroller" id="scroller">
+            <div id="root"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="speaker-notes">
+[
+  "Wizard de 5 pasos para crear una campaña. Patrón idéntico al Registrar plantación del operario para que el rol coordinador no tenga que aprender otra interacción. Paso 1: datos y tipo (arborización/reforestación/forestación cambian copy y mapa después). Paso 2: zona — se dibuja un polígono sobre mapa estilizado; muestra hectáreas y densidad sugerida en cuanto hay polígono. Paso 3: meta y especies con %; valida que sume 100. Paso 4: tabs para equipo y lotes, con previews de cuántos hay seleccionados. Paso 5: resumen completo + mini-mapa; advierte si la meta excede el saldo de lotes asignados. Al publicar pasa de BORRADOR a ACTIVA."
+]
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="admin/Icon.jsx"></script>
+<script type="text/babel" src="admin/tweaks-panel.jsx"></script>
+<script type="text/babel" src="admin/AdminData.jsx"></script>
+<script type="text/babel" src="admin/AdminShell.jsx"></script>
+<script type="text/babel" src="admin/CrearCampanaA.jsx"></script>
+<script type="text/babel" src="admin/CrearCampanaB.jsx"></script>
+<script type="text/babel" src="admin/CrearCampanaScreen.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "paso": 1,
+  "tipo": "ARBORIZACION",
+  "tieneZona": true,
+  "asignacionTab": "equipo",
+  "confirmacion": "idle"
+}/*EDITMODE-END*/;
+
+const STEP_NOTES = {
+  1: { title: 'Datos básicos', body: 'Tipo (arborización/reforestación/forestación), nombre, zona, fechas y coordinadora a cargo. Se autorrellena con el usuario actual si tiene el permiso.' },
+  2: { title: 'Zona en mapa', body: 'Polígono dibujado a mano sobre mapa. Se persiste como <b>GeoJSON</b>. Hectáreas + densidad sugerida se calculan al cerrar el polígono.' },
+  3: { title: 'Especies y meta', body: 'Mix planificado por especie en %. Debe sumar <b>100%</b>. Muestra cuánto hay disponible en vivero para detectar shortfall temprano.' },
+  4: { title: 'Equipo y lotes', body: 'Asignación múltiple. Opcional al crear — se puede ampliar después desde el detalle. Los lotes muestran saldo vivo actual.' },
+  5: { title: 'Revisa y publica', body: 'Resumen completo + mini-mapa. Si la meta supera el saldo de lotes asignados, advertencia visual. Publicar pasa <code>BORRADOR → ACTIVA</code>.' },
+};
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  const [nombre, setNombre] = React.useState('Arborización La Paz 2026');
+  const [zona, setZona] = React.useState('San Miguel · La Paz');
+  const [meta, setMeta] = React.useState(3000);
+  const [especies, setEspecies] = React.useState([
+    { especie: 'Jacarandá', cientifico: 'Jacaranda mimosifolia', region: 'Urbano La Paz', viveroDisponible: 320, pct: 40 },
+    { especie: 'Molle',     cientifico: 'Schinus molle',          region: 'Urbano La Paz', viveroDisponible: 480, pct: 40 },
+    { especie: 'Ceibo',     cientifico: 'Erythrina crista-galli', region: 'Urbano La Paz', viveroDisponible: 210, pct: 20 },
+  ]);
+  const [equipoIds, setEquipoIds] = React.useState(['op-1', 'op-2', 'op-3', 'co-1']);
+  const [lotesIds, setLotesIds] = React.useState(['VIV-000123-REC-000045', 'VIV-000131-REC-000051']);
+
+  React.useEffect(() => {
+    const labels = ['', 'Datos básicos', 'Zona en mapa', 'Especies y meta', 'Equipo y lotes', 'Revisión final'];
+    const label = document.getElementById('stage-label');
+    if (label) label.textContent = `Paso ${t.paso} de 5 · ${labels[t.paso]}`;
+    const note = document.getElementById('step-note');
+    if (note && STEP_NOTES[t.paso]) {
+      note.innerHTML = `<span class="num">${t.paso}</span><b>${STEP_NOTES[t.paso].title}.</b> ${STEP_NOTES[t.paso].body}`;
+    }
+  }, [t.paso]);
+
+  React.useEffect(() => {
+    const wire = (root, key, current, transform = v => v) => {
+      const node = document.getElementById(root);
+      if (!node) return () => {};
+      const onClick = (e) => {
+        const btn = e.target.closest('button[data-val]');
+        if (!btn) return;
+        setTweak(key, transform(btn.dataset.val));
+      };
+      node.addEventListener('click', onClick);
+      [...node.querySelectorAll('button[data-val]')].forEach(b => {
+        b.classList.toggle('on', transform(b.dataset.val) === current);
+      });
+      return () => node.removeEventListener('click', onClick);
+    };
+    const offs = [
+      wire('seg-paso',          'paso',          t.paso, v => parseInt(v, 10)),
+      wire('seg-tipo',          'tipo',          t.tipo),
+      wire('seg-zona',          'tieneZona',     t.tieneZona, v => v === 'si'),
+      wire('seg-tab',           'asignacionTab', t.asignacionTab),
+      wire('seg-confirmacion',  'confirmacion',  t.confirmacion),
+    ];
+    return () => offs.forEach(o => o && o());
+  }, [t.paso, t.tipo, t.tieneZona, t.asignacionTab, t.confirmacion, setTweak]);
+
+  React.useEffect(() => {
+    const sc = document.getElementById('scroller');
+    if (sc) sc.scrollTop = 0;
+  }, [t.paso]);
+
+  const onChangeBasic = (k, v) => {
+    if (k === 'tipo') setTweak('tipo', v);
+    if (k === 'nombre') setNombre(v);
+    if (k === 'zona') setZona(v);
+  };
+  const onTogglePct = (especie, pct) =>
+    setEspecies(prev => prev.map(e => e.especie === especie ? { ...e, pct } : e));
+  const onTogglePersona = (id) =>
+    setEquipoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const onToggleLote = (id) =>
+    setLotesIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+  return (
+    <React.Fragment>
+      <CrearCampanaScreen
+        paso={t.paso} onPaso={(v) => setTweak('paso', v)}
+        tipo={t.tipo} nombre={nombre} zona={zona}
+        fechaInicio="12 mar 2026" fechaFin="30 nov 2026"
+        coordinadora={{ nombre: 'María López', rol: 'Coordinadora', iniciales: 'ML' }}
+        tieneZona={t.tieneZona} hectareas={4.2}
+        onTieneZona={(v) => setTweak('tieneZona', v)}
+        meta={meta} especies={especies}
+        onMeta={setMeta} onTogglePct={onTogglePct}
+        onChangeBasic={onChangeBasic}
+        equipoIds={equipoIds} lotesIds={lotesIds}
+        onTogglePersona={onTogglePersona} onToggleLote={onToggleLote}
+        asignacionTab={t.asignacionTab} onAsignacionTab={(v) => setTweak('asignacionTab', v)}
+        confirmacion={t.confirmacion} onConfirmacion={(v) => setTweak('confirmacion', v)}
+      />
+
+      <TweaksPanel>
+        <TweakSection label="Wizard" />
+        <TweakSelect label="Paso" value={String(t.paso)} options={['1','2','3','4','5']}
+                     onChange={(v) => setTweak('paso', parseInt(v, 10))} />
+        <TweakRadio label="Tipo" value={t.tipo}
+                    options={['ARBORIZACION','REFORESTACION','FORESTACION']}
+                    onChange={(v) => setTweak('tipo', v)} />
+        <TweakToggle label="Zona dibujada" value={t.tieneZona}
+                     onChange={(v) => setTweak('tieneZona', v)} />
+        <TweakRadio label="Tab paso 4" value={t.asignacionTab}
+                    options={['equipo','lotes']}
+                    onChange={(v) => setTweak('asignacionTab', v)} />
+        <TweakRadio label="Confirmación" value={t.confirmacion}
+                    options={['idle','guardando','exito']}
+                    onChange={(v) => setTweak('confirmacion', v)} />
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

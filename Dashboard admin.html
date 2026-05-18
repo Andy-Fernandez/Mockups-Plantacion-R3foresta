@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Dashboard admin · R3foresta</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f'},
+      },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  html, body { background: #d8e0d3; min-height: 100%; font-family: 'Manrope', system-ui, sans-serif; margin:0; }
+  body { padding: 28px 16px 80px; display:flex; justify-content:center; }
+  .stage { display:grid; grid-template-columns: 1fr; gap:28px; max-width: 1180px; width:100%; }
+  @media (min-width: 980px) { .stage { grid-template-columns: 360px 1fr; align-items: start; } }
+  .sidebar { background:#fff; border-radius: 24px; padding: 22px 22px 18px; box-shadow: 0 10px 30px rgba(0,0,0,.05); position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; }
+  .sidebar .eyebrow { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+  .sidebar h1 { font-size: 22px; font-weight: 800; color: #0f3b23; letter-spacing: -.02em; margin: 4px 0 0; }
+  .sidebar p.lead { font-size: 13px; color: #1f613b; margin-top: 6px; font-weight:500; line-height:1.45; }
+  .sidebar .block { margin-top: 18px; }
+  .sidebar .block h3 { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#1f613b; margin:0 0 8px; }
+  .seg { display:flex; gap:4px; padding:4px; background:#f0f6f2; border-radius:14px; flex-wrap:wrap; }
+  .seg button { flex:1 1 50px; padding:8px 6px; font-size:11px; font-weight:800; color:#0f3b23; background:transparent; border:0; border-radius:10px; cursor:default; letter-spacing:.03em; transition: background .15s, color .15s; min-width: 44px; }
+  .seg button.on { background:#0f3b23; color:#fff }
+  .legend { margin-top: 18px; padding-top:14px; border-top:1px solid #e5ebe2; font-size: 11px; color: #475569; line-height:1.5 }
+  .legend b { color:#0f3b23 }
+  .legend ul { padding-left: 16px; margin: 6px 0 0; }
+  .legend li { margin: 3px 0; }
+  .step-note { margin-top: 14px; padding: 12px 14px; background: #f6faf6; border:1px solid #d9e8dd; border-radius: 14px; font-size: 11.5px; color:#0f3b23; line-height: 1.5 }
+  .step-note b { color:#164d2f; font-weight: 800 }
+  .nav-link { display:flex; align-items:center; justify-content:space-between; padding: 9px 12px; font-size: 12px; font-weight: 800; color:#0f3b23; background:#fff; border:1px solid #d9e8dd; border-radius: 12px; text-decoration:none; }
+  .nav-link:hover { background:#f0f6f2; border-color:#8fb89e }
+  .nav-link .arr { color:#1f613b }
+
+  /* Phone frame */
+  .phone-wrap { display:flex; justify-content:center; }
+  .phone { width: 400px; height: 860px; border-radius: 46px; background: #f6f7f3; box-shadow: 0 30px 80px rgba(8,30,19,.18), inset 0 0 0 10px #1a1d1a; position: relative; overflow: hidden; }
+  .phone-screen { position:absolute; inset:10px; border-radius: 36px; overflow:hidden; background:#eef2ed; }
+  .phone-notch { position:absolute; top:14px; left:50%; transform:translateX(-50%); width:104px; height:28px; background:#0c0e0c; border-radius:18px; z-index:50; }
+  .scroller { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; }
+  .scroller::-webkit-scrollbar { width: 6px; }
+  .scroller::-webkit-scrollbar-thumb { background:#cbd5c5; border-radius:9999px; }
+  .nav-mount { position:absolute; inset:auto 0 0 0; pointer-events:none; z-index:45; }
+  .nav-mount > * { pointer-events:auto; }
+  .stage-title { display:flex; align-items:baseline; justify-content:space-between; max-width: 420px; margin: 0 auto 14px; padding: 0 6px; }
+  .stage-title h2 { font-size: 13.5px; font-weight: 800; color: #0f3b23; letter-spacing:.04em; margin:0 }
+  .stage-title span { font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#1f613b }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <aside class="sidebar">
+    <p class="eyebrow">R3foresta · Plantación</p>
+    <h1>Dashboard admin</h1>
+    <p class="lead">Vista de coordinación: métricas vivas del programa, estado de campañas y actividad del equipo.</p>
+
+    <div class="block">
+      <h3>Periodo</h3>
+      <div class="seg" id="seg-periodo">
+        <button data-val="mes">Mes</button>
+        <button data-val="trimestre">Trimestre</button>
+        <button data-val="anio" class="on">Año</button>
+        <button data-val="historico">Histórico</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Filtro de campañas</h3>
+      <div class="seg" id="seg-filtro">
+        <button data-val="TODAS" class="on">Todas</button>
+        <button data-val="ACTIVA">Activa</button>
+        <button data-val="PAUSADA">Pausada</button>
+        <button data-val="COMPLETADA">Completada</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Alertas pendientes</h3>
+      <div class="seg" id="seg-alertas">
+        <button data-val="si" class="on">Hay alertas</button>
+        <button data-val="no">Sin alertas</button>
+      </div>
+    </div>
+
+    <div class="step-note">
+      <b>Rol activo:</b> Coordinadora. Solo ve las campañas donde está asignada o que coordina. El dashboard nunca muestra datos de otras coordinadoras.
+    </div>
+
+    <div class="block">
+      <h3>Pantallas relacionadas</h3>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+        <a href="Crear campaña.html" class="nav-link">Crear campaña <span class="arr">→</span></a>
+        <a href="Detalle de campaña.html" class="nav-link">Detalle de campaña <span class="arr">→</span></a>
+        <a href="Asignar equipo y lotes.html" class="nav-link">Asignar equipo y lotes <span class="arr">→</span></a>
+        <a href="Registrar plantación.html" class="nav-link">Registrar plantación (operario) <span class="arr">→</span></a>
+      </div>
+    </div>
+
+    <div class="legend">
+      <b>Reglas clave del dashboard</b>
+      <ul>
+        <li>Las métricas son <b>derivadas</b> de los eventos append-only — nunca editables aquí.</li>
+        <li><b>Supervivencia</b> se recalcula al cierre de cada periodo de monitoreo.</li>
+        <li>El <b>donut de estados</b> incluye campañas en BORRADOR y CANCELADA pero las desprioriza visualmente.</li>
+        <li>La <b>actividad reciente</b> agrega plantaciones, asignaciones, cambios de estado y eventos de vivero.</li>
+        <li>FAB <b>"Nueva campaña"</b> solo aparece para roles con permiso <code>CREATE_CAMPANA</code>.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div>
+    <div class="stage-title">
+      <h2>Dashboard admin · Coordinadora</h2>
+      <span>Mobile · 400×860</span>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="scroller" id="scroller">
+            <div id="root"></div>
+          </div>
+          <div class="nav-mount" id="nav-mount"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="speaker-notes">
+[
+  "Dashboard del admin/coordinador. Es mobile-first porque queremos un único stack para todos los roles, pero el contenido aquí es agregado de programa, no de operación. El header recibe a la coordinadora por nombre y muestra el badge de alertas (rojo discreto en la campana). Las métricas son derivadas de los eventos append-only, jamás editables aquí. El donut respeta el orden semántico ACTIVA → PAUSADA → COMPLETADA → BORRADOR → CANCELADA. La lista de campañas se filtra con chips y cada tarjeta es enlace al Detalle. El FAB de 'Nueva campaña' solo aparece a roles con permiso CREATE_CAMPANA."
+]
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="admin/Icon.jsx"></script>
+<script type="text/babel" src="admin/BottomNav.jsx"></script>
+<script type="text/babel" src="admin/tweaks-panel.jsx"></script>
+<script type="text/babel" src="admin/AdminData.jsx"></script>
+<script type="text/babel" src="admin/AdminShell.jsx"></script>
+<script type="text/babel" src="admin/DashboardScreen.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "periodo": "mes",
+  "filtro": "todos",
+  "alertas": true,
+  "campanaId": "CAM-2025-022",
+  "tab": "lotes",
+  "confirmacion": "idle",
+  "tipo": "ARBORIZACION",
+  "paso": 3
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  React.useEffect(() => {
+    const wire = (root, key, current, transform = v => v) => {
+      const node = document.getElementById(root);
+      if (!node) return () => {};
+      const onClick = (e) => {
+        const btn = e.target.closest('button[data-val]');
+        if (!btn) return;
+        setTweak(key, transform(btn.dataset.val));
+      };
+      node.addEventListener('click', onClick);
+      [...node.querySelectorAll('button[data-val]')].forEach(b => {
+        b.classList.toggle('on', transform(b.dataset.val) === current);
+      });
+      return () => node.removeEventListener('click', onClick);
+    };
+    const offs = [
+      wire('seg-periodo', 'periodo', t.periodo),
+      wire('seg-filtro', 'filtro', t.filtro),
+      wire('seg-alertas', 'alertas', t.alertas, v => v === 'si'),
+    ];
+    return () => offs.forEach(o => o && o());
+  }, [t.periodo, t.filtro, t.alertas, setTweak]);
+
+  return (
+    <React.Fragment>
+      <DashboardScreen
+        periodo={t.periodo} onPeriodo={(v) => setTweak('periodo', v)}
+        filtroEstado={t.filtro} onFiltroEstado={(v) => setTweak('filtro', v)}
+        hayAlertas={t.alertas}
+        onNuevaCampana={() => { window.location.href = 'Crear campaña.html'; }}
+        onAbrirCampana={() => { window.location.href = 'Detalle de campaña.html'; }}
+      />
+      <TweaksPanel>
+        <TweakSection label="Periodo" />
+        <TweakRadio label="Rango" value={t.periodo}
+                    options={['mes','trimestre','anio','historico']}
+                    onChange={(v) => setTweak('periodo', v)} />
+        <TweakSection label="Campañas" />
+        <TweakSelect label="Filtro" value={t.filtro}
+                     options={['TODAS','ACTIVA','PAUSADA','COMPLETADA','BORRADOR']}
+                     onChange={(v) => setTweak('filtro', v)} />
+        <TweakToggle label="Alertas pendientes" value={t.alertas}
+                     onChange={(v) => setTweak('alertas', v)} />
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>
