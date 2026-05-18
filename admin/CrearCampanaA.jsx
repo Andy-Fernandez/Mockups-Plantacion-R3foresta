@@ -2,20 +2,51 @@
 // Pasos: 1·Tipo y datos · 2·Zona en mapa · 3·Especies y meta · 4·Equipo y lotes · 5·Resumen
 
 const CC_STEPS = [
-  { n: 1, label: 'Datos' },
-  { n: 2, label: 'Zona' },
-  { n: 3, label: 'Especies' },
+  { n: 1, label: 'Zona' },
+  { n: 2, label: 'Especies' },
+  { n: 3, label: 'Lotes' },
   { n: 4, label: 'Equipo' },
   { n: 5, label: 'Final' },
 ];
 
 const CC_TITLES = {
-  1: 'Datos de la campaña',
-  2: 'Define la zona',
-  3: 'Especies y meta',
-  4: 'Asigna equipo y lotes',
+  1: 'Define la zona',
+  2: 'Especies y meta',
+  3: 'Plantas y lotes',
+  4: 'Asigna equipo',
   5: 'Revisa y publica',
 };
+
+const SUBCAMPANA_COORDINADORES = PERSONAS.filter((p) => p.rol.toLowerCase().includes('coordin'));
+
+function formatSubcampanaDate(value) {
+  if (!value) return 'Pendiente';
+  const [year, month, day] = value.split('-');
+  const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  return `${day} ${monthNames[Number(month) - 1]} ${year}`;
+}
+
+function getSubcampanaIssues(subcampana, generalRange) {
+  if (!subcampana) return [];
+  const issues = [];
+  if (!subcampana.coordinadorId) issues.push('Sin coordinador');
+  if (!subcampana.fechaInicio || !subcampana.fechaFin) {
+    issues.push('Fechas pendientes');
+    return issues;
+  }
+  if (subcampana.fechaInicio > subcampana.fechaFin) issues.push('Inicio mayor que cierre');
+  if (generalRange) {
+    if (subcampana.fechaInicio < generalRange.inicioISO || subcampana.fechaFin > generalRange.finISO) {
+      issues.push('Fuera del rango de campaña');
+    }
+  }
+  return issues;
+}
+
+function formatSubcampanaRange(subcampana) {
+  if (!subcampana?.fechaInicio || !subcampana?.fechaFin) return 'Pendientes';
+  return `${formatSubcampanaDate(subcampana.fechaInicio)} → ${formatSubcampanaDate(subcampana.fechaFin)}`;
+}
 
 function CCHeader({ paso, onBack }) {
   return (
@@ -33,7 +64,7 @@ function CCHeader({ paso, onBack }) {
           </span>
         </div>
         <p className="mt-4 text-[10.5px] font-extrabold uppercase tracking-[0.24em] text-white/85">
-          Nueva campaña · Paso {paso} de {CC_STEPS.length}
+          Sub-campaña activa · Paso {paso} de {CC_STEPS.length}
         </p>
         <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">{CC_TITLES[paso]}</h1>
         <div className="mt-4 flex items-center gap-2">
@@ -50,24 +81,386 @@ function CCHeader({ paso, onBack }) {
   );
 }
 
+function SubcampanaContextCard({
+  campanaNombre,
+  subcampana,
+  generalFechaInicio,
+  generalFechaFin,
+  generalRange,
+  onCoordinadorChange,
+  onFechaChange,
+}) {
+  if (!subcampana) return null;
+  const issues = getSubcampanaIssues(subcampana, generalRange);
+  return (
+    <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Sub-campaña activa</p>
+          <p className="mt-1 text-[17px] font-extrabold leading-tight text-brand-800">{subcampana.comunidadNombre}</p>
+          <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{campanaNombre}</p>
+        </div>
+        <SubcampanaStatusBadge estado={subcampana.estado} />
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-2">
+        <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
+          <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Coordinador</p>
+          <select
+            value={subcampana.coordinadorId || ''}
+            onChange={(e) => onCoordinadorChange(e.target.value)}
+            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-extrabold text-brand-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100">
+            <option value="">Seleccionar coordinador</option>
+            {SUBCAMPANA_COORDINADORES.map((persona) => (
+              <option key={persona.id} value={persona.id}>{persona.nombre}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Fechas</p>
+            <p className="text-[10px] font-bold text-slate-500">{generalFechaInicio} → {generalFechaFin}</p>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <input
+              type="date"
+              value={subcampana.fechaInicio || ''}
+              min={generalRange?.inicioISO}
+              max={generalRange?.finISO}
+              onChange={(e) => onFechaChange('fechaInicio', e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-extrabold text-brand-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+            <input
+              type="date"
+              value={subcampana.fechaFin || ''}
+              min={generalRange?.inicioISO}
+              max={generalRange?.finISO}
+              onChange={(e) => onFechaChange('fechaFin', e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-extrabold text-brand-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+          <p className="mt-2 text-[10.5px] font-semibold text-slate-500">
+            Rango seleccionado: {formatSubcampanaRange(subcampana)}
+          </p>
+        </div>
+      </div>
+
+      {issues.length > 0 && (
+        <div className="mt-3 rounded-2xl border border-amber-100 bg-amber-50 px-3 py-3">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-amber-700">Pendientes de esta sub-campaña</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {issues.map((issue) => (
+              <span key={issue} className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold text-amber-700 ring-1 ring-amber-100">
+                {issue}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CGHeader({ onBack }) {
+  return (
+    <header className="relative overflow-hidden rounded-b-3xl bg-brand-700 text-white shadow-soft">
+      <img src="assets/hero-canopy.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+      <div className="absolute inset-0 bg-gradient-to-b from-brand-700/90 via-brand-700/85 to-brand-700" />
+      <div className="relative px-5 pt-5 pb-5">
+        <div className="flex items-center justify-between gap-2">
+          <button onClick={onBack} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition" aria-label="Volver">
+            <Icon name="arrow-left" className="h-5 w-5" />
+          </button>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide ring-1 ring-white/30">
+            <Icon name="layers" className="h-3 w-3" />
+            CAMPAÑA PARAGUAS
+          </span>
+        </div>
+        <p className="mt-4 text-[10.5px] font-extrabold uppercase tracking-[0.24em] text-white/85">
+          Inicio del flujo
+        </p>
+        <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">Campaña general</h1>
+        <p className="mt-1 text-[13px] font-medium text-white/80 leading-snug">
+          Define los datos marco. Las comunidades y su configuración vivirán en el siguiente nivel.
+        </p>
+      </div>
+    </header>
+  );
+}
+
+function CrearCampanaGeneralScreen({
+  tipo,
+  nombre,
+  organizacion,
+  descripcion,
+  fechaInicio,
+  fechaFin,
+  onChange,
+  onContinue,
+  onBack,
+}) {
+  const canContinue = tipo && nombre.trim().length > 2 && organizacion.trim().length > 2;
+
+  return (
+    <div data-screen-label="Campaña general" className="relative min-h-full bg-[#eef2ed] text-brand-700">
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col pb-4">
+        <CGHeader onBack={onBack} />
+
+        <div className="px-5 pt-4 space-y-4 flex-1">
+          <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Esqueleto actual</p>
+            <p className="mt-1 text-sm font-semibold leading-relaxed text-brand-800">
+              Aquí solo se crean los datos compartidos de la campaña. El siguiente paso será gestionar sub-campañas por comunidad.
+            </p>
+          </div>
+
+          <CCStepDatos
+            tipo={tipo}
+            nombre={nombre}
+            organizacion={organizacion}
+            descripcion={descripcion}
+            fechaInicio={fechaInicio}
+            fechaFin={fechaFin}
+            onChange={onChange}
+          />
+        </div>
+
+        <div className="px-5">
+          <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-5 bg-gradient-to-t from-[#eef2ed] via-[#eef2ed]/95 to-transparent">
+            <button
+              onClick={onContinue}
+              disabled={!canContinue}
+              className={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-base font-extrabold text-white shadow-soft transition active:scale-[0.99]
+                ${!canContinue ? 'bg-slate-400/70 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'}`}>
+              Guardar y continuar
+              <Icon name="chevron-right" className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SubcampanaStatusBadge({ estado }) {
+  const tone = {
+    PENDIENTE: 'bg-amber-50 text-amber-700 ring-amber-100',
+    EN_CONFIGURACION: 'bg-blue-50 text-blue-700 ring-blue-100',
+    CONFIGURADA: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+    ACTIVA: 'bg-brand-50 text-brand-700 ring-brand-100',
+  }[estado] || 'bg-slate-50 text-slate-600 ring-slate-200';
+
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${tone}`}>
+      {estado.replace('_', ' ')}
+    </span>
+  );
+}
+
+function GestionSubcampanasScreen({
+  tipo,
+  nombre,
+  organizacion,
+  fechaInicio,
+  fechaFin,
+  fechaInicioISO,
+  fechaFinISO,
+  subcampanas,
+  comunidadesDisponibles,
+  comunidadQuery,
+  pickerOpen,
+  onComunidadQuery,
+  onTogglePicker,
+  onAddSubcampana,
+  onConfigurar,
+  onBack,
+}) {
+  const query = comunidadQuery.trim().toLowerCase();
+  const comunidadesAgregadas = new Set(subcampanas.map((s) => s.comunidadId));
+  const resultados = query.length < 2
+    ? []
+    : comunidadesDisponibles.filter((c) =>
+        !comunidadesAgregadas.has(c.id) &&
+        (c.nombre.toLowerCase().includes(query) || c.municipio.toLowerCase().includes(query) || c.perfil.toLowerCase().includes(query))
+      ).slice(0, 6);
+
+  return (
+    <div data-screen-label="Subcampañas" className="relative min-h-full bg-[#eef2ed] text-brand-700">
+      <div className="mx-auto flex min-h-full w-full max-w-md flex-col pb-4">
+        <header className="relative overflow-hidden rounded-b-3xl bg-brand-700 text-white shadow-soft">
+          <img src="assets/hero-canopy.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-700/90 via-brand-700/85 to-brand-700" />
+          <div className="relative px-5 pt-5 pb-5">
+            <div className="flex items-center justify-between gap-2">
+              <button onClick={onBack} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition" aria-label="Volver">
+                <Icon name="arrow-left" className="h-5 w-5" />
+              </button>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide ring-1 ring-white/30">
+                <Icon name="map" className="h-3 w-3" />
+                SUB-CAMPAÑAS
+              </span>
+            </div>
+            <p className="mt-4 text-[10.5px] font-extrabold uppercase tracking-[0.24em] text-white/85">
+              Campaña general creada
+            </p>
+            <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">{nombre}</h1>
+            <p className="mt-1 text-[13px] font-medium text-white/80 leading-snug">
+              Agrega comunidades una por una. Cada una se convertirá en una sub-campaña con configuración propia.
+            </p>
+          </div>
+        </header>
+
+        <div className="px-5 pt-4 space-y-4 flex-1">
+          <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <TipoBadge tipo={tipo} />
+              <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-extrabold text-brand-700 ring-1 ring-brand-100">
+                {subcampanas.length} sub-campaña{subcampanas.length === 1 ? '' : 's'}
+              </span>
+            </div>
+            <p className="mt-2 text-sm font-extrabold text-brand-800">{organizacion}</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{fechaInicio} → {fechaFin}</p>
+          </div>
+
+          <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Agregar comunidad</p>
+                <p className="text-[11px] font-semibold text-slate-500">Cada comunidad tendrá su propio coordinador, fechas y configuración técnica.</p>
+              </div>
+              <button onClick={onTogglePicker} className="flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-[11px] font-extrabold text-white hover:bg-brand-700">
+                <Icon name={pickerOpen ? 'minus' : 'plus'} className="h-3.5 w-3.5" />
+                {pickerOpen ? 'Cerrar' : 'Agregar'}
+              </button>
+            </div>
+
+            {pickerOpen && (
+              <div className="space-y-2">
+                <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <Icon name="search" className="h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      value={comunidadQuery}
+                      onChange={(e) => onComunidadQuery(e.target.value)}
+                      placeholder="Buscar comunidad por nombre o municipio"
+                      className="w-full bg-transparent text-sm font-semibold text-brand-800 placeholder:text-slate-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {query.length < 2 ? (
+                  <div className="rounded-2xl border border-dashed border-brand-100 bg-[#f8fbf7] px-3 py-3">
+                    <p className="text-sm font-extrabold text-brand-800">Escribe para buscar</p>
+                    <p className="mt-0.5 text-[10.5px] font-semibold text-slate-500">Usaremos este selector para poblar la lista de sub-campañas.</p>
+                  </div>
+                ) : resultados.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3">
+                    <p className="text-sm font-extrabold text-brand-800">Sin coincidencias</p>
+                    <p className="mt-0.5 text-[10.5px] font-semibold text-slate-500">Prueba con otro nombre o municipio.</p>
+                  </div>
+                ) : (
+                  resultados.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => onAddSubcampana(c)}
+                      className="flex w-full items-start gap-3 rounded-2xl bg-[#f8fbf7] px-3 py-3 text-left shadow-soft ring-1 ring-brand-100 transition hover:ring-brand-300">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+                        <Icon name="pin" className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-extrabold leading-tight text-brand-800">{c.nombre}</p>
+                        <p className="text-[10.5px] font-semibold text-slate-500">{c.municipio} · {c.perfil}</p>
+                      </div>
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                        <Icon name="plus" className="h-4 w-4" />
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
+          {subcampanas.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-brand-100 bg-white px-5 py-8 text-center shadow-soft">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                <Icon name="map" className="h-7 w-7" />
+              </div>
+              <p className="mt-3 text-base font-extrabold text-brand-800">Aún no hay sub-campañas</p>
+              <p className="mt-1 text-[11.5px] font-semibold leading-relaxed text-slate-500">
+                Agrega una comunidad para crear la primera card en estado pendiente.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {subcampanas.map((s, index) => {
+                const issues = getSubcampanaIssues(s, { inicioISO: fechaInicioISO, finISO: fechaFinISO });
+                return (
+                <div key={s.id} className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Sub-campaña {index + 1}</p>
+                      <p className="mt-1 text-[16px] font-extrabold leading-tight text-brand-800">{s.comunidadNombre}</p>
+                      <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{s.municipio}</p>
+                    </div>
+                    <SubcampanaStatusBadge estado={s.estado} />
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
+                      <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Progreso</p>
+                      <p className="mt-1 text-sm font-extrabold text-brand-800">{s.progresoPaso}/5 pasos</p>
+                    </div>
+                    <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
+                      <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Coordinador</p>
+                      <p className="mt-1 text-sm font-extrabold text-brand-800">{s.coordinador || 'Pendiente'}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
+                    <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Fechas</p>
+                    <p className="mt-1 text-sm font-extrabold text-brand-800">{formatSubcampanaRange(s)}</p>
+                  </div>
+
+                  {issues.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {issues.map((issue) => (
+                        <span key={issue} className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-extrabold text-amber-700 ring-1 ring-amber-100">
+                          {issue}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <button onClick={() => onConfigurar(s.id)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 px-4 py-3 text-sm font-extrabold text-white shadow-soft hover:bg-brand-700">
+                    {s.estado === 'PENDIENTE' ? 'Configurar sub-campaña' : 'Continuar configuración'}
+                    <Icon name="chevron-right" className="h-4 w-4" />
+                  </button>
+                </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── STEP 1 · Datos ────────────────────────────────────────────────────────
 
 function CCStepDatos({
   tipo,
   nombre,
-  comunidades,
-  comunidadIds,
-  comunidadQuery,
-  comunidadLoading,
-  comunidadResults,
+  organizacion,
+  descripcion,
   fechaInicio,
   fechaFin,
-  coordinadora,
   onChange,
-  onToggleComunidad,
-  onComunidadQuery,
 }) {
-  const comunidadesSel = comunidades.filter(c => comunidadIds.includes(c.id));
   return (
     <div className="space-y-4">
       <div>
@@ -101,76 +494,18 @@ function CCStepDatos({
         </div>
 
         <div>
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">SELECCIONAR COMUNIDADES</label>
-            <span className="text-[10.5px] font-bold text-slate-500">{comunidadIds.length} seleccionada{comunidadIds.length === 1 ? '' : 's'}</span>
+          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Organización responsable</label>
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+            <Icon name="briefcase" className="h-4 w-4 text-slate-400" />
+            <input type="text" value={organizacion} onChange={(e) => onChange('organizacion', e.target.value)} placeholder="Fundación R3foresta"
+              className="w-full bg-transparent text-sm font-extrabold text-brand-800 placeholder:font-medium placeholder:text-slate-400 focus:outline-none" />
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <Icon name="search" className="h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={comunidadQuery}
-                onChange={(e) => onComunidadQuery(e.target.value)}
-                placeholder="Buscar comunidad por nombre o municipio"
-                className="w-full bg-transparent text-sm font-semibold text-brand-800 placeholder:text-slate-400 focus:outline-none"
-              />
-            </div>
-          </div>
+        </div>
 
-          {comunidadesSel.length > 0 && (
-            <div className="rounded-2xl bg-brand-50 px-3 py-2.5">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Seleccionadas</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {comunidadesSel.map(c => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => onToggleComunidad(c.id)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-brand-700 ring-1 ring-brand-100 hover:ring-brand-300">
-                    {c.nombre}
-                    <Icon name="x" className="h-3.5 w-3.5" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            {comunidadLoading ? (
-              <div className="rounded-2xl border border-brand-100 bg-[#f8fbf7] px-3 py-3">
-                <p className="text-sm font-extrabold text-brand-800">Buscando comunidades…</p>
-                <p className="mt-0.5 text-[10.5px] font-semibold text-slate-500">Simulación de respuesta del backend con coincidencias del padrón.</p>
-              </div>
-            ) : comunidadQuery.trim().length < 2 ? (
-              null
-            ) : comunidadResults.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3">
-                <p className="text-sm font-extrabold text-brand-800">Sin coincidencias</p>
-                <p className="mt-0.5 text-[10.5px] font-semibold text-slate-500">Prueba con otro nombre de comunidad o municipio.</p>
-              </div>
-            ) : comunidadResults.map(c => {
-              const isOn = comunidadIds.includes(c.id);
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => onToggleComunidad(c.id)}
-                  className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-[#f8fbf7] text-brand-800 ring-brand-100 hover:ring-brand-300'}`}>
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${isOn ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-700'}`}>
-                    <Icon name="pin" className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-extrabold leading-tight">{c.nombre}</p>
-                    <p className={`text-[10.5px] font-semibold leading-snug ${isOn ? 'text-white/80' : 'text-slate-500'}`}>{c.municipio} · {c.perfil}</p>
-                  </div>
-                  <div className={`mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full ${isOn ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
-                    {isOn ? <Icon name="check" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        <div>
+          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Descripción general</label>
+          <textarea value={descripcion} onChange={(e) => onChange('descripcion', e.target.value)} rows={3} placeholder="Objetivo y alcance general de la campaña"
+            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-brand-800 placeholder:font-medium placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100" />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -190,18 +525,11 @@ function CCStepDatos({
           </div>
         </div>
 
-        <div>
-          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Coordinadora a cargo</label>
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-[11px] font-extrabold text-brand-700">
-              {coordinadora.iniciales}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-extrabold text-brand-800 leading-tight">{coordinadora.nombre}</p>
-              <p className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">{coordinadora.rol}</p>
-            </div>
-            <button className="rounded-full bg-brand-50 px-3 py-1 text-[11px] font-extrabold text-brand-700 hover:bg-brand-100">Cambiar</button>
-          </div>
+        <div className="rounded-2xl bg-brand-50 px-3 py-3">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Siguiente nivel</p>
+          <p className="mt-1 text-sm font-extrabold text-brand-800 leading-snug">
+            Las comunidades y sus coordinadores se configurarán después como sub-campañas.
+          </p>
         </div>
       </div>
     </div>

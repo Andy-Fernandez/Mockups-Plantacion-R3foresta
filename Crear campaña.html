@@ -62,14 +62,23 @@ tailwind.config = {
   <aside class="sidebar">
     <p class="eyebrow">R3foresta · Plantación</p>
     <h1>Crear campaña</h1>
-    <p class="lead">Wizard de 5 pasos para configurar una campaña de plantación. Borrador editable hasta publicar.</p>
+    <p class="lead">Esqueleto del flujo nuevo: campaña general primero y luego sub-campañas con borradores independientes por comunidad.</p>
 
     <div class="block">
+      <h3>Pantalla</h3>
+      <div class="seg" id="seg-view">
+        <button data-val="general" class="on">General</button>
+        <button data-val="subcampanas">Sub-campañas</button>
+        <button data-val="wizard">Wizard</button>
+      </div>
+    </div>
+
+    <div class="block" id="block-paso">
       <h3>Paso del wizard</h3>
       <div class="steps-row" id="seg-paso">
-        <button data-val="1" class="on"><strong>1</strong>Datos</button>
-        <button data-val="2"><strong>2</strong>Zona</button>
-        <button data-val="3"><strong>3</strong>Especies</button>
+        <button data-val="1" class="on"><strong>1</strong>Zona</button>
+        <button data-val="2"><strong>2</strong>Especies</button>
+        <button data-val="3"><strong>3</strong>Lotes</button>
         <button data-val="4"><strong>4</strong>Equipo</button>
         <button data-val="5"><strong>5</strong>Final</button>
       </div>
@@ -84,7 +93,7 @@ tailwind.config = {
       </div>
     </div>
 
-    <div class="block">
+    <div class="block" id="block-zona">
       <h3>Zona dibujada</h3>
       <div class="seg" id="seg-zona">
         <button data-val="no">Sin marcar</button>
@@ -92,15 +101,7 @@ tailwind.config = {
       </div>
     </div>
 
-    <div class="block">
-      <h3>Tab asignación (paso 4)</h3>
-      <div class="seg" id="seg-tab">
-        <button data-val="equipo" class="on">Equipo</button>
-        <button data-val="lotes">Lotes</button>
-      </div>
-    </div>
-
-    <div class="block">
+    <div class="block" id="block-confirmacion">
       <h3>Confirmación</h3>
       <div class="seg" id="seg-confirmacion">
         <button data-val="idle" class="on">Inactiva</button>
@@ -110,11 +111,11 @@ tailwind.config = {
     </div>
 
     <div class="step-note" id="step-note">
-      <span class="num">1</span><b>Datos básicos.</b>
-      Tipo (arborización/reforestación/forestación), nombre, comunidades, fechas y coordinadora a cargo. Las comunidades se consultan al backend con buscador y se agregan una por una.
+      <span class="num">G</span><b>Campaña general.</b>
+      Define los datos marco de la campaña paraguas. Las comunidades se agregarán en la pantalla siguiente como sub-campañas independientes.
     </div>
 
-    <div class="legend">
+    <div class="legend" id="block-legend">
       <b>Reglas de creación</b>
       <ul>
         <li>El wizard guarda <b>auto-borrador</b> después de cada paso. Salir no pierde el progreso.</li>
@@ -136,7 +137,7 @@ tailwind.config = {
 
   <div>
     <div class="stage-title">
-      <h2 id="stage-label">Wizard · Paso 1 de 5</h2>
+      <h2 id="stage-label">Campaña general · Cabecera</h2>
       <span>Mobile · 400×860</span>
     </div>
     <div class="phone-wrap">
@@ -154,7 +155,7 @@ tailwind.config = {
 
 <script type="application/json" id="speaker-notes">
 [
-  "Wizard de 5 pasos para crear una campaña. Patrón idéntico al Registrar plantación del operario para que el rol coordinador no tenga que aprender otra interacción. Paso 1: datos, tipo y comunidades; se busca contra el padrón del backend y se agregan solo las coincidencias necesarias. Paso 2: zona — se dibuja un polígono sobre mapa estilizado; muestra hectáreas y densidad sugerida en cuanto hay polígono. Paso 3: meta y especies con %; valida que sume 100. Paso 4: tabs para equipo y lotes, con previews de cuántos hay seleccionados. Paso 5: resumen completo + mini-mapa; advierte si la meta excede el saldo de lotes asignados. Al publicar pasa de BORRADOR a ACTIVA."
+  "Esqueleto en transición. La campaña general ya vive separada, la gestión de sub-campañas ya existe, y cada comunidad guarda su propio borrador de zona, especies, lotes y equipo antes de que pulamos el diseño final."
 ]
 </script>
 
@@ -172,10 +173,9 @@ tailwind.config = {
 
 <script type="text/babel">
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "view": "general",
   "paso": 1,
   "tipo": "ARBORIZACION",
-  "tieneZona": true,
-  "asignacionTab": "equipo",
   "confirmacion": "idle"
 }/*EDITMODE-END*/;
 
@@ -190,39 +190,112 @@ const COMUNIDADES_DISPONIBLES = [
   { id: 'com-8', nombre: 'Retamani', municipio: 'Palca', perfil: 'Microcuenca alta' },
 ];
 
+const GENERAL_NOTE = {
+  title: 'Campaña general',
+  body: 'Define los datos marco de la campaña paraguas. Las comunidades se agregarán en la pantalla siguiente como sub-campañas independientes.'
+};
+
+const SUB_NOTE = {
+  title: 'Sub-campañas',
+  body: 'Cada comunidad agregada crea una card propia en estado pendiente. Desde aquí entrarás al flujo de configuración detallada.'
+};
+
+const CAMPANA_GENERAL_RANGE = {
+  inicioISO: '2026-03-12',
+  finISO: '2026-11-30',
+  inicioLabel: '12 mar 2026',
+  finLabel: '30 nov 2026',
+};
+
+const SUBCAMPANA_ESPECIES_BASE = [
+  { especie: 'Jacarandá', cientifico: 'Jacaranda mimosifolia', region: 'Urbano La Paz', viveroDisponible: 320, pct: 40 },
+  { especie: 'Molle', cientifico: 'Schinus molle', region: 'Urbano La Paz', viveroDisponible: 480, pct: 40 },
+  { especie: 'Ceibo', cientifico: 'Erythrina crista-galli', region: 'Urbano La Paz', viveroDisponible: 210, pct: 20 },
+];
+
+const SUBCAMPANA_EQUIPO_BASE = ['op-1', 'op-2', 'op-3', 'co-1'];
+const SUBCAMPANA_LOTES_BASE = ['VIV-000123-REC-000045', 'VIV-000131-REC-000051'];
+
+function createSubcampana(comunidad, index) {
+  return {
+    id: `sub-${index + 1}`,
+    comunidadId: comunidad.id,
+    comunidadNombre: comunidad.nombre,
+    municipio: comunidad.municipio,
+    estado: 'PENDIENTE',
+    progresoPaso: 0,
+    coordinadorId: '',
+    coordinador: null,
+    fechaInicio: '',
+    fechaFin: '',
+    tieneZona: false,
+    hectareas: 4.2,
+    meta: 3000,
+    especies: SUBCAMPANA_ESPECIES_BASE.map((e) => ({ ...e })),
+    equipoIds: [...SUBCAMPANA_EQUIPO_BASE],
+    lotesIds: [...SUBCAMPANA_LOTES_BASE],
+  };
+}
+
+function hasSubcampanaFechasValidas(subcampana) {
+  if (!subcampana.fechaInicio || !subcampana.fechaFin) return false;
+  if (subcampana.fechaInicio > subcampana.fechaFin) return false;
+  return subcampana.fechaInicio >= CAMPANA_GENERAL_RANGE.inicioISO && subcampana.fechaFin <= CAMPANA_GENERAL_RANGE.finISO;
+}
+
+function deriveSubcampanaEstado(subcampana) {
+  const completa = subcampana.progresoPaso >= 5 && !!subcampana.coordinadorId && hasSubcampanaFechasValidas(subcampana);
+  if (subcampana.estado === 'ACTIVA') return 'ACTIVA';
+  if (completa) return 'CONFIGURADA';
+  if (subcampana.progresoPaso > 0 || subcampana.coordinadorId || subcampana.fechaInicio || subcampana.fechaFin) return 'EN_CONFIGURACION';
+  return 'PENDIENTE';
+}
+
+const pasoToProgress = (paso) => paso;
+
 const STEP_NOTES = {
-  1: { title: 'Datos básicos', body: 'Tipo (arborización/reforestación/forestación), nombre, comunidades, fechas y coordinadora a cargo. Las comunidades se buscan en un padrón del back y se agregan una por una.' },
-  2: { title: 'Zona en mapa', body: 'Polígono dibujado a mano sobre mapa. Se persiste como <b>GeoJSON</b>. Hectáreas + densidad sugerida se calculan al cerrar el polígono.' },
-  3: { title: 'Especies y meta', body: 'Mix planificado por especie en %. Debe sumar <b>100%</b>. Muestra cuánto hay disponible en vivero para detectar shortfall temprano.' },
-  4: { title: 'Equipo y lotes', body: 'Asignación múltiple. Opcional al crear — se puede ampliar después desde el detalle. Los lotes muestran saldo vivo actual.' },
-  5: { title: 'Revisa y publica', body: 'Resumen completo + mini-mapa. Si la meta supera el saldo de lotes asignados, advertencia visual. Publicar pasa <code>BORRADOR → ACTIVA</code>.' },
+  1: { title: 'Zona', body: 'La sub-campaña define su propio polígono. Aquí ya no se está editando la campaña general, sino la comunidad activa.' },
+  2: { title: 'Especies y meta', body: 'Cada comunidad puede tener un mix distinto. Este paso ya representa configuración por sub-campaña.' },
+  3: { title: 'Lotes', body: 'Selecciona los lotes y el saldo disponible para esta comunidad. Luego el equipo se configura por separado.' },
+  4: { title: 'Equipo', body: 'Asigna personas a esta sub-campaña. El coordinador y las fechas ya se gestionan arriba como parte del contexto propio de la comunidad.' },
+  5: { title: 'Revisa y publica', body: 'Resumen de la sub-campaña activa, todavía montado sobre el wizard heredado mientras terminamos el esqueleto.' },
 };
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
   const [nombre, setNombre] = React.useState('Arborización La Paz 2026');
-  const [comunidadIds, setComunidadIds] = React.useState(['com-1']);
-  const [comunidadQuery, setComunidadQuery] = React.useState('');
-  const [comunidadLoading, setComunidadLoading] = React.useState(false);
-  const [meta, setMeta] = React.useState(3000);
-  const [especies, setEspecies] = React.useState([
-    { especie: 'Jacarandá', cientifico: 'Jacaranda mimosifolia', region: 'Urbano La Paz', viveroDisponible: 320, pct: 40 },
-    { especie: 'Molle',     cientifico: 'Schinus molle',          region: 'Urbano La Paz', viveroDisponible: 480, pct: 40 },
-    { especie: 'Ceibo',     cientifico: 'Erythrina crista-galli', region: 'Urbano La Paz', viveroDisponible: 210, pct: 20 },
-  ]);
-  const [equipoIds, setEquipoIds] = React.useState(['op-1', 'op-2', 'op-3', 'co-1']);
-  const [lotesIds, setLotesIds] = React.useState(['VIV-000123-REC-000045', 'VIV-000131-REC-000051']);
+  const [organizacion, setOrganizacion] = React.useState('Fundación R3foresta');
+  const [descripcion, setDescripcion] = React.useState('Campaña marco para coordinar comunidades, planificación territorial y metas de plantación.');
+  const [subcampanas, setSubcampanas] = React.useState([]);
+  const [subcampanaQuery, setSubcampanaQuery] = React.useState('');
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const [activeSubcampanaId, setActiveSubcampanaId] = React.useState(null);
+  const subcampanaActiva = subcampanas.find((s) => s.id === activeSubcampanaId) || null;
+  const tieneZonaActiva = subcampanaActiva?.tieneZona ?? false;
+  const hectareasActiva = subcampanaActiva?.hectareas ?? 4.2;
+  const metaActiva = subcampanaActiva?.meta ?? 0;
+  const especiesActiva = subcampanaActiva?.especies ?? [];
+  const equipoIdsActiva = subcampanaActiva?.equipoIds ?? [];
+  const lotesIdsActiva = subcampanaActiva?.lotesIds ?? [];
 
   React.useEffect(() => {
-    const labels = ['', 'Datos básicos', 'Zona en mapa', 'Especies y meta', 'Equipo y lotes', 'Revisión final'];
+    const labels = ['', 'Zona', 'Especies y meta', 'Plantas y lotes', 'Equipo', 'Revisión final'];
     const label = document.getElementById('stage-label');
-    if (label) label.textContent = `Paso ${t.paso} de 5 · ${labels[t.paso]}`;
-    const note = document.getElementById('step-note');
-    if (note && STEP_NOTES[t.paso]) {
-      note.innerHTML = `<span class="num">${t.paso}</span><b>${STEP_NOTES[t.paso].title}.</b> ${STEP_NOTES[t.paso].body}`;
+    if (label) {
+      label.textContent = t.view === 'general'
+        ? 'Campaña general · Cabecera'
+        : t.view === 'subcampanas'
+        ? 'Sub-campañas · Gestión'
+        : `Wizard heredado · Paso ${t.paso} de 5 · ${labels[t.paso]}`;
     }
-  }, [t.paso]);
+    const note = document.getElementById('step-note');
+    if (note) {
+      const meta = t.view === 'general' ? GENERAL_NOTE : t.view === 'subcampanas' ? SUB_NOTE : STEP_NOTES[t.paso];
+      const num = t.view === 'general' ? 'G' : t.view === 'subcampanas' ? 'S' : String(t.paso);
+      if (meta) note.innerHTML = `<span class="num">${num}</span><b>${meta.title}.</b> ${meta.body}`;
+    }
+  }, [t.view, t.paso]);
 
   React.useEffect(() => {
     const wire = (root, key, current, transform = v => v) => {
@@ -240,85 +313,184 @@ function App() {
       return () => node.removeEventListener('click', onClick);
     };
     const offs = [
+      wire('seg-view',          'view',          t.view),
       wire('seg-paso',          'paso',          t.paso, v => parseInt(v, 10)),
       wire('seg-tipo',          'tipo',          t.tipo),
-      wire('seg-zona',          'tieneZona',     t.tieneZona, v => v === 'si'),
-      wire('seg-tab',           'asignacionTab', t.asignacionTab),
       wire('seg-confirmacion',  'confirmacion',  t.confirmacion),
     ];
     return () => offs.forEach(o => o && o());
-  }, [t.paso, t.tipo, t.tieneZona, t.asignacionTab, t.confirmacion, setTweak]);
+  }, [t.view, t.paso, t.tipo, t.confirmacion, setTweak]);
+
+  React.useEffect(() => {
+    const node = document.getElementById('seg-zona');
+    if (!node) return () => {};
+    const onClick = (e) => {
+      const btn = e.target.closest('button[data-val]');
+      if (!btn || !subcampanaActiva) return;
+      setSubcampanas((prev) => prev.map((s) =>
+        s.id === subcampanaActiva.id ? { ...s, tieneZona: btn.dataset.val === 'si' } : s
+      ));
+    };
+    node.addEventListener('click', onClick);
+    [...node.querySelectorAll('button[data-val]')].forEach((b) => {
+      b.classList.toggle('on', (b.dataset.val === 'si') === tieneZonaActiva);
+    });
+    return () => node.removeEventListener('click', onClick);
+  }, [subcampanaActiva, tieneZonaActiva]);
+
+  React.useEffect(() => {
+    const wizardOnlyIds = ['block-paso', 'block-zona', 'block-confirmacion', 'block-legend'];
+    wizardOnlyIds.forEach((id) => {
+      const node = document.getElementById(id);
+      if (!node) return;
+      node.style.display = t.view === 'wizard' ? '' : 'none';
+    });
+  }, [t.view]);
 
   React.useEffect(() => {
     const sc = document.getElementById('scroller');
     if (sc) sc.scrollTop = 0;
-  }, [t.paso]);
-
-  const comunidadQueryNorm = comunidadQuery.trim().toLowerCase();
-  const comunidadResults = comunidadQueryNorm.length < 2
-    ? []
-    : COMUNIDADES_DISPONIBLES
-        .filter(c =>
-          c.nombre.toLowerCase().includes(comunidadQueryNorm) ||
-          c.municipio.toLowerCase().includes(comunidadQueryNorm) ||
-          c.perfil.toLowerCase().includes(comunidadQueryNorm)
-        )
-        .slice(0, 6);
+  }, [t.view, t.paso]);
 
   React.useEffect(() => {
-    if (comunidadQueryNorm.length < 2) {
-      setComunidadLoading(false);
-      return;
-    }
-    setComunidadLoading(true);
-    const timer = window.setTimeout(() => setComunidadLoading(false), 320);
-    return () => window.clearTimeout(timer);
-  }, [comunidadQueryNorm]);
+    if (t.view === 'wizard' && !subcampanaActiva) setTweak('view', 'subcampanas');
+  }, [t.view, subcampanaActiva, setTweak]);
+
+  const updateActiveSubcampana = (patchOrFn) => {
+    if (!activeSubcampanaId) return;
+    setSubcampanas((prev) => prev.map((s) => {
+      if (s.id !== activeSubcampanaId) return s;
+      const next = typeof patchOrFn === 'function' ? patchOrFn(s) : { ...s, ...patchOrFn };
+      return { ...next, estado: deriveSubcampanaEstado(next) };
+    }));
+  };
 
   const onChangeBasic = (k, v) => {
     if (k === 'tipo') setTweak('tipo', v);
     if (k === 'nombre') setNombre(v);
+    if (k === 'organizacion') setOrganizacion(v);
+    if (k === 'descripcion') setDescripcion(v);
   };
-  const onToggleComunidad = (id) =>
-    setComunidadIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   const onTogglePct = (especie, pct) =>
-    setEspecies(prev => prev.map(e => e.especie === especie ? { ...e, pct } : e));
+    updateActiveSubcampana((s) => ({
+      ...s,
+      especies: s.especies.map((e) => e.especie === especie ? { ...e, pct } : e),
+    }));
   const onTogglePersona = (id) =>
-    setEquipoIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    updateActiveSubcampana((s) => ({
+      ...s,
+      equipoIds: s.equipoIds.includes(id)
+        ? s.equipoIds.filter((x) => x !== id)
+        : [...s.equipoIds, id],
+    }));
   const onToggleLote = (id) =>
-    setLotesIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    updateActiveSubcampana((s) => ({
+      ...s,
+      lotesIds: s.lotesIds.includes(id)
+        ? s.lotesIds.filter((x) => x !== id)
+        : [...s.lotesIds, id],
+    }));
+  const onChangeSubcampanaCoordinador = (id) => {
+    const persona = PERSONAS.find((p) => p.id === id) || null;
+    updateActiveSubcampana({
+      coordinadorId: id,
+      coordinador: persona ? persona.nombre : null,
+    });
+  };
+  const onChangeSubcampanaFecha = (field, value) =>
+    updateActiveSubcampana({ [field]: value });
+  const onAddSubcampana = (comunidad) => {
+    setSubcampanas((prev) => [...prev, createSubcampana(comunidad, prev.length)]);
+    setSubcampanaQuery('');
+    setPickerOpen(false);
+  };
+  const onConfigurarSubcampana = (id) => {
+    setActiveSubcampanaId(id);
+    setSubcampanas((prev) => prev.map((s) => {
+      if (s.id !== id) return s;
+      const next = { ...s, progresoPaso: Math.max(1, s.progresoPaso) };
+      return { ...next, estado: deriveSubcampanaEstado(next) };
+    }));
+    setTweak({ view: 'wizard', paso: 1 });
+  };
+
+  React.useEffect(() => {
+    if (t.view !== 'wizard' || !activeSubcampanaId) return;
+    setSubcampanas((prev) => prev.map((s) => {
+      if (s.id !== activeSubcampanaId) return s;
+      const progresoPaso = Math.max(s.progresoPaso, pasoToProgress(t.paso));
+      const next = { ...s, progresoPaso };
+      return { ...next, estado: deriveSubcampanaEstado(next) };
+    }));
+  }, [t.view, t.paso, activeSubcampanaId]);
 
   return (
     <React.Fragment>
-      <CrearCampanaScreen
-        paso={t.paso} onPaso={(v) => setTweak('paso', v)}
-        tipo={t.tipo} nombre={nombre} comunidades={COMUNIDADES_DISPONIBLES} comunidadIds={comunidadIds}
-        comunidadQuery={comunidadQuery} comunidadLoading={comunidadLoading} comunidadResults={comunidadResults}
-        fechaInicio="12 mar 2026" fechaFin="30 nov 2026"
-        coordinadora={{ nombre: 'María López', rol: 'Coordinadora', iniciales: 'ML' }}
-        tieneZona={t.tieneZona} hectareas={4.2}
-        onTieneZona={(v) => setTweak('tieneZona', v)}
-        meta={meta} especies={especies}
-        onMeta={setMeta} onTogglePct={onTogglePct}
-        onChangeBasic={onChangeBasic} onToggleComunidad={onToggleComunidad} onComunidadQuery={setComunidadQuery}
-        equipoIds={equipoIds} lotesIds={lotesIds}
-        onTogglePersona={onTogglePersona} onToggleLote={onToggleLote}
-        asignacionTab={t.asignacionTab} onAsignacionTab={(v) => setTweak('asignacionTab', v)}
-        confirmacion={t.confirmacion} onConfirmacion={(v) => setTweak('confirmacion', v)}
-      />
+      {t.view === 'general' ? (
+        <CrearCampanaGeneralScreen
+          tipo={t.tipo}
+          nombre={nombre}
+          organizacion={organizacion}
+          descripcion={descripcion}
+          fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel}
+          fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
+          onChange={onChangeBasic}
+          onBack={() => { window.location.href = 'Dashboard admin.html'; }}
+          onContinue={() => setTweak({ view: 'subcampanas' })}
+        />
+      ) : t.view === 'subcampanas' ? (
+        <GestionSubcampanasScreen
+          tipo={t.tipo}
+          nombre={nombre}
+          organizacion={organizacion}
+          fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel}
+          fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
+          fechaInicioISO={CAMPANA_GENERAL_RANGE.inicioISO}
+          fechaFinISO={CAMPANA_GENERAL_RANGE.finISO}
+          subcampanas={subcampanas}
+          comunidadesDisponibles={COMUNIDADES_DISPONIBLES}
+          comunidadQuery={subcampanaQuery}
+          pickerOpen={pickerOpen}
+          onComunidadQuery={setSubcampanaQuery}
+          onTogglePicker={() => setPickerOpen((v) => !v)}
+          onAddSubcampana={onAddSubcampana}
+          onConfigurar={onConfigurarSubcampana}
+          onBack={() => setTweak('view', 'general')}
+        />
+      ) : (
+        <CrearCampanaScreen
+          paso={t.paso} onPaso={(v) => setTweak('paso', v)}
+          tipo={t.tipo} nombre={nombre} organizacion={organizacion} descripcion={descripcion}
+          fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel} fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
+          fechaInicioISO={CAMPANA_GENERAL_RANGE.inicioISO} fechaFinISO={CAMPANA_GENERAL_RANGE.finISO}
+          subcampanaActiva={subcampanaActiva}
+          onSubcampanaCoordinador={onChangeSubcampanaCoordinador}
+          onSubcampanaFecha={onChangeSubcampanaFecha}
+          tieneZona={tieneZonaActiva} hectareas={hectareasActiva}
+          onTieneZona={(v) => updateActiveSubcampana({ tieneZona: v })}
+          meta={metaActiva} especies={especiesActiva}
+          onMeta={(v) => updateActiveSubcampana({ meta: v })} onTogglePct={onTogglePct}
+          onChangeBasic={onChangeBasic}
+          equipoIds={equipoIdsActiva} lotesIds={lotesIdsActiva}
+          onTogglePersona={onTogglePersona} onToggleLote={onToggleLote}
+          onBackToGeneral={() => setTweak('view', 'subcampanas')}
+          confirmacion={t.confirmacion} onConfirmacion={(v) => setTweak('confirmacion', v)}
+        />
+      )}
 
       <TweaksPanel>
+        <TweakSection label="Vista" />
+        <TweakRadio label="Pantalla" value={t.view}
+                    options={['general','subcampanas','wizard']}
+                    onChange={(v) => setTweak('view', v)} />
         <TweakSection label="Wizard" />
         <TweakSelect label="Paso" value={String(t.paso)} options={['1','2','3','4','5']}
                      onChange={(v) => setTweak('paso', parseInt(v, 10))} />
         <TweakRadio label="Tipo" value={t.tipo}
                     options={['ARBORIZACION','REFORESTACION','FORESTACION']}
                     onChange={(v) => setTweak('tipo', v)} />
-        <TweakToggle label="Zona dibujada" value={t.tieneZona}
-                     onChange={(v) => setTweak('tieneZona', v)} />
-        <TweakRadio label="Tab paso 4" value={t.asignacionTab}
-                    options={['equipo','lotes']}
-                    onChange={(v) => setTweak('asignacionTab', v)} />
+        <TweakToggle label="Zona dibujada" value={tieneZonaActiva}
+                     onChange={(v) => updateActiveSubcampana({ tieneZona: v })} />
         <TweakRadio label="Confirmación" value={t.confirmacion}
                     options={['idle','guardando','exito']}
                     onChange={(v) => setTweak('confirmacion', v)} />

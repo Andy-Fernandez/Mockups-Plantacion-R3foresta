@@ -2,21 +2,29 @@
 
 function CrearCampanaScreen({
   paso, onPaso,
-  tipo, nombre, comunidades, comunidadIds, fechaInicio, fechaFin, coordinadora,
-  comunidadQuery, comunidadLoading, comunidadResults, onComunidadQuery,
+  tipo, nombre, organizacion, descripcion, fechaInicio, fechaFin, fechaInicioISO, fechaFinISO,
+  subcampanaActiva,
+  onSubcampanaCoordinador, onSubcampanaFecha,
   tieneZona, hectareas, onTieneZona,
-  meta, especies, onMeta, onTogglePct, onChangeBasic, onToggleComunidad,
+  meta, especies, onMeta, onTogglePct, onChangeBasic,
   equipoIds, lotesIds, onTogglePersona, onToggleLote,
-  asignacionTab, onAsignacionTab,
+  onBackToGeneral,
   confirmacion, onConfirmacion,
 }) {
+  const subcampanaReady = !!subcampanaActiva &&
+    !!subcampanaActiva.coordinadorId &&
+    !!subcampanaActiva.fechaInicio &&
+    !!subcampanaActiva.fechaFin &&
+    subcampanaActiva.fechaInicio <= subcampanaActiva.fechaFin &&
+    subcampanaActiva.fechaInicio >= fechaInicioISO &&
+    subcampanaActiva.fechaFin <= fechaFinISO;
 
   const canNext = (() => {
-    if (paso === 1) return tipo && nombre.trim().length > 2 && comunidadIds.length > 0;
-    if (paso === 2) return tieneZona;
-    if (paso === 3) return meta > 0 && especies.reduce((a, e) => a + e.pct, 0) === 100;
+    if (paso === 1) return tieneZona;
+    if (paso === 2) return meta > 0 && especies.reduce((a, e) => a + e.pct, 0) === 100;
+    if (paso === 3) return true;
     if (paso === 4) return true; // optional but encouraged
-    if (paso === 5) return true;
+    if (paso === 5) return subcampanaReady;
     return true;
   })();
 
@@ -24,7 +32,13 @@ function CrearCampanaScreen({
     if (paso < 5) onPaso(paso + 1);
     else onConfirmacion('guardando');
   };
-  const goBack = () => { if (paso > 1) onPaso(paso - 1); };
+  const goBack = () => {
+    if (onBackToGeneral && paso <= 1) {
+      onBackToGeneral();
+      return;
+    }
+    if (paso > 1) onPaso(paso - 1);
+  };
 
   return (
     <div data-screen-label="Crear campaña" className="relative min-h-full bg-[#eef2ed] text-brand-700">
@@ -32,36 +46,39 @@ function CrearCampanaScreen({
         <CCHeader paso={paso} onBack={goBack} />
 
         <div className="px-5 pt-4 space-y-4 flex-1">
+          <SubcampanaContextCard
+            campanaNombre={nombre}
+            subcampana={subcampanaActiva}
+            generalFechaInicio={fechaInicio}
+            generalFechaFin={fechaFin}
+            generalRange={{ inicioISO: fechaInicioISO, finISO: fechaFinISO }}
+            onCoordinadorChange={onSubcampanaCoordinador}
+            onFechaChange={onSubcampanaFecha}
+          />
           {paso === 1 && (
-            <CCStepDatos
-              tipo={tipo} nombre={nombre} comunidades={comunidades} comunidadIds={comunidadIds}
-              comunidadQuery={comunidadQuery} comunidadLoading={comunidadLoading} comunidadResults={comunidadResults}
-              fechaInicio={fechaInicio} fechaFin={fechaFin}
-              coordinadora={coordinadora}
-              onChange={onChangeBasic}
-              onToggleComunidad={onToggleComunidad}
-              onComunidadQuery={onComunidadQuery} />
-          )}
-          {paso === 2 && (
             <CCStepZona
               tieneZona={tieneZona} hectareas={hectareas}
               onMarcar={() => onTieneZona(true)}
               onLimpiar={() => onTieneZona(false)} />
           )}
-          {paso === 3 && (
+          {paso === 2 && (
             <CCStepEspecies meta={meta} especies={especies} onMeta={onMeta} onTogglePct={onTogglePct} />
+          )}
+          {paso === 3 && (
+            <CCStepLotes
+              lotesIds={lotesIds}
+              onToggleLote={onToggleLote} />
           )}
           {paso === 4 && (
             <CCStepEquipo
-              equipoIds={equipoIds} lotesIds={lotesIds}
-              onTogglePersona={onTogglePersona} onToggleLote={onToggleLote}
-              tab={asignacionTab} onTab={onAsignacionTab} />
+              equipoIds={equipoIds}
+              onTogglePersona={onTogglePersona} />
           )}
           {paso === 5 && (
             <CCStepResumen
-              tipo={tipo} nombre={nombre} comunidades={comunidades} comunidadIds={comunidadIds}
-              fechaInicio={fechaInicio} fechaFin={fechaFin}
-              coordinadora={coordinadora}
+              tipo={tipo} nombre={nombre} organizacion={organizacion} descripcion={descripcion}
+              fechaInicio={subcampanaActiva?.fechaInicio ? formatSubcampanaDate(subcampanaActiva.fechaInicio) : fechaInicio}
+              fechaFin={subcampanaActiva?.fechaFin ? formatSubcampanaDate(subcampanaActiva.fechaFin) : fechaFin}
               hectareas={hectareas} meta={meta} especies={especies}
               equipoIds={equipoIds} lotesIds={lotesIds} />
           )}

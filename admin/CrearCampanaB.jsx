@@ -1,117 +1,105 @@
 // Crear campaña — pasos 4, 5 + overlay de éxito
 
-// ── STEP 4 · Equipo y lotes ──────────────────────────────────────────────
+// ── STEP 3 · Lotes ───────────────────────────────────────────────────────
 
-function CCStepEquipo({ equipoIds, lotesIds, onTogglePersona, onToggleLote, tab, onTab }) {
-  const equipoSel = PERSONAS.filter(p => equipoIds.includes(p.id));
+function CCStepLotes({ lotesIds, onToggleLote }) {
   const lotesSel = LOTES_VIVERO.filter(l => lotesIds.includes(l.id));
   const lotesSaldoTotal = lotesSel.reduce((a, l) => a + l.saldo, 0);
 
   return (
     <div className="space-y-3">
-      {/* Mini-summary */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Equipo</p>
-          <div className="mt-1 flex items-center gap-2">
-            <p className="text-xl font-extrabold text-brand-800 tabular-nums">{equipoSel.length}</p>
-            {equipoSel.length > 0 && <AvatarPile items={equipoSel} max={4} size={7} />}
-          </div>
-        </div>
-        <div className="rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Lotes asignados</p>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <p className="text-xl font-extrabold text-brand-800 tabular-nums">{lotesSel.length}</p>
-            <p className="text-[10.5px] font-bold text-slate-500">· {lotesSaldoTotal} plantas</p>
-          </div>
+      <div className="rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Lotes asignados</p>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <p className="text-xl font-extrabold text-brand-800 tabular-nums">{lotesSel.length}</p>
+          <p className="text-[10.5px] font-bold text-slate-500">· {lotesSaldoTotal} plantas</p>
         </div>
       </div>
 
-      {/* Tab switcher */}
-      <div className="flex rounded-full bg-white p-1 shadow-soft ring-1 ring-black/5">
-        {[
-          { k: 'equipo', label: `Equipo (${equipoSel.length})` },
-          { k: 'lotes',  label: `Lotes (${lotesSel.length})` },
-        ].map(o => {
-          const isOn = o.k === tab;
+      <ul className="space-y-2">
+        {LOTES_VIVERO.map(l => {
+          const isOn = lotesIds.includes(l.id);
           return (
-            <button key={o.k} onClick={() => onTab(o.k)}
-              className={`flex-1 rounded-full px-3 py-2 text-[12px] font-extrabold tracking-wide transition ${isOn ? 'bg-brand-600 text-white shadow-soft' : 'text-brand-700 hover:bg-brand-50'}`}>
-              {o.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {tab === 'equipo' ? (
-        <ul className="space-y-2">
-          {PERSONAS.map(p => {
-            const isOn = equipoIds.includes(p.id);
-            return (
-              <li key={p.id}>
-                <button onClick={() => onTogglePersona(p.id)}
-                  className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-black/5 hover:ring-brand-300'}`}>
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${isOn ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-700'}`}>{p.iniciales}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-extrabold leading-tight">{p.nombre}</p>
-                    <p className={`text-[10.5px] font-bold uppercase tracking-wider ${isOn ? 'text-white/75' : 'text-brand-500'}`}>
-                      {p.rol}{p.plantadosTotal ? ` · ${p.plantadosTotal.toLocaleString('es-BO')} plantados` : ''}
-                    </p>
+            <li key={l.id}>
+              <button onClick={() => onToggleLote(l.id)}
+                className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-black/5 hover:ring-brand-300'}`}>
+                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${isOn ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700'}`}>
+                  <Icon name="package" className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-extrabold leading-tight">{l.especie}</p>
+                  <p className={`text-[10.5px] italic ${isOn ? 'text-white/85' : 'text-slate-500'}`}>{l.cientifico}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] font-bold">
+                    <span className={isOn ? 'text-white/85' : 'text-brand-700'}>
+                      {l.id.split('-').slice(0, 2).join('-')}
+                    </span>
+                    <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
+                    <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{l.vivero}</span>
+                    <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
+                    <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{l.subetapa.replace('_', ' ')}</span>
                   </div>
+                </div>
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <p className={`text-lg font-extrabold leading-none tabular-nums ${isOn ? 'text-white' : 'text-brand-800'}`}>{l.saldo}</p>
                   <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isOn ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
                     {isOn ? <Icon name="check" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
                   </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <ul className="space-y-2">
-          {LOTES_VIVERO.map(l => {
-            const isOn = lotesIds.includes(l.id);
-            return (
-              <li key={l.id}>
-                <button onClick={() => onToggleLote(l.id)}
-                  className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-black/5 hover:ring-brand-300'}`}>
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${isOn ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700'}`}>
-                    <Icon name="package" className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-extrabold leading-tight">{l.especie}</p>
-                    <p className={`text-[10.5px] italic ${isOn ? 'text-white/85' : 'text-slate-500'}`}>{l.cientifico}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] font-bold">
-                      <span className={isOn ? 'text-white/85' : 'text-brand-700'}>
-                        {l.id.split('-').slice(0, 2).join('-')}
-                      </span>
-                      <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
-                      <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{l.vivero}</span>
-                      <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
-                      <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{l.subetapa.replace('_', ' ')}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                    <p className={`text-lg font-extrabold leading-none tabular-nums ${isOn ? 'text-white' : 'text-brand-800'}`}>{l.saldo}</p>
-                    <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isOn ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
-                      {isOn ? <Icon name="check" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
-                    </div>
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                </div>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+// ── STEP 4 · Equipo ──────────────────────────────────────────────────────
+
+function CCStepEquipo({ equipoIds, onTogglePersona }) {
+  const equipoSel = PERSONAS.filter(p => equipoIds.includes(p.id));
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Equipo asignado</p>
+        <div className="mt-1 flex items-center gap-2">
+          <p className="text-xl font-extrabold text-brand-800 tabular-nums">{equipoSel.length}</p>
+          {equipoSel.length > 0 && <AvatarPile items={equipoSel} max={4} size={7} />}
+        </div>
+      </div>
+
+      <ul className="space-y-2">
+        {PERSONAS.map(p => {
+          const isOn = equipoIds.includes(p.id);
+          return (
+            <li key={p.id}>
+              <button onClick={() => onTogglePersona(p.id)}
+                className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-black/5 hover:ring-brand-300'}`}>
+                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${isOn ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-700'}`}>{p.iniciales}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-extrabold leading-tight">{p.nombre}</p>
+                  <p className={`text-[10.5px] font-bold uppercase tracking-wider ${isOn ? 'text-white/75' : 'text-brand-500'}`}>
+                    {p.rol}{p.plantadosTotal ? ` · ${p.plantadosTotal.toLocaleString('es-BO')} plantados` : ''}
+                  </p>
+                </div>
+                <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isOn ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
+                  {isOn ? <Icon name="check" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
+                </div>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
 
 // ── STEP 5 · Resumen ─────────────────────────────────────────────────────
 
-function CCStepResumen({ tipo, nombre, comunidades, comunidadIds, fechaInicio, fechaFin, coordinadora, hectareas, meta, especies, equipoIds, lotesIds }) {
+function CCStepResumen({ tipo, nombre, organizacion, descripcion, fechaInicio, fechaFin, hectareas, meta, especies, equipoIds, lotesIds }) {
   const equipo = PERSONAS.filter(p => equipoIds.includes(p.id));
   const lotes = LOTES_VIVERO.filter(l => lotesIds.includes(l.id));
-  const comunidadesSel = comunidades.filter(c => comunidadIds.includes(c.id));
   const lotesSaldo = lotes.reduce((a, l) => a + l.saldo, 0);
   return (
     <div className="space-y-3">
@@ -125,8 +113,8 @@ function CCStepResumen({ tipo, nombre, comunidades, comunidadIds, fechaInicio, f
         </div>
         <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-tight">{nombre}</h2>
         <p className="mt-0.5 flex items-center gap-1.5 text-sm font-bold text-white/85">
-          <Icon name="pin" className="h-3.5 w-3.5" />
-          {comunidadesSel.map(c => c.nombre).join(' · ')}
+          <Icon name="briefcase" className="h-3.5 w-3.5" />
+          {organizacion}
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-2xl bg-white/10 p-2.5 ring-1 ring-white/15">
@@ -157,23 +145,18 @@ function CCStepResumen({ tipo, nombre, comunidades, comunidadIds, fechaInicio, f
             <p className="text-sm font-extrabold text-brand-800">{fechaInicio} → {fechaFin}</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 px-3 py-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-[11px] font-extrabold text-brand-700">{coordinadora.iniciales}</div>
+        <div className="flex items-start gap-3 px-3 py-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon name="briefcase" className="h-4 w-4" /></div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Coordinadora</p>
-            <p className="text-sm font-extrabold text-brand-800">{coordinadora.nombre}</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Organización responsable</p>
+            <p className="text-sm font-extrabold text-brand-800 leading-tight">{organizacion}</p>
           </div>
         </div>
         <div className="flex items-start gap-3 px-3 py-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon name="pin" className="h-4 w-4" /></div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon name="note" className="h-4 w-4" /></div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Comunidades ({comunidadesSel.length})</p>
-            <p className="text-sm font-extrabold text-brand-800 leading-tight">
-              {comunidadesSel.map(c => c.nombre).join(' · ')}
-            </p>
-            <p className="text-[11px] font-semibold text-slate-500 truncate">
-              {comunidadesSel.map(c => c.municipio).join(' · ')}
-            </p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Descripción general</p>
+            <p className="text-sm font-semibold text-brand-800 leading-relaxed">{descripcion || 'Sin descripción general registrada.'}</p>
           </div>
         </div>
         <div className="flex items-start gap-3 px-3 py-2.5">
