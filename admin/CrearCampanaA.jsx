@@ -48,7 +48,7 @@ function formatSubcampanaRange(subcampana) {
   return `${formatSubcampanaDate(subcampana.fechaInicio)} → ${formatSubcampanaDate(subcampana.fechaFin)}`;
 }
 
-function CCHeader({ paso, onBack }) {
+function CCHeader({ paso, onBack, subcampanaNombre }) {
   return (
     <header className="relative overflow-hidden rounded-b-3xl bg-brand-700 text-white shadow-soft">
       <img src="assets/hero-canopy.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
@@ -67,6 +67,11 @@ function CCHeader({ paso, onBack }) {
           Sub-campaña activa · Paso {paso} de {CC_STEPS.length}
         </p>
         <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">{CC_TITLES[paso]}</h1>
+        {subcampanaNombre && (
+          <p className="mt-1 text-[12px] font-semibold text-white/80 leading-snug">
+            {subcampanaNombre}
+          </p>
+        )}
         <div className="mt-4 flex items-center gap-2">
           {CC_STEPS.map((s, i) => {
             const done = i + 1 < paso;

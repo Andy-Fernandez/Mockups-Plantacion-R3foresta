@@ -18,6 +18,7 @@ function CrearCampanaScreen({
     subcampanaActiva.fechaInicio <= subcampanaActiva.fechaFin &&
     subcampanaActiva.fechaInicio >= fechaInicioISO &&
     subcampanaActiva.fechaFin <= fechaFinISO;
+  const showSubcampanaContextCard = paso === 1 || !subcampanaReady;
 
   const canNext = (() => {
     if (paso === 1) return tieneZona;
@@ -43,18 +44,20 @@ function CrearCampanaScreen({
   return (
     <div data-screen-label="Crear campaña" className="relative min-h-full bg-[#eef2ed] text-brand-700">
       <div className="mx-auto flex min-h-full w-full max-w-md flex-col pb-4">
-        <CCHeader paso={paso} onBack={goBack} />
+        <CCHeader paso={paso} onBack={goBack} subcampanaNombre={subcampanaActiva?.comunidadNombre} />
 
         <div className="px-5 pt-4 space-y-4 flex-1">
-          <SubcampanaContextCard
-            campanaNombre={nombre}
-            subcampana={subcampanaActiva}
-            generalFechaInicio={fechaInicio}
-            generalFechaFin={fechaFin}
-            generalRange={{ inicioISO: fechaInicioISO, finISO: fechaFinISO }}
-            onCoordinadorChange={onSubcampanaCoordinador}
-            onFechaChange={onSubcampanaFecha}
-          />
+          {showSubcampanaContextCard && (
+            <SubcampanaContextCard
+              campanaNombre={nombre}
+              subcampana={subcampanaActiva}
+              generalFechaInicio={fechaInicio}
+              generalFechaFin={fechaFin}
+              generalRange={{ inicioISO: fechaInicioISO, finISO: fechaFinISO }}
+              onCoordinadorChange={onSubcampanaCoordinador}
+              onFechaChange={onSubcampanaFecha}
+            />
+          )}
           {paso === 1 && (
             <CCStepZona
               tieneZona={tieneZona} hectareas={hectareas}

@@ -2,54 +2,149 @@
 
 // ── STEP 3 · Lotes ───────────────────────────────────────────────────────
 
+function formatSubetapaLabel(subetapa) {
+  return subetapa.replace('_', ' ');
+}
+
 function CCStepLotes({ lotesIds, onToggleLote }) {
   const lotesSel = LOTES_VIVERO.filter(l => lotesIds.includes(l.id));
   const lotesSaldoTotal = lotesSel.reduce((a, l) => a + l.saldo, 0);
+  const viveros = Array.from(new Set(LOTES_VIVERO.map(l => l.vivero)));
+  const resumenEspecies = lotesSel.reduce((acc, lote) => {
+    const current = acc[lote.especie] || {
+      especie: lote.especie,
+      cientifico: lote.cientifico,
+      plantas: 0,
+      lotes: 0,
+      viveros: new Set(),
+    };
+    current.plantas += lote.saldo;
+    current.lotes += 1;
+    current.viveros.add(lote.vivero);
+    acc[lote.especie] = current;
+    return acc;
+  }, {});
+  const especiesSeleccionadas = Object.values(resumenEspecies).sort((a, b) => b.plantas - a.plantas);
 
   return (
-    <div className="space-y-3">
-      <div className="rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Lotes asignados</p>
-        <div className="mt-1 flex items-baseline gap-1.5">
-          <p className="text-xl font-extrabold text-brand-800 tabular-nums">{lotesSel.length}</p>
-          <p className="text-[10.5px] font-bold text-slate-500">· {lotesSaldoTotal} plantas</p>
+    <div className="space-y-4">
+      <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Lotes seleccionados</p>
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <p className="text-xl font-extrabold text-brand-800 tabular-nums">{lotesSel.length}</p>
+              <p className="text-[10.5px] font-bold text-slate-500">· {lotesSaldoTotal.toLocaleString('es-BO')} plantas</p>
+            </div>
+          </div>
+          <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2 text-right">
+            <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Viveros</p>
+            <p className="mt-1 text-lg font-extrabold text-brand-800 tabular-nums">{viveros.length}</p>
+          </div>
         </div>
+
+        {especiesSeleccionadas.length === 0 ? (
+          <p className="mt-3 text-[11px] font-semibold text-slate-500">
+            Selecciona lotes y aquí verás cuántas plantas ya tienes por especie.
+          </p>
+        ) : (
+          <div className="mt-3 grid grid-cols-1 gap-2">
+            {especiesSeleccionadas.map((item) => (
+              <div key={item.especie} className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5 ring-1 ring-brand-100">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-extrabold text-brand-800 leading-tight">{item.especie}</p>
+                    <p className="text-[10.5px] italic text-slate-500">{item.cientifico}</p>
+                  </div>
+                  <p className="text-lg font-extrabold text-brand-800 tabular-nums">{item.plantas.toLocaleString('es-BO')}</p>
+                </div>
+                <p className="mt-1 text-[10.5px] font-semibold text-slate-500">
+                  {item.lotes} lote{item.lotes === 1 ? '' : 's'} · {Array.from(item.viveros).join(' · ')}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <ul className="space-y-2">
-        {LOTES_VIVERO.map(l => {
-          const isOn = lotesIds.includes(l.id);
+      <div className="space-y-3">
+        {viveros.map((vivero) => {
+          const lotesVivero = LOTES_VIVERO
+            .filter((l) => l.vivero === vivero)
+            .sort((a, b) => {
+              const aOn = lotesIds.includes(a.id) ? 1 : 0;
+              const bOn = lotesIds.includes(b.id) ? 1 : 0;
+              if (aOn !== bOn) return bOn - aOn;
+              return b.saldo - a.saldo;
+            });
+          const lotesSelVivero = lotesVivero.filter((l) => lotesIds.includes(l.id));
+          const plantasSelVivero = lotesSelVivero.reduce((acc, l) => acc + l.saldo, 0);
+
           return (
-            <li key={l.id}>
-              <button onClick={() => onToggleLote(l.id)}
-                className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-black/5 hover:ring-brand-300'}`}>
-                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${isOn ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700'}`}>
-                  <Icon name="package" className="h-5 w-5" />
+            <section key={vivero} className="rounded-3xl bg-white p-3 shadow-soft ring-1 ring-black/5">
+              <div className="flex items-start justify-between gap-3 px-1 pb-2">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Vivero</p>
+                  <p className="mt-1 text-base font-extrabold text-brand-800">{vivero}</p>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-extrabold leading-tight">{l.especie}</p>
-                  <p className={`text-[10.5px] italic ${isOn ? 'text-white/85' : 'text-slate-500'}`}>{l.cientifico}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] font-bold">
-                    <span className={isOn ? 'text-white/85' : 'text-brand-700'}>
-                      {l.id.split('-').slice(0, 2).join('-')}
-                    </span>
-                    <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
-                    <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{l.vivero}</span>
-                    <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
-                    <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{l.subetapa.replace('_', ' ')}</span>
-                  </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Cargado</p>
+                  <p className="mt-1 text-sm font-extrabold text-brand-800 tabular-nums">
+                    {plantasSelVivero.toLocaleString('es-BO')} <span className="text-[10px] font-bold text-slate-500">plantas</span>
+                  </p>
+                  <p className="text-[10px] font-semibold text-slate-500">
+                    {lotesSelVivero.length}/{lotesVivero.length} lotes
+                  </p>
                 </div>
-                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <p className={`text-lg font-extrabold leading-none tabular-nums ${isOn ? 'text-white' : 'text-brand-800'}`}>{l.saldo}</p>
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isOn ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
-                    {isOn ? <Icon name="check" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
-                  </div>
-                </div>
-              </button>
-            </li>
+              </div>
+
+              <ul className="space-y-2">
+                {lotesVivero.map((l) => {
+                  const isOn = lotesIds.includes(l.id);
+                  return (
+                    <li key={l.id}>
+                      <button
+                        onClick={() => onToggleLote(l.id)}
+                        className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-[#f8fbf7] text-brand-800 ring-brand-100 hover:ring-brand-300'}`}>
+                        <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${isOn ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700'}`}>
+                          <Icon name="package" className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="text-sm font-extrabold leading-tight">{l.especie}</p>
+                            {isOn && (
+                              <span className="rounded-full bg-white/15 px-1.5 py-0 text-[9px] font-extrabold uppercase tracking-[0.14em] text-white ring-1 ring-white/20">
+                                Seleccionado
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-[10.5px] italic ${isOn ? 'text-white/85' : 'text-slate-500'}`}>{l.cientifico}</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] font-bold">
+                            <span className={isOn ? 'text-white/85' : 'text-brand-700'}>
+                              {l.id.split('-').slice(0, 2).join('-')}
+                            </span>
+                            <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
+                            <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{formatSubetapaLabel(l.subetapa)}</span>
+                            <span className={isOn ? 'text-white/60' : 'text-slate-400'}>·</span>
+                            <span className={isOn ? 'text-white/85' : 'text-slate-500'}>{l.edadDias} días</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                          <p className={`text-lg font-extrabold leading-none tabular-nums ${isOn ? 'text-white' : 'text-brand-800'}`}>{l.saldo.toLocaleString('es-BO')}</p>
+                          <p className={`text-[9px] font-extrabold uppercase tracking-wider ${isOn ? 'text-white/70' : 'text-slate-400'}`}>plantas</p>
+                          <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isOn ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
+                            {isOn ? <Icon name="check" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
+                          </div>
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 }
