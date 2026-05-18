@@ -108,9 +108,10 @@ function CCStepEquipo({ equipoIds, lotesIds, onTogglePersona, onToggleLote, tab,
 
 // ── STEP 5 · Resumen ─────────────────────────────────────────────────────
 
-function CCStepResumen({ tipo, nombre, zona, fechaInicio, fechaFin, coordinadora, hectareas, meta, especies, equipoIds, lotesIds }) {
+function CCStepResumen({ tipo, nombre, comunidades, comunidadIds, fechaInicio, fechaFin, coordinadora, hectareas, meta, especies, equipoIds, lotesIds }) {
   const equipo = PERSONAS.filter(p => equipoIds.includes(p.id));
   const lotes = LOTES_VIVERO.filter(l => lotesIds.includes(l.id));
+  const comunidadesSel = comunidades.filter(c => comunidadIds.includes(c.id));
   const lotesSaldo = lotes.reduce((a, l) => a + l.saldo, 0);
   return (
     <div className="space-y-3">
@@ -125,7 +126,7 @@ function CCStepResumen({ tipo, nombre, zona, fechaInicio, fechaFin, coordinadora
         <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-tight">{nombre}</h2>
         <p className="mt-0.5 flex items-center gap-1.5 text-sm font-bold text-white/85">
           <Icon name="pin" className="h-3.5 w-3.5" />
-          {zona}
+          {comunidadesSel.map(c => c.nombre).join(' · ')}
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-2xl bg-white/10 p-2.5 ring-1 ring-white/15">
@@ -161,6 +162,18 @@ function CCStepResumen({ tipo, nombre, zona, fechaInicio, fechaFin, coordinadora
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Coordinadora</p>
             <p className="text-sm font-extrabold text-brand-800">{coordinadora.nombre}</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3 px-3 py-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon name="pin" className="h-4 w-4" /></div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Comunidades ({comunidadesSel.length})</p>
+            <p className="text-sm font-extrabold text-brand-800 leading-tight">
+              {comunidadesSel.map(c => c.nombre).join(' · ')}
+            </p>
+            <p className="text-[11px] font-semibold text-slate-500 truncate">
+              {comunidadesSel.map(c => c.municipio).join(' · ')}
+            </p>
           </div>
         </div>
         <div className="flex items-start gap-3 px-3 py-2.5">

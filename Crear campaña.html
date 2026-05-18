@@ -111,7 +111,7 @@ tailwind.config = {
 
     <div class="step-note" id="step-note">
       <span class="num">1</span><b>Datos básicos.</b>
-      Tipo (arborización/reforestación/forestación), nombre, zona, fechas y coordinadora a cargo. La coordinadora se autorrellena con el usuario actual si tiene el permiso.
+      Tipo (arborización/reforestación/forestación), nombre, comunidades, fechas y coordinadora a cargo. Las comunidades se consultan al backend con buscador y se agregan una por una.
     </div>
 
     <div class="legend">
@@ -154,7 +154,7 @@ tailwind.config = {
 
 <script type="application/json" id="speaker-notes">
 [
-  "Wizard de 5 pasos para crear una campaña. Patrón idéntico al Registrar plantación del operario para que el rol coordinador no tenga que aprender otra interacción. Paso 1: datos y tipo (arborización/reforestación/forestación cambian copy y mapa después). Paso 2: zona — se dibuja un polígono sobre mapa estilizado; muestra hectáreas y densidad sugerida en cuanto hay polígono. Paso 3: meta y especies con %; valida que sume 100. Paso 4: tabs para equipo y lotes, con previews de cuántos hay seleccionados. Paso 5: resumen completo + mini-mapa; advierte si la meta excede el saldo de lotes asignados. Al publicar pasa de BORRADOR a ACTIVA."
+  "Wizard de 5 pasos para crear una campaña. Patrón idéntico al Registrar plantación del operario para que el rol coordinador no tenga que aprender otra interacción. Paso 1: datos, tipo y comunidades; se busca contra el padrón del backend y se agregan solo las coincidencias necesarias. Paso 2: zona — se dibuja un polígono sobre mapa estilizado; muestra hectáreas y densidad sugerida en cuanto hay polígono. Paso 3: meta y especies con %; valida que sume 100. Paso 4: tabs para equipo y lotes, con previews de cuántos hay seleccionados. Paso 5: resumen completo + mini-mapa; advierte si la meta excede el saldo de lotes asignados. Al publicar pasa de BORRADOR a ACTIVA."
 ]
 </script>
 
@@ -179,8 +179,19 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "confirmacion": "idle"
 }/*EDITMODE-END*/;
 
+const COMUNIDADES_DISPONIBLES = [
+  { id: 'com-1', nombre: 'San Miguel', municipio: 'La Paz', perfil: 'Ladera urbana' },
+  { id: 'com-2', nombre: 'Hampaturi Alto', municipio: 'Palca', perfil: 'Cuenca periurbana' },
+  { id: 'com-3', nombre: 'Jupapina', municipio: 'Mecapaca', perfil: 'Corredor ribereño' },
+  { id: 'com-4', nombre: 'Cota Cota', municipio: 'La Paz', perfil: 'Borde urbano' },
+  { id: 'com-5', nombre: 'Achumani', municipio: 'La Paz', perfil: 'Quebrada urbana' },
+  { id: 'com-6', nombre: 'Ovejuyo', municipio: 'La Paz', perfil: 'Ladera residencial' },
+  { id: 'com-7', nombre: 'Huajchilla', municipio: 'Mecapaca', perfil: 'Valle interandino' },
+  { id: 'com-8', nombre: 'Retamani', municipio: 'Palca', perfil: 'Microcuenca alta' },
+];
+
 const STEP_NOTES = {
-  1: { title: 'Datos básicos', body: 'Tipo (arborización/reforestación/forestación), nombre, zona, fechas y coordinadora a cargo. Se autorrellena con el usuario actual si tiene el permiso.' },
+  1: { title: 'Datos básicos', body: 'Tipo (arborización/reforestación/forestación), nombre, comunidades, fechas y coordinadora a cargo. Las comunidades se buscan en un padrón del back y se agregan una por una.' },
   2: { title: 'Zona en mapa', body: 'Polígono dibujado a mano sobre mapa. Se persiste como <b>GeoJSON</b>. Hectáreas + densidad sugerida se calculan al cerrar el polígono.' },
   3: { title: 'Especies y meta', body: 'Mix planificado por especie en %. Debe sumar <b>100%</b>. Muestra cuánto hay disponible en vivero para detectar shortfall temprano.' },
   4: { title: 'Equipo y lotes', body: 'Asignación múltiple. Opcional al crear — se puede ampliar después desde el detalle. Los lotes muestran saldo vivo actual.' },
@@ -191,7 +202,9 @@ function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
   const [nombre, setNombre] = React.useState('Arborización La Paz 2026');
-  const [zona, setZona] = React.useState('San Miguel · La Paz');
+  const [comunidadIds, setComunidadIds] = React.useState(['com-1']);
+  const [comunidadQuery, setComunidadQuery] = React.useState('');
+  const [comunidadLoading, setComunidadLoading] = React.useState(false);
   const [meta, setMeta] = React.useState(3000);
   const [especies, setEspecies] = React.useState([
     { especie: 'Jacarandá', cientifico: 'Jacaranda mimosifolia', region: 'Urbano La Paz', viveroDisponible: 320, pct: 40 },
@@ -241,11 +254,33 @@ function App() {
     if (sc) sc.scrollTop = 0;
   }, [t.paso]);
 
+  const comunidadQueryNorm = comunidadQuery.trim().toLowerCase();
+  const comunidadResults = comunidadQueryNorm.length < 2
+    ? []
+    : COMUNIDADES_DISPONIBLES
+        .filter(c =>
+          c.nombre.toLowerCase().includes(comunidadQueryNorm) ||
+          c.municipio.toLowerCase().includes(comunidadQueryNorm) ||
+          c.perfil.toLowerCase().includes(comunidadQueryNorm)
+        )
+        .slice(0, 6);
+
+  React.useEffect(() => {
+    if (comunidadQueryNorm.length < 2) {
+      setComunidadLoading(false);
+      return;
+    }
+    setComunidadLoading(true);
+    const timer = window.setTimeout(() => setComunidadLoading(false), 320);
+    return () => window.clearTimeout(timer);
+  }, [comunidadQueryNorm]);
+
   const onChangeBasic = (k, v) => {
     if (k === 'tipo') setTweak('tipo', v);
     if (k === 'nombre') setNombre(v);
-    if (k === 'zona') setZona(v);
   };
+  const onToggleComunidad = (id) =>
+    setComunidadIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   const onTogglePct = (especie, pct) =>
     setEspecies(prev => prev.map(e => e.especie === especie ? { ...e, pct } : e));
   const onTogglePersona = (id) =>
@@ -257,14 +292,15 @@ function App() {
     <React.Fragment>
       <CrearCampanaScreen
         paso={t.paso} onPaso={(v) => setTweak('paso', v)}
-        tipo={t.tipo} nombre={nombre} zona={zona}
+        tipo={t.tipo} nombre={nombre} comunidades={COMUNIDADES_DISPONIBLES} comunidadIds={comunidadIds}
+        comunidadQuery={comunidadQuery} comunidadLoading={comunidadLoading} comunidadResults={comunidadResults}
         fechaInicio="12 mar 2026" fechaFin="30 nov 2026"
         coordinadora={{ nombre: 'María López', rol: 'Coordinadora', iniciales: 'ML' }}
         tieneZona={t.tieneZona} hectareas={4.2}
         onTieneZona={(v) => setTweak('tieneZona', v)}
         meta={meta} especies={especies}
         onMeta={setMeta} onTogglePct={onTogglePct}
-        onChangeBasic={onChangeBasic}
+        onChangeBasic={onChangeBasic} onToggleComunidad={onToggleComunidad} onComunidadQuery={setComunidadQuery}
         equipoIds={equipoIds} lotesIds={lotesIds}
         onTogglePersona={onTogglePersona} onToggleLote={onToggleLote}
         asignacionTab={t.asignacionTab} onAsignacionTab={(v) => setTweak('asignacionTab', v)}

@@ -2,16 +2,17 @@
 
 function CrearCampanaScreen({
   paso, onPaso,
-  tipo, nombre, zona, fechaInicio, fechaFin, coordinadora,
+  tipo, nombre, comunidades, comunidadIds, fechaInicio, fechaFin, coordinadora,
+  comunidadQuery, comunidadLoading, comunidadResults, onComunidadQuery,
   tieneZona, hectareas, onTieneZona,
-  meta, especies, onMeta, onTogglePct, onChangeBasic,
+  meta, especies, onMeta, onTogglePct, onChangeBasic, onToggleComunidad,
   equipoIds, lotesIds, onTogglePersona, onToggleLote,
   asignacionTab, onAsignacionTab,
   confirmacion, onConfirmacion,
 }) {
 
   const canNext = (() => {
-    if (paso === 1) return tipo && nombre.trim().length > 2 && zona.trim().length > 2;
+    if (paso === 1) return tipo && nombre.trim().length > 2 && comunidadIds.length > 0;
     if (paso === 2) return tieneZona;
     if (paso === 3) return meta > 0 && especies.reduce((a, e) => a + e.pct, 0) === 100;
     if (paso === 4) return true; // optional but encouraged
@@ -33,10 +34,13 @@ function CrearCampanaScreen({
         <div className="px-5 pt-4 space-y-4 flex-1">
           {paso === 1 && (
             <CCStepDatos
-              tipo={tipo} nombre={nombre} zona={zona}
+              tipo={tipo} nombre={nombre} comunidades={comunidades} comunidadIds={comunidadIds}
+              comunidadQuery={comunidadQuery} comunidadLoading={comunidadLoading} comunidadResults={comunidadResults}
               fechaInicio={fechaInicio} fechaFin={fechaFin}
               coordinadora={coordinadora}
-              onChange={onChangeBasic} />
+              onChange={onChangeBasic}
+              onToggleComunidad={onToggleComunidad}
+              onComunidadQuery={onComunidadQuery} />
           )}
           {paso === 2 && (
             <CCStepZona
@@ -55,7 +59,7 @@ function CrearCampanaScreen({
           )}
           {paso === 5 && (
             <CCStepResumen
-              tipo={tipo} nombre={nombre} zona={zona}
+              tipo={tipo} nombre={nombre} comunidades={comunidades} comunidadIds={comunidadIds}
               fechaInicio={fechaInicio} fechaFin={fechaFin}
               coordinadora={coordinadora}
               hectareas={hectareas} meta={meta} especies={especies}
