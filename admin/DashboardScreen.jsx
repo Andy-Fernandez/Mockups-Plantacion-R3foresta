@@ -235,6 +235,85 @@ function ActividadRow({ a }) {
   );
 }
 
+// Hero principal — Captura de CO₂ en tiempo real (toneladas, 8 decimales).
+// Tasa simulada en T/s; deriva eliminada usando deltas basados en performance.now().
+function CO2LiveHero({ baseToneladas, meta }) {
+  const RATE_TON_PER_SECOND = 0.0000008;
+  const [value, setValue] = React.useState(baseToneladas);
+
+  React.useEffect(() => {
+    const reduced = typeof window !== 'undefined'
+      && window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+
+    const start = performance.now();
+    let raf;
+    const tick = (now) => {
+      setValue(baseToneladas + ((now - start) / 1000) * RATE_TON_PER_SECOND);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [baseToneladas]);
+
+  const intPart = Math.floor(value);
+  const decPart = (value - intPart).toFixed(8).slice(2);
+  const intStr  = intPart.toLocaleString('es-BO');
+  const pct     = Math.min(100, Math.round((value / meta) * 100));
+  const kgPorHora = (RATE_TON_PER_SECOND * 3600 * 1000).toFixed(2).replace('.', ',');
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-brand-800 to-brand-900 p-4 text-white shadow-soft ring-1 ring-emerald-400/15">
+      <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-emerald-300/20 blur-3xl" />
+      <div className="pointer-events-none absolute -left-8 -bottom-12 h-32 w-32 rounded-full bg-emerald-400/10 blur-3xl" />
+
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2 py-0.5 ring-1 ring-emerald-300/25">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-300" />
+              </span>
+              <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-emerald-100">
+                Captura en vivo
+              </p>
+            </div>
+            <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-emerald-200/90">
+              CO₂ capturado · acumulado del programa
+            </p>
+          </div>
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-400/15 ring-1 ring-emerald-300/30">
+            <Icon name="drop" className="h-6 w-6 text-emerald-200" />
+          </div>
+        </div>
+
+        <p className="mt-2.5 font-extrabold leading-none tracking-tight tabular-nums">
+          <span className="text-[44px]">{intStr}</span>
+          <span className="text-[20px] text-emerald-200/85">,{decPart}</span>
+          <span className="ml-2 text-base font-extrabold text-emerald-200/80">T</span>
+        </p>
+        <p className="mt-1.5 text-[11px] font-bold text-emerald-100/80">
+          Toneladas de CO₂ · midiendo ~{kgPorHora} kg / h en tiempo real
+        </p>
+
+        <div className="mt-3">
+          <div className="flex items-baseline justify-between text-[11px] font-extrabold">
+            <span className="text-emerald-100/80">Meta {meta.toLocaleString('es-BO')} T</span>
+            <span className="tabular-nums text-emerald-200">{pct}%</span>
+          </div>
+          <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-white/15">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-emerald-200 shadow-[0_0_10px_rgba(110,231,183,0.55)]"
+              style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hayAlertas, onNuevaCampana, onAbrirCampana }) {
   const campanas = filtroEstado === 'TODAS'
     ? CAMPANAS_ADMIN
@@ -253,6 +332,9 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
 
         <div className="px-5 pt-4 space-y-4">
           <PeriodoTabs value={periodo} onChange={onPeriodo} />
+
+          {/* Hero principal — CO₂ capturado en tiempo real */}
+          <CO2LiveHero baseToneladas={m.co2Toneladas} meta={m.co2Meta} />
 
           {/* Hero metric — árboles plantados */}
           <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-700 p-4 text-white shadow-soft">

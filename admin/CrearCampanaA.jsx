@@ -530,7 +530,7 @@ function CCStepDatos({
         <div className="grid grid-cols-3 gap-2">
           {[
             { k: 'ARBORIZACION',  label: 'Arborización',  hint: 'Plantar en zona urbana',     icon: 'building' },
-            { k: 'REFORESTACION', label: 'Reforestación', hint: 'Plantar en zona natural',    icon: 'trees' },
+            { k: 'REFORESTACION', label: 'Reforestación', hint: 'Replantar en zona natural',    icon: 'trees' },
             { k: 'FORESTACION',   label: 'Forestación',   hint: 'Crear cobertura forestal',   icon: 'leaf' },
           ].map(t => {
             const isOn = t.k === tipo;
@@ -559,7 +559,7 @@ function CCStepDatos({
           <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Organización asociada</label>
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
             <Icon name="briefcase" className="h-4 w-4 text-slate-400" />
-            <input type="text" value={organizacion} onChange={(e) => onChange('organizacion', e.target.value)} placeholder="Fundación R3foresta"
+            <input type="text" value={organizacion} onChange={(e) => onChange('organizacion', e.target.value)} placeholder="R3foresta"
               className="w-full bg-transparent text-sm font-extrabold text-brand-800 placeholder:font-medium placeholder:text-slate-400 focus:outline-none" />
           </div>
         </div>
