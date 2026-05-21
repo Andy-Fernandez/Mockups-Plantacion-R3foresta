@@ -9,14 +9,13 @@ function DSCBadge({ estado }) {
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] ring-1 ${m.tone}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
-      {m.label}
+      {m.short || m.label}
     </span>
   );
 }
 
 function DSCHeader({ sub, campana, onBack, onMore }) {
   const pct = sub.meta ? Math.round((sub.plantados / sub.meta) * 100) : 0;
-  const isPausada = sub.estado === 'PAUSADA';
   return (
     <header className="relative overflow-hidden rounded-b-3xl bg-brand-700 text-white shadow-soft">
       <img src="assets/plantacion.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
@@ -26,9 +25,12 @@ function DSCHeader({ sub, campana, onBack, onMore }) {
           <button onClick={onBack} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition" aria-label="Volver">
             <Icon name="arrow-left" className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
             <TipoBadge tipo={campana?.tipo} />
             <DSCBadge estado={sub.estado} />
+            {sub.faseMantenimiento && (
+              <FaseBadge fase={sub.faseMantenimiento} mesesRestantes={sub.mesesRestantesMantenimiento} light compact />
+            )}
             <button onClick={onMore} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition" aria-label="Más opciones">
               <Icon name="ellipsis" className="h-5 w-5" />
             </button>
@@ -73,11 +75,19 @@ function DSCHeader({ sub, campana, onBack, onMore }) {
           <div className="h-full rounded-full bg-emerald-300" style={{ width: `${pct}%` }} />
         </div>
 
-        {isPausada && sub.motivoPausa && (
+        {sub.estado === 'FINALIZADA_PARCIAL' && (
           <div className="mt-3 flex items-start gap-2 rounded-2xl bg-amber-400/15 px-3 py-2.5 ring-1 ring-amber-300/40">
-            <Icon name="pause" className="h-4 w-4 mt-0.5 text-amber-200 flex-shrink-0" />
+            <Icon name="flag" className="h-4 w-4 mt-0.5 text-amber-200 flex-shrink-0" />
             <p className="text-[11.5px] font-bold text-amber-100 leading-snug">
-              <b className="text-white">Sub-campaña pausada:</b> {sub.motivoPausa}
+              <b className="text-white">Cerrada parcialmente:</b> {sub.motivoCierreParcial || 'cerrada antes de alcanzar la meta'}.
+            </p>
+          </div>
+        )}
+        {sub.estado === 'COMPLETADA' && sub.faseMantenimiento === 'MANTENIMIENTO_ACTIVO' && (
+          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-blue-400/15 px-3 py-2.5 ring-1 ring-blue-300/40">
+            <Icon name="shield" className="h-4 w-4 mt-0.5 text-blue-200 flex-shrink-0" />
+            <p className="text-[11.5px] font-bold text-blue-100 leading-snug">
+              <b className="text-white">Meta alcanzada.</b> En mantenimiento activo · <span className="tabular-nums">{sub.mesesRestantesMantenimiento}</span> meses restantes.
             </p>
           </div>
         )}

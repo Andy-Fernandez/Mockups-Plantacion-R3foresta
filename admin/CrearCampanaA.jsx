@@ -248,16 +248,17 @@ function CrearCampanaGeneralScreen({
 }
 
 function SubcampanaStatusBadge({ estado }) {
-  const tone = {
-    PENDIENTE: 'bg-amber-50 text-amber-700 ring-amber-100',
-    EN_CONFIGURACION: 'bg-blue-50 text-blue-700 ring-blue-100',
-    CONFIGURADA: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-    ACTIVA: 'bg-brand-50 text-brand-700 ring-brand-100',
-  }[estado] || 'bg-slate-50 text-slate-600 ring-slate-200';
+  // 4 estados según guía Módulo 3.
+  const meta = {
+    BORRADOR:           { tone: 'bg-slate-100 text-slate-700 ring-slate-200',     label: 'BORRADOR' },
+    ACTIVA:             { tone: 'bg-emerald-50 text-emerald-800 ring-emerald-100', label: 'ACTIVA' },
+    COMPLETADA:         { tone: 'bg-blue-50 text-blue-800 ring-blue-100',          label: 'COMPLETADA' },
+    FINALIZADA_PARCIAL: { tone: 'bg-amber-50 text-amber-800 ring-amber-100',       label: 'PARCIAL' },
+  }[estado] || { tone: 'bg-slate-50 text-slate-600 ring-slate-200', label: estado };
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${tone}`}>
-      {estado.replace('_', ' ')}
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${meta.tone}`}>
+      {meta.label}
     </span>
   );
 }
@@ -273,7 +274,7 @@ function SubcampanaConfiguredExampleCard({ comunidad, fechaInicio, fechaFin }) {
           <p className="mt-1 text-[16px] font-extrabold leading-tight text-brand-800">{comunidad?.nombre || 'Comunidad ejemplo'}</p>
           <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{comunidad?.municipio || 'Municipio ejemplo'}</p>
         </div>
-        <SubcampanaStatusBadge estado="CONFIGURADA" />
+        <SubcampanaStatusBadge estado="BORRADOR" />
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
@@ -321,7 +322,7 @@ function GestionSubcampanasScreen({
 }) {
   const query = comunidadQuery.trim().toLowerCase();
   const comunidadesAgregadas = new Set(subcampanas.map((s) => s.comunidadId));
-  const autoShowExample = !subcampanas.some((s) => s.estado === 'CONFIGURADA' || s.estado === 'ACTIVA');
+  const autoShowExample = !subcampanas.some((s) => s.estado === 'BORRADOR' || s.estado === 'ACTIVA');
   const showConfiguredExample =
     ejemploOverride === 'si' ? true :
     ejemploOverride === 'no' ? false :
@@ -498,7 +499,7 @@ function GestionSubcampanasScreen({
                   )}
 
                   <button onClick={() => onConfigurar(s.id)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 px-4 py-3 text-sm font-extrabold text-white shadow-soft hover:bg-brand-700">
-                    {s.estado === 'PENDIENTE' ? 'Configurar sub-campaña' : 'Continuar configuración'}
+                    {s.estado === 'BORRADOR' ? 'Configurar sub-campaña' : 'Continuar configuración'}
                     <Icon name="chevron-right" className="h-4 w-4" />
                   </button>
                 </div>

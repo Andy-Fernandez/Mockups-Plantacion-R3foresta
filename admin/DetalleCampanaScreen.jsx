@@ -13,14 +13,14 @@
 
 // ── Atoms locales ───────────────────────────────────────────────────────
 
-// Badge propio de sub-campaña (más estados que ESTADO_META de campaña).
+// Badge de estado de sub-campaña. Usa label corto para no romper layouts densos.
 function SubcampanaBadge({ estado }) {
   const m = ESTADO_SUBCAMPANA_META[estado];
   if (!m) return null;
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] ring-1 ${m.tone}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
-      {m.label}
+      {m.short || m.label}
     </span>
   );
 }
@@ -37,7 +37,7 @@ function TipoSubBadge({ tipo }) {
 // ── Header hero ─────────────────────────────────────────────────────────
 
 function DCHeader({ campana, onBack, onMore }) {
-  const isPausada = campana.estado === 'PAUSADA';
+  const isCerrada = campana.estado === 'FINALIZADA_PARCIAL' || campana.estado === 'COMPLETADA';
   return (
     <header className="relative overflow-hidden rounded-b-3xl bg-brand-700 text-white shadow-soft">
       <img src="assets/plantacion.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
@@ -47,9 +47,12 @@ function DCHeader({ campana, onBack, onMore }) {
           <button onClick={onBack} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition" aria-label="Volver">
             <Icon name="arrow-left" className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
             <TipoBadge tipo={campana.tipo} />
-            <StateBadge estado={campana.estado} light />
+            <StateBadge estado={campana.estado} light compact />
+            {campana.faseMantenimiento && (
+              <FaseBadge fase={campana.faseMantenimiento} mesesRestantes={campana.mesesRestantesMantenimiento} light compact />
+            )}
             <button onClick={onMore} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition" aria-label="Más opciones">
               <Icon name="ellipsis" className="h-5 w-5" />
             </button>
@@ -107,11 +110,19 @@ function DCHeader({ campana, onBack, onMore }) {
           })}
         </div>
 
-        {isPausada && (
+        {campana.estado === 'FINALIZADA_PARCIAL' && (
           <div className="mt-3 flex items-start gap-2 rounded-2xl bg-amber-400/15 px-3 py-2.5 ring-1 ring-amber-300/40">
-            <Icon name="pause" className="h-4 w-4 mt-0.5 text-amber-200 flex-shrink-0" />
+            <Icon name="flag" className="h-4 w-4 mt-0.5 text-amber-200 flex-shrink-0" />
             <p className="text-[11.5px] font-bold text-amber-100 leading-snug">
-              <b className="text-white">Paraguas pausado:</b> sus sub-campañas están en pausa. {campana.pausaMotivo || ''}
+              <b className="text-white">Cerrada parcialmente:</b> {campana.motivoCierreParcial || 'cerrada antes de alcanzar la meta'}.
+            </p>
+          </div>
+        )}
+        {campana.estado === 'COMPLETADA' && (
+          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-blue-400/15 px-3 py-2.5 ring-1 ring-blue-300/40">
+            <Icon name="flag" className="h-4 w-4 mt-0.5 text-blue-200 flex-shrink-0" />
+            <p className="text-[11.5px] font-bold text-blue-100 leading-snug">
+              <b className="text-white">Meta alcanzada.</b> {campana.faseMantenimiento === 'MANTENIMIENTO_ACTIVO' && campana.mesesRestantesMantenimiento != null ? `En mantenimiento activo · ${campana.mesesRestantesMantenimiento} meses restantes.` : ''}
             </p>
           </div>
         )}
@@ -150,11 +161,10 @@ function DCTabs({ active, onChange }) {
 
 function SubcampanaRow({ s, onTap }) {
   const pct = s.meta ? Math.round((s.plantados / s.meta) * 100) : 0;
-  const isPend = s.estado === 'PENDIENTE' || s.estado === 'EN_CONFIGURACION';
-  const isConfigurada = s.estado === 'CONFIGURADA';
+  const isBorrador = s.estado === 'BORRADOR';
 
   // Calcular faltantes si quiere pasar a ACTIVA — solo informativo.
-  const guard = isConfigurada ? puedeTransitionar(s, 'ACTIVA') : null;
+  const guard = isBorrador ? puedeTransitionar(s, 'ACTIVA') : null;
 
   return (
     <button onClick={() => onTap && onTap(s)} className="block w-full text-left rounded-2xl bg-white p-3.5 shadow-soft ring-1 ring-black/5 hover:ring-brand-300 active:scale-[0.995] transition">
@@ -163,6 +173,9 @@ function SubcampanaRow({ s, onTap }) {
           <div className="flex items-center gap-1.5 flex-wrap">
             <TipoSubBadge tipo={s.tipo} />
             <SubcampanaBadge estado={s.estado} />
+            {s.faseMantenimiento && (
+              <FaseBadge fase={s.faseMantenimiento} mesesRestantes={s.mesesRestantesMantenimiento} compact />
+            )}
           </div>
           <p className="mt-1 text-[14px] font-extrabold leading-tight text-brand-800 truncate">{s.nombre}</p>
           {s.municipio && (
@@ -175,20 +188,15 @@ function SubcampanaRow({ s, onTap }) {
         <Icon name="chevron-right" className="h-4 w-4 text-slate-400 flex-shrink-0 mt-0.5" />
       </div>
 
-      {/* PENDIENTE / EN_CONFIG: mostrar faltantes en lugar de stats */}
-      {isPend ? (
+      {/* BORRADOR: mostrar faltantes en lugar de stats */}
+      {isBorrador && guard && !guard.ok ? (
         <div className="mt-2.5 rounded-xl bg-amber-50 px-3 py-2 ring-1 ring-amber-100">
           <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-800">
             <Icon name="info" className="h-3.5 w-3.5" />
-            Falta para configurar
+            Falta para activar
           </p>
           <p className="mt-0.5 text-[11.5px] font-bold text-amber-900 leading-snug">
-            {!s.coordinadorId && 'coordinador · '}
-            {(!s.fechaInicioISO || !s.fechaFinISO) && 'fechas · '}
-            {!s.cobertura && 'zona · '}
-            {(!s.mixPlanificado || s.mixPlanificado.length === 0) && 'mix · '}
-            {(!s.equipoIds || s.equipoIds.length === 0) && 'equipo · '}
-            {(!s.lotesIds || s.lotesIds.length === 0) && 'lotes'}
+            {guard.faltantes.join(' · ')}
           </p>
         </div>
       ) : (
@@ -217,7 +225,7 @@ function SubcampanaRow({ s, onTap }) {
                 <span className="ml-1.5 text-brand-500">{pct}%</span>
               </p>
             </div>
-            <div className="mt-1"><Progress pct={pct} tone={s.estado === 'PAUSADA' ? 'amber' : 'brand'} height={6} /></div>
+            <div className="mt-1"><Progress pct={pct} tone={s.estado === 'FINALIZADA_PARCIAL' ? 'amber' : s.estado === 'COMPLETADA' ? 'blue' : 'brand'} height={6} /></div>
           </div>
 
           <div className="mt-2 text-[10.5px] font-bold text-slate-500">
@@ -244,7 +252,7 @@ function DCResumen({ campana, onTabMapa, onAbrirSub, onNuevaSub }) {
     : campana.subcampanas.filter(s => s.estado === filtro);
 
   // Orden: bloqueadas primero, luego activas, luego completadas
-  const orden = { PENDIENTE: 0, EN_CONFIGURACION: 1, CONFIGURADA: 2, ACTIVA: 3, PAUSADA: 4, COMPLETADA: 5, CANCELADA: 6 };
+  const orden = { ACTIVA: 0, BORRADOR: 1, COMPLETADA: 2, FINALIZADA_PARCIAL: 3 };
   const subsOrdenadas = [...subs].sort((a, b) => (orden[a.estado] || 99) - (orden[b.estado] || 99));
 
   return (
@@ -305,14 +313,20 @@ function DCResumen({ campana, onTabMapa, onAbrirSub, onNuevaSub }) {
         {/* Filtros chip */}
         <div className="mt-2 -mx-5 px-5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           <div className="flex gap-1.5 pb-1.5 pr-2">
-            {['TODAS', 'PENDIENTE', 'EN_CONFIGURACION', 'CONFIGURADA', 'ACTIVA', 'PAUSADA', 'COMPLETADA'].map(k => {
+            {[
+              { k: 'TODAS',              label: 'TODAS' },
+              { k: 'ACTIVA',             label: 'ACTIVA' },
+              { k: 'BORRADOR',           label: 'BORRADOR' },
+              { k: 'COMPLETADA',         label: 'COMPLETADA' },
+              { k: 'FINALIZADA_PARCIAL', label: 'PARCIAL' },
+            ].map(({ k, label }) => {
               const isOn = k === filtro;
               const count = k === 'TODAS' ? campana.subcampanasCount : (campana.distribucionEstados?.[k] || 0);
               if (k !== 'TODAS' && count === 0) return null;
               return (
                 <button key={k} onClick={() => setFiltro(k)}
                   className={`flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10.5px] font-extrabold uppercase tracking-wide ring-1 transition ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-700 ring-brand-100 hover:ring-brand-300'}`}>
-                  {k.replace('_', ' ')}
+                  {label}
                   <span className={`tabular-nums ${isOn ? 'text-white/85' : 'text-slate-400'}`}>{count}</span>
                 </button>
               );
@@ -358,13 +372,10 @@ function ParaguasMiniMap({ campana }) {
   };
   const positions = layoutByCount(campana.subcampanas.length);
   const colorByEstado = {
-    ACTIVA:           '#10b981',
-    PAUSADA:          '#f59e0b',
-    COMPLETADA:       '#94a3b8',
-    CONFIGURADA:      '#1f613b',
-    EN_CONFIGURACION: '#3b82f6',
-    PENDIENTE:        '#cbd5e1',
-    CANCELADA:        '#ef4444',
+    ACTIVA:             '#10b981',
+    BORRADOR:           '#94a3b8',
+    COMPLETADA:         '#3b82f6',
+    FINALIZADA_PARCIAL: '#f59e0b',
   };
   return (
     <div className="relative overflow-hidden rounded-3xl bg-white ring-1 ring-black/5 shadow-soft">
@@ -388,7 +399,7 @@ function ParaguasMiniMap({ campana }) {
             const r = Math.max(8, Math.min(22, Math.sqrt(s.hectareas || 1) * 8));
             return (
               <g key={s.id}>
-                <circle cx={cx} cy={cy} r={r} fill={fill} fillOpacity="0.18" stroke={fill} strokeWidth="1.5" strokeDasharray={s.estado === 'PENDIENTE' ? '4 3' : '0'} />
+                <circle cx={cx} cy={cy} r={r} fill={fill} fillOpacity="0.18" stroke={fill} strokeWidth="1.5" strokeDasharray={s.estado === 'BORRADOR' ? '4 3' : '0'} />
                 <circle cx={cx} cy={cy} r="3" fill={fill} />
               </g>
             );
@@ -617,13 +628,10 @@ function DCLotes({ campana }) {
 
 function DCMapa({ campana }) {
   const colorByEstado = {
-    ACTIVA:           '#10b981',
-    PAUSADA:          '#f59e0b',
-    COMPLETADA:       '#94a3b8',
-    CONFIGURADA:      '#1f613b',
-    EN_CONFIGURACION: '#3b82f6',
-    PENDIENTE:        '#cbd5e1',
-    CANCELADA:        '#ef4444',
+    ACTIVA:             '#10b981',
+    BORRADOR:           '#94a3b8',
+    COMPLETADA:         '#3b82f6',
+    FINALIZADA_PARCIAL: '#f59e0b',
   };
   // Layout sintético de polígonos.
   const polys = campana.subcampanas.map((s, i) => {
@@ -660,7 +668,7 @@ function DCMapa({ campana }) {
               const fill = colorByEstado[p.sub.estado] || '#94a3b8';
               return (
                 <g key={p.sub.id}>
-                  <path d={p.d} fill={fill} fillOpacity="0.2" stroke={fill} strokeWidth="2" strokeDasharray={p.sub.estado === 'PENDIENTE' ? '5 3' : '0'} />
+                  <path d={p.d} fill={fill} fillOpacity="0.2" stroke={fill} strokeWidth="2" strokeDasharray={p.sub.estado === 'BORRADOR' ? '5 3' : '0'} />
                   <circle cx={p.cx} cy={p.cy} r="3" fill={fill} />
                 </g>
               );
@@ -708,7 +716,7 @@ function DCMapa({ campana }) {
 
 function DCMoreSheet({ open, estado, onClose, onAccion }) {
   if (!open) return null;
-  const puedeCompletar = estado === 'ACTIVA' || estado === 'PAUSADA';
+  const puedeCompletar = estado === 'ACTIVA';
   return (
     <div className="absolute inset-0 z-40 flex flex-col bg-black/50 backdrop-blur-sm">
       <button className="flex-1" onClick={onClose} aria-label="Cerrar" />

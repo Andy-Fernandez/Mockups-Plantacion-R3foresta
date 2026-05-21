@@ -1,34 +1,60 @@
 // Shared UI atoms for admin screens. Header w/ image, state chips,
 // progress rings/bars, mini-map, etc. All mobile-first.
 
+// Estados operativos de sub-campaña (4 únicos según guía Módulo 3).
+// `short` es para badges compactos (donut, listas densas); `label` para detalles.
 const ESTADO_META = {
-  ACTIVA:     { label: 'ACTIVA',     tone: 'bg-emerald-50 text-emerald-800 ring-emerald-100',   icon: 'check-circle', dot: 'bg-emerald-500' },
-  PAUSADA:    { label: 'PAUSADA',    tone: 'bg-amber-50 text-amber-800 ring-amber-100',         icon: 'pause',        dot: 'bg-amber-500' },
-  COMPLETADA: { label: 'COMPLETADA', tone: 'bg-slate-100 text-slate-700 ring-slate-200',        icon: 'flag',         dot: 'bg-slate-400' },
-  BORRADOR:   { label: 'BORRADOR',   tone: 'bg-white text-brand-700 ring-brand-100',            icon: 'pencil',       dot: 'bg-brand-300' },
-  CANCELADA:  { label: 'CANCELADA',  tone: 'bg-red-50 text-red-700 ring-red-100',               icon: 'x-circle',     dot: 'bg-red-400' },
+  BORRADOR:           { label: 'BORRADOR',             short: 'BORRADOR',   tone: 'bg-slate-100 text-slate-700 ring-slate-200',     icon: 'pencil',       dot: 'bg-slate-400' },
+  ACTIVA:             { label: 'ACTIVA',               short: 'ACTIVA',     tone: 'bg-emerald-50 text-emerald-800 ring-emerald-100', icon: 'check-circle', dot: 'bg-emerald-500' },
+  COMPLETADA:         { label: 'META ALCANZADA',       short: 'COMPLETADA', tone: 'bg-blue-50 text-blue-800 ring-blue-100',          icon: 'flag',         dot: 'bg-blue-500' },
+  FINALIZADA_PARCIAL: { label: 'CERRADA PARCIALMENTE', short: 'PARCIAL',    tone: 'bg-amber-50 text-amber-800 ring-amber-100',       icon: 'flag',         dot: 'bg-amber-500' },
+};
+
+// Fase de mantenimiento (paralela al estado, solo en COMPLETADA / FINALIZADA_PARCIAL).
+const FASE_META = {
+  MANTENIMIENTO_ACTIVO: { label: 'MANTENIMIENTO ACTIVO', short: 'MANT. ACTIVO',  tone: 'bg-blue-50 text-blue-800 ring-blue-100',     dot: 'bg-blue-500', icon: 'shield' },
+  MONITOREO_HISTORICO:  { label: 'MONITOREO HISTÓRICO',  short: 'HISTÓRICO',     tone: 'bg-slate-100 text-slate-700 ring-slate-200', dot: 'bg-slate-400', icon: 'archive' },
 };
 
 const TIPO_META = {
   ARBORIZACION:  { label: 'ARBORIZACIÓN',  tone: 'bg-amber-50 text-amber-800 ring-amber-100' },
   REFORESTACION: { label: 'REFORESTACIÓN', tone: 'bg-emerald-50 text-emerald-700 ring-emerald-100' },
+  FORESTACION:   { label: 'FORESTACIÓN',   tone: 'bg-brand-50 text-brand-700 ring-brand-100' },
 };
 
-function StateBadge({ estado, light }) {
+function StateBadge({ estado, light, compact }) {
   const m = ESTADO_META[estado];
   if (!m) return null;
+  const text = compact ? m.short : m.label;
   if (light) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white ring-1 ring-white/30">
         <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
-        {m.label}
+        {text}
       </span>
     );
   }
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] ring-1 ${m.tone}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
-      {m.label}
+      {text}
+    </span>
+  );
+}
+
+// Badge de fase de mantenimiento, opcionalmente con contador "· 18m".
+function FaseBadge({ fase, mesesRestantes, light, compact }) {
+  const m = FASE_META[fase];
+  if (!m) return null;
+  const text = compact ? m.short : m.label;
+  const sufijo = (fase === 'MANTENIMIENTO_ACTIVO' && mesesRestantes != null) ? ` · ${mesesRestantes}m` : '';
+  const cls = light
+    ? 'bg-white/20 text-white ring-white/30'
+    : m.tone;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.14em] ring-1 ${cls}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
+      {text}{sufijo}
     </span>
   );
 }
@@ -156,9 +182,11 @@ function AvatarPile({ items, max = 4, size = 7 }) {
 }
 
 window.StateBadge = StateBadge;
+window.FaseBadge  = FaseBadge;
 window.TipoBadge  = TipoBadge;
 window.Progress   = Progress;
 window.StatesDonut = StatesDonut;
 window.MiniMap    = MiniMap;
 window.AvatarPile = AvatarPile;
 window.ESTADO_META = ESTADO_META;
+window.FASE_META   = FASE_META;

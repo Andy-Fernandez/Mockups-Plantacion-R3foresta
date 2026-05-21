@@ -34,13 +34,19 @@ const METRICAS_GLOBALES = {
   especiesMeta:            18,
 };
 
-// ── Distribución de campañas paraguas por estado ─────────────────────────
+// ── Distribución de sub-campañas por estado (mock para donut/breakdown) ──
+// 4 estados únicos según guía Módulo 3: BORRADOR / ACTIVA / COMPLETADA / FINALIZADA_PARCIAL.
 const CAMPANAS_ESTADOS = {
-  ACTIVA: 4,
-  PAUSADA: 1,
-  COMPLETADA: 7,
-  BORRADOR: 2,
-  CANCELADA: 1,
+  BORRADOR:           3,
+  ACTIVA:             4,
+  COMPLETADA:         6,
+  FINALIZADA_PARCIAL: 2,
+};
+
+// Distribución por fase de mantenimiento (solo aplica a COMPLETADA / FINALIZADA_PARCIAL).
+const CAMPANAS_FASE_MANTENIMIENTO = {
+  MANTENIMIENTO_ACTIVO: 5,
+  MONITOREO_HISTORICO:  3,
 };
 
 // ── Personas disponibles ─────────────────────────────────────────────────
@@ -119,13 +125,15 @@ const CAMPANAS_ADMIN = [
     organizacion: 'R3foresta',
     descripcion: 'Arborización de barrio en ladera, frente al parque urbano.',
     tipo: 'ARBORIZACION',
-    estado: 'PAUSADA',
+    estado: 'FINALIZADA_PARCIAL',
     zona: 'Achumani · La Paz',
     fechaInicio: '15 sep 2025',
     fechaFin:    '15 mar 2026',
     fechaInicioISO: '2025-09-15',
     fechaFinISO:    '2026-03-15',
-    pausaMotivo: 'Lluvias intensas · revisar 12 mar',
+    faseMantenimiento: 'MANTENIMIENTO_ACTIVO',
+    mesesRestantesMantenimiento: 26,
+    motivoCierreParcial: 'Lluvias intensas · cierre anticipado',
   },
   {
     id: 'CAM-2025-019',
@@ -140,6 +148,8 @@ const CAMPANAS_ADMIN = [
     fechaFin:    '20 dic 2025',
     fechaInicioISO: '2025-03-01',
     fechaFinISO:    '2025-12-20',
+    faseMantenimiento: 'MANTENIMIENTO_ACTIVO',
+    mesesRestantesMantenimiento: 31,
   },
 ];
 
@@ -153,7 +163,7 @@ const SUBCAMPANAS_ADMIN = [
     nombre: 'San Miguel',
     comunidad: 'San Miguel',
     municipio: 'La Paz · Sur',
-    estado: 'CONFIGURADA',
+    estado: 'BORRADOR',
     coordinadorId: 'co-1',
     coordinador: 'María López',
     coordinadorIniciales: 'ML',
@@ -244,7 +254,7 @@ const SUBCAMPANAS_ADMIN = [
     nombre: 'Mallasa',
     comunidad: 'Mallasa',
     municipio: 'La Paz · Sur',
-    estado: 'PENDIENTE',
+    estado: 'BORRADOR',
     coordinadorId: null,
     coordinador: null,
     coordinadorIniciales: null,
@@ -333,7 +343,7 @@ const SUBCAMPANAS_ADMIN = [
     nombre: 'Etapa 2 · Pinar Sur',
     comunidad: 'Hampaturi Sur',
     municipio: 'Hampaturi',
-    estado: 'CONFIGURADA',
+    estado: 'BORRADOR',
     coordinadorId: 'co-2',
     coordinador: 'Patricia Vargas',
     coordinadorIniciales: 'PV',
@@ -364,7 +374,9 @@ const SUBCAMPANAS_ADMIN = [
     nombre: 'Achumani Norte',
     comunidad: 'Achumani',
     municipio: 'La Paz · Sur',
-    estado: 'PAUSADA',
+    estado: 'FINALIZADA_PARCIAL',
+    faseMantenimiento: 'MANTENIMIENTO_ACTIVO',
+    mesesRestantesMantenimiento: 26,
     coordinadorId: 'co-2',
     coordinador: 'Patricia Vargas',
     coordinadorIniciales: 'PV',
@@ -379,8 +391,8 @@ const SUBCAMPANAS_ADMIN = [
     supervivencia: 71,
     co2Proyectado: 22,
     eventosCount: 11,
-    ultimoEvento: 'hace 11 días · pausa por lluvias',
-    motivoPausa: 'Lluvias intensas · revisar 12 mar',
+    ultimoEvento: 'cerrada parcialmente · 15 mar 2026',
+    motivoCierreParcial: 'Lluvias intensas · cierre anticipado',
     mixPlanificado: [
       { especie: 'Jacarandá', cientifico: 'Jacaranda mimosifolia', maxPct: 60, plantados: 230 },
       { especie: 'Molle',     cientifico: 'Schinus molle',         maxPct: 40, plantados: 150 },
@@ -398,6 +410,8 @@ const SUBCAMPANAS_ADMIN = [
     comunidad: 'Sopocachi',
     municipio: 'La Paz · Centro',
     estado: 'COMPLETADA',
+    faseMantenimiento: 'MANTENIMIENTO_ACTIVO',
+    mesesRestantesMantenimiento: 31,
     coordinadorId: 'co-1',
     coordinador: 'María López',
     coordinadorIniciales: 'ML',
@@ -422,16 +436,20 @@ const SUBCAMPANAS_ADMIN = [
   },
 ];
 
-// ── Máquina de estados de sub-campaña ────────────────────────────────────
-// Solo transiciones autorizadas. Cualquier otra está cerrada.
+// ── Máquina de estados de sub-campaña (4 estados según guía Módulo 3) ────
+// BORRADOR → ACTIVA (al activar wizard)
+// ACTIVA   → COMPLETADA (automático al alcanzar meta)
+// ACTIVA   → FINALIZADA_PARCIAL (manual admin, con motivo)
+// Estados terminales: COMPLETADA, FINALIZADA_PARCIAL (append-only).
+//
+// Fase de mantenimiento (paralela, no es un estado): se activa al cerrar la
+// sub-campaña. Empieza en MANTENIMIENTO_ACTIVO (3 años) y luego pasa a
+// MONITOREO_HISTORICO.
 const TRANSICIONES_SUBCAMPANA = {
-  PENDIENTE:        ['EN_CONFIGURACION', 'CANCELADA'],
-  EN_CONFIGURACION: ['CONFIGURADA', 'CANCELADA'],
-  CONFIGURADA:      ['ACTIVA', 'EN_CONFIGURACION', 'CANCELADA'],
-  ACTIVA:           ['PAUSADA', 'COMPLETADA', 'CANCELADA'],
-  PAUSADA:          ['ACTIVA', 'COMPLETADA', 'CANCELADA'],
-  COMPLETADA:       [],
-  CANCELADA:        [],
+  BORRADOR:           ['ACTIVA'],
+  ACTIVA:             ['COMPLETADA', 'FINALIZADA_PARCIAL'],
+  COMPLETADA:         [],
+  FINALIZADA_PARCIAL: [],
 };
 
 // Devuelve { ok, faltantes[] } indicando si la transición es válida y qué falta.
@@ -440,33 +458,28 @@ function puedeTransitionar(sub, destino) {
     return { ok: false, faltantes: ['transición no permitida desde ' + sub.estado] };
   }
   const faltantes = [];
-  if (destino === 'CONFIGURADA') {
+  if (destino === 'ACTIVA') {
     if (!sub.coordinadorId) faltantes.push('coordinador');
     if (!sub.fechaInicioISO || !sub.fechaFinISO) faltantes.push('fechas');
     if (!sub.meta) faltantes.push('meta');
     if (!sub.cobertura) faltantes.push('cobertura');
     if (!sub.mixPlanificado || sub.mixPlanificado.length === 0) faltantes.push('mix de especies');
   }
-  if (destino === 'ACTIVA') {
-    if (!sub.coordinadorId) faltantes.push('coordinador');
-    if (!sub.fechaInicioISO || !sub.fechaFinISO) faltantes.push('fechas');
-    if (!sub.meta) faltantes.push('meta');
-    if (!sub.cobertura) faltantes.push('cobertura');
-    if (!sub.equipoIds || sub.equipoIds.length === 0) faltantes.push('equipo');
-    if (!sub.lotesIds || sub.lotesIds.length === 0) faltantes.push('lotes');
-  }
   return { ok: faltantes.length === 0, faltantes };
 }
 
-// Etiquetas de estado para sub-campaña (para badges).
+// Etiquetas de estado para sub-campaña (mismo set que ESTADO_META en AdminShell).
 const ESTADO_SUBCAMPANA_META = {
-  PENDIENTE:        { label: 'PENDIENTE',        tone: 'bg-slate-100 text-slate-700 ring-slate-200', dot: 'bg-slate-400' },
-  EN_CONFIGURACION: { label: 'EN_CONFIGURACION', tone: 'bg-blue-50 text-blue-800 ring-blue-100',     dot: 'bg-blue-500' },
-  CONFIGURADA:      { label: 'CONFIGURADA',      tone: 'bg-brand-50 text-brand-700 ring-brand-100',  dot: 'bg-brand-500' },
-  ACTIVA:           { label: 'ACTIVA',           tone: 'bg-emerald-50 text-emerald-800 ring-emerald-100', dot: 'bg-emerald-500' },
-  PAUSADA:          { label: 'PAUSADA',          tone: 'bg-amber-50 text-amber-800 ring-amber-100',  dot: 'bg-amber-500' },
-  COMPLETADA:       { label: 'COMPLETADA',       tone: 'bg-slate-100 text-slate-700 ring-slate-200', dot: 'bg-slate-400' },
-  CANCELADA:        { label: 'CANCELADA',        tone: 'bg-red-50 text-red-700 ring-red-100',         dot: 'bg-red-400' },
+  BORRADOR:           { label: 'BORRADOR',             short: 'BORRADOR',   tone: 'bg-slate-100 text-slate-700 ring-slate-200',     dot: 'bg-slate-400' },
+  ACTIVA:             { label: 'ACTIVA',               short: 'ACTIVA',     tone: 'bg-emerald-50 text-emerald-800 ring-emerald-100', dot: 'bg-emerald-500' },
+  COMPLETADA:         { label: 'META ALCANZADA',       short: 'COMPLETADA', tone: 'bg-blue-50 text-blue-800 ring-blue-100',          dot: 'bg-blue-500' },
+  FINALIZADA_PARCIAL: { label: 'CERRADA PARCIALMENTE', short: 'PARCIAL',    tone: 'bg-amber-50 text-amber-800 ring-amber-100',       dot: 'bg-amber-500' },
+};
+
+// Etiquetas de fase de mantenimiento.
+const FASE_MANTENIMIENTO_META = {
+  MANTENIMIENTO_ACTIVO: { label: 'MANTENIMIENTO ACTIVO', short: 'MANT. ACTIVO', tone: 'bg-blue-50 text-blue-800 ring-blue-100',     dot: 'bg-blue-500' },
+  MONITOREO_HISTORICO:  { label: 'MONITOREO HISTÓRICO',  short: 'HISTÓRICO',    tone: 'bg-slate-100 text-slate-700 ring-slate-200', dot: 'bg-slate-400' },
 };
 
 // Label de tipo (sub-campaña) — derivado del enum.
@@ -512,9 +525,9 @@ function selectCampanaAgregado(campanaId) {
   const comunidadesCubiertas = new Set(subs.map(s => s.comunidad).filter(Boolean)).size;
 
   // Último evento del paraguas: el más reciente entre las hijas (heurística:
-  // hijas ACTIVA/PAUSADA primero, ordenadas por su ultimoEvento textual).
+  // hijas ACTIVA primero, ordenadas por su ultimoEvento textual).
   const ultimaActiva = subs
-    .filter(s => s.estado === 'ACTIVA' || s.estado === 'PAUSADA')
+    .filter(s => s.estado === 'ACTIVA')
     .map(s => s.ultimoEvento).find(Boolean);
   const ultimoEvento = ultimaActiva || subs.map(s => s.ultimoEvento).find(Boolean) || '';
 
@@ -611,7 +624,7 @@ const ACTIVIDAD_RECIENTE = [
     campanaId: 'CAM-2026-007', subcampanaId: 'SUB-007-A', tiempo: 'hace 2 días',
   },
   {
-    id: 'a-6', kind: 'PAUSA', label: 'Sub-campaña pausada por lluvias',
+    id: 'a-6', kind: 'CIERRE_PARCIAL', label: 'Sub-campaña cerrada parcialmente · lluvias',
     campanaId: 'CAM-2025-022', subcampanaId: 'SUB-022-A', tiempo: 'hace 11 días',
   },
 ];
@@ -629,6 +642,7 @@ function breadcrumbActividad(a) {
 window.PROGRAMA = PROGRAMA;
 window.METRICAS_GLOBALES = METRICAS_GLOBALES;
 window.CAMPANAS_ESTADOS = CAMPANAS_ESTADOS;
+window.CAMPANAS_FASE_MANTENIMIENTO = CAMPANAS_FASE_MANTENIMIENTO;
 window.CAMPANAS_ADMIN = CAMPANAS_ADMIN;
 window.SUBCAMPANAS_ADMIN = SUBCAMPANAS_ADMIN;
 window.PERSONAS = PERSONAS;
@@ -637,6 +651,7 @@ window.CATALOGO_ESPECIES = CATALOGO_ESPECIES;
 window.ACTIVIDAD_RECIENTE = ACTIVIDAD_RECIENTE;
 window.TRANSICIONES_SUBCAMPANA = TRANSICIONES_SUBCAMPANA;
 window.ESTADO_SUBCAMPANA_META = ESTADO_SUBCAMPANA_META;
+window.FASE_MANTENIMIENTO_META = FASE_MANTENIMIENTO_META;
 window.TIPO_SUBCAMPANA_LABEL = TIPO_SUBCAMPANA_LABEL;
 window.puedeTransitionar = puedeTransitionar;
 window.subcampanasDe = subcampanasDe;

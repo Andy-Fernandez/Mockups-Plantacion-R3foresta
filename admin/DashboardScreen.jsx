@@ -93,15 +93,20 @@ function MetricCard({ label, value, unit, pct, target, tone = 'brand', icon, foo
 }
 
 function EstadosBreakdown({ data, total, onTap }) {
-  const ordered = ['ACTIVA', 'PAUSADA', 'COMPLETADA', 'BORRADOR', 'CANCELADA'];
+  const ordered = ['ACTIVA', 'BORRADOR', 'COMPLETADA', 'FINALIZADA_PARCIAL'];
   const colorByKey = {
-    ACTIVA:     '#10b981',
-    PAUSADA:    '#f59e0b',
-    COMPLETADA: '#94a3b8',
-    BORRADOR:   '#8fb89e',
-    CANCELADA:  '#ef4444',
+    ACTIVA:             '#10b981',
+    BORRADOR:           '#94a3b8',
+    COMPLETADA:         '#3b82f6',
+    FINALIZADA_PARCIAL: '#f59e0b',
   };
-  const items = ordered.map(k => ({ key: k, value: data[k] || 0, color: colorByKey[k] })).filter(d => d.value > 0);
+  const labelByKey = {
+    ACTIVA:             'ACTIVA',
+    BORRADOR:           'BORRADOR',
+    COMPLETADA:         'COMPLETADA',
+    FINALIZADA_PARCIAL: 'PARCIAL',
+  };
+  const items = ordered.map(k => ({ key: k, label: labelByKey[k], value: data[k] || 0, color: colorByKey[k] })).filter(d => d.value > 0);
   return (
     <section className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
       <div className="flex items-baseline justify-between">
@@ -121,7 +126,7 @@ function EstadosBreakdown({ data, total, onTap }) {
           {items.map(it => (
             <li key={it.key} className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full" style={{ background: it.color }} />
-              <span className="flex-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-brand-700 truncate">{it.key}</span>
+              <span className="flex-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-brand-700 truncate">{it.label}</span>
               <span className="text-sm font-extrabold tabular-nums text-brand-800">{it.value}</span>
             </li>
           ))}
@@ -131,18 +136,17 @@ function EstadosBreakdown({ data, total, onTap }) {
   );
 }
 
-// Resumen breve de hijas: "8 sub-campañas · 3 activas · 2 pend."
+// Resumen breve de hijas: "8 sub-campañas · 3 activas · 2 borradores".
 function subcampanasResumen(c) {
   const dist = c.distribucionEstados || {};
   const total = c.subcampanasCount || 0;
   const sufijo = total === 1 ? 'sub-campaña' : 'sub-campañas';
   const piezas = [];
-  if (dist.ACTIVA)            piezas.push(`${dist.ACTIVA} activa${dist.ACTIVA > 1 ? 's' : ''}`);
-  if (dist.PAUSADA)           piezas.push(`${dist.PAUSADA} pausada${dist.PAUSADA > 1 ? 's' : ''}`);
-  if (dist.PENDIENTE)         piezas.push(`${dist.PENDIENTE} pend.`);
-  if (dist.EN_CONFIGURACION)  piezas.push(`${dist.EN_CONFIGURACION} en config`);
-  if (dist.CONFIGURADA)       piezas.push(`${dist.CONFIGURADA} config.`);
+  if (dist.ACTIVA)              piezas.push(`${dist.ACTIVA} activa${dist.ACTIVA > 1 ? 's' : ''}`);
+  if (dist.BORRADOR)            piezas.push(`${dist.BORRADOR} borrador${dist.BORRADOR > 1 ? 'es' : ''}`);
+  if (dist.FINALIZADA_PARCIAL)  piezas.push(`${dist.FINALIZADA_PARCIAL} parcial${dist.FINALIZADA_PARCIAL > 1 ? 'es' : ''}`);
   if (dist.COMPLETADA && total === dist.COMPLETADA) piezas.push('completada');
+  else if (dist.COMPLETADA)     piezas.push(`${dist.COMPLETADA} completa${dist.COMPLETADA > 1 ? 's' : ''}`);
   return `${total} ${sufijo}${piezas.length ? ' · ' + piezas.join(' · ') : ''}`;
 }
 
@@ -159,7 +163,10 @@ function CampanaRow({ c, onTap }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
             <TipoBadge tipo={c.tipo} />
-            <StateBadge estado={c.estado} />
+            <StateBadge estado={c.estado} compact />
+            {c.faseMantenimiento && (
+              <FaseBadge fase={c.faseMantenimiento} mesesRestantes={c.mesesRestantesMantenimiento} compact />
+            )}
           </div>
           <p className="mt-1 text-[14px] font-extrabold leading-tight text-brand-800 truncate">{c.nombre}</p>
           <p className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-slate-500 truncate">
@@ -184,7 +191,7 @@ function CampanaRow({ c, onTap }) {
             <span className="ml-1.5 text-brand-500">{pct}%</span>
           </p>
         </div>
-        <div className="mt-1"><Progress pct={pct} tone={c.estado === 'PAUSADA' ? 'amber' : 'brand'} height={6} /></div>
+        <div className="mt-1"><Progress pct={pct} tone={c.estado === 'FINALIZADA_PARCIAL' ? 'amber' : c.estado === 'COMPLETADA' ? 'blue' : 'brand'} height={6} /></div>
       </div>
 
       <div className="mt-2.5 flex items-center justify-between gap-2">
@@ -392,7 +399,7 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
             <MetricCard
               label="Campañas activas" value={CAMPANAS_ESTADOS.ACTIVA} unit=""
               icon="planting" tone="brand"
-              footer={`${CAMPANAS_ESTADOS.COMPLETADA} completadas · ${CAMPANAS_ESTADOS.PAUSADA} pausadas`} />
+              footer={`${CAMPANAS_ESTADOS.COMPLETADA} completadas · ${CAMPANAS_ESTADOS.FINALIZADA_PARCIAL} parciales`} />
           </div>
 
           <EstadosBreakdown data={CAMPANAS_ESTADOS} total={totalCampanas} />
@@ -405,12 +412,18 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
             </div>
             <div className="mt-2 -mx-5 px-5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
               <div className="flex gap-1.5 pb-1.5 pr-2">
-                {['TODAS', 'ACTIVA', 'PAUSADA', 'COMPLETADA', 'BORRADOR'].map(k => {
+                {[
+                  { k: 'TODAS',              label: 'TODAS' },
+                  { k: 'ACTIVA',             label: 'ACTIVA' },
+                  { k: 'BORRADOR',           label: 'BORRADOR' },
+                  { k: 'COMPLETADA',         label: 'COMPLETADA' },
+                  { k: 'FINALIZADA_PARCIAL', label: 'PARCIAL' },
+                ].map(({ k, label }) => {
                   const isOn = k === filtroEstado;
                   return (
                     <button key={k} onClick={() => onFiltroEstado(k)}
                       className={`flex-shrink-0 rounded-full px-3 py-1.5 text-[11px] font-extrabold ring-1 transition ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-700 ring-brand-100 hover:ring-brand-300'}`}>
-                      {k}
+                      {label}
                     </button>
                   );
                 })}
