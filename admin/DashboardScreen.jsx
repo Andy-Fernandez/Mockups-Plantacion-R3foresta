@@ -235,9 +235,9 @@ function ActividadRow({ a }) {
   );
 }
 
-// Hero principal — Captura de CO₂ en tiempo real (toneladas, 8 decimales).
-// Tasa simulada en T/s; deriva eliminada usando deltas basados en performance.now().
-function CO2LiveHero({ baseToneladas, meta }) {
+// Hero principal unificado — CO₂ capturado (live, 8 decimales) + árboles plantados.
+// El ratio kg/árbol se recalcula con el valor vivo para reforzar la relación causal.
+function CO2LiveHero({ baseToneladas, meta, arbolesPlantados, arbolesMeta, arbolesAnioAnterior }) {
   const RATE_TON_PER_SECOND = 0.0000008;
   const [value, setValue] = React.useState(baseToneladas);
 
@@ -261,7 +261,11 @@ function CO2LiveHero({ baseToneladas, meta }) {
   const decPart = (value - intPart).toFixed(8).slice(2);
   const intStr  = intPart.toLocaleString('es-BO');
   const pct     = Math.min(100, Math.round((value / meta) * 100));
-  const kgPorHora = (RATE_TON_PER_SECOND * 3600 * 1000).toFixed(2).replace('.', ',');
+  const pctArb  = Math.min(100, Math.round((arbolesPlantados / arbolesMeta) * 100));
+  const kgPorHora   = (RATE_TON_PER_SECOND * 3600 * 1000).toFixed(2).replace('.', ',');
+  const kgPorArbol  = arbolesPlantados > 0 ? (value * 1000) / arbolesPlantados : 0;
+  const kgPorArbolStr = kgPorArbol.toFixed(2).replace('.', ',');
+  const deltaArb    = arbolesPlantados - arbolesAnioAnterior;
 
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-brand-800 to-brand-900 p-4 text-white shadow-soft ring-1 ring-emerald-400/15">
@@ -269,6 +273,7 @@ function CO2LiveHero({ baseToneladas, meta }) {
       <div className="pointer-events-none absolute -left-8 -bottom-12 h-32 w-32 rounded-full bg-emerald-400/10 blur-3xl" />
 
       <div className="relative">
+        {/* Bloque 1 — CO₂ en vivo */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2 py-0.5 ring-1 ring-emerald-300/25">
@@ -295,7 +300,7 @@ function CO2LiveHero({ baseToneladas, meta }) {
           <span className="ml-2 text-base font-extrabold text-emerald-200/80">T</span>
         </p>
         <p className="mt-1.5 text-[11px] font-bold text-emerald-100/80">
-          Toneladas de CO₂ · midiendo ~{kgPorHora} kg / h en tiempo real
+          midiendo ~{kgPorHora} kg / h en tiempo real
         </p>
 
         <div className="mt-3">
@@ -307,6 +312,38 @@ function CO2LiveHero({ baseToneladas, meta }) {
             <div
               className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-emerald-200 shadow-[0_0_10px_rgba(110,231,183,0.55)]"
               style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+
+        {/* Divisor sutil */}
+        <div className="my-3.5 h-px w-full bg-gradient-to-r from-transparent via-emerald-300/25 to-transparent" />
+
+        {/* Bloque 2 — Árboles plantados + ratio (la causa del CO₂) */}
+        <div className="flex items-stretch gap-3">
+          <div className="flex flex-1 items-center gap-2.5 min-w-0">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-400/15 ring-1 ring-emerald-300/25">
+              <Icon name="trees" className="h-5 w-5 text-emerald-200" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-emerald-200/80">Árboles plantados</p>
+              <p className="text-[20px] font-extrabold leading-none tabular-nums text-white">
+                {arbolesPlantados.toLocaleString('es-BO')}
+              </p>
+              <p className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-200/85">
+                <Icon name="trending" className="h-3 w-3" />
+                +{deltaArb.toLocaleString('es-BO')} vs año ant. · {pctArb}% meta
+              </p>
+            </div>
+          </div>
+          <div className="w-px self-stretch bg-emerald-300/15" />
+          <div className="flex flex-1 flex-col justify-center min-w-0">
+            <p className="text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-emerald-200/80">Captura / árbol</p>
+            <p className="text-[20px] font-extrabold leading-none tabular-nums text-white">
+              {kgPorArbolStr}<span className="ml-1 text-[13px] font-extrabold text-emerald-200/80">kg</span>
+            </p>
+            <p className="mt-1 text-[10.5px] font-bold text-emerald-200/80">
+              promedio acumulado
+            </p>
           </div>
         </div>
       </div>
@@ -321,9 +358,8 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
 
   const totalCampanas = Object.values(CAMPANAS_ESTADOS).reduce((a, b) => a + b, 0);
   const m = METRICAS_GLOBALES;
-  const pctArboles = Math.round((m.arbolesPlantados / m.arbolesMeta) * 100);
-  const pctCO2 = Math.round((m.co2Toneladas / m.co2Meta) * 100);
-  const pctHa  = Math.round((m.hectareas / m.hectareasMeta) * 100);
+  const pctHa = Math.round((m.hectareas / m.hectareasMeta) * 100);
+  const pctEsp = Math.round((m.especiesPlantadas / m.especiesMeta) * 100);
 
   return (
     <div data-screen-label="Dashboard admin" className="relative min-h-full bg-[#eef2ed] text-brand-700">
@@ -333,43 +369,16 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
         <div className="px-5 pt-4 space-y-4">
           <PeriodoTabs value={periodo} onChange={onPeriodo} />
 
-          {/* Hero principal — CO₂ capturado en tiempo real */}
-          <CO2LiveHero baseToneladas={m.co2Toneladas} meta={m.co2Meta} />
+          {/* Hero principal unificado — CO₂ capturado live + árboles plantados */}
+          <CO2LiveHero
+            baseToneladas={m.co2Toneladas}
+            meta={m.co2Meta}
+            arbolesPlantados={m.arbolesPlantados}
+            arbolesMeta={m.arbolesMeta}
+            arbolesAnioAnterior={m.arbolesAnioAnterior} />
 
-          {/* Hero metric — árboles plantados */}
-          <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-700 p-4 text-white shadow-soft">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/80">Árboles plantados</p>
-                <p className="mt-1 text-[44px] font-extrabold leading-none tracking-tight tabular-nums">
-                  {m.arbolesPlantados.toLocaleString('es-BO')}
-                </p>
-                <p className="mt-1 text-[11px] font-bold text-white/80">UNIDAD · acumulado del programa</p>
-              </div>
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
-                <Icon name="trees" className="h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="flex items-baseline justify-between text-[11px] font-extrabold">
-                <span className="text-white/80">Meta {m.arbolesMeta.toLocaleString('es-BO')}</span>
-                <span className="tabular-nums">{pctArboles}%</span>
-              </div>
-              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-white/15">
-                <div className="h-full rounded-full bg-emerald-300" style={{ width: `${pctArboles}%` }} />
-              </div>
-              <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-200">
-                <Icon name="trending" className="h-3.5 w-3.5" />
-                +{(m.arbolesPlantados - m.arbolesAnioAnterior).toLocaleString('es-BO')} vs año anterior
-              </p>
-            </div>
-          </div>
-
-          {/* Metrics grid */}
+          {/* Metrics grid — métricas operativas secundarias */}
           <div className="grid grid-cols-2 gap-2.5">
-            <MetricCard
-              label="CO₂ proyectado" value={m.co2Toneladas} unit="T"
-              pct={pctCO2} target={`${m.co2Meta} T`} icon="drop" tone="emerald" />
             <MetricCard
               label="Supervivencia" value={`${m.supervivenciaPct}`} unit="%"
               pct={m.supervivenciaPct} icon="shield" tone="brand"
@@ -377,6 +386,9 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
             <MetricCard
               label="Hectáreas" value={m.hectareas.toString().replace('.', ',')} unit="ha"
               pct={pctHa} target={`${m.hectareasMeta} ha`} icon="area" tone="amber" />
+            <MetricCard
+              label="Especies" value={m.especiesPlantadas} unit=""
+              pct={pctEsp} target={`${m.especiesMeta} sp.`} icon="leaf" tone="emerald" />
             <MetricCard
               label="Campañas activas" value={CAMPANAS_ESTADOS.ACTIVA} unit=""
               icon="planting" tone="brand"

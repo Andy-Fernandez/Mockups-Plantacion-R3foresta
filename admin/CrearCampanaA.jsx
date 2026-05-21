@@ -530,8 +530,8 @@ function CCStepDatos({
         <div className="grid grid-cols-3 gap-2">
           {[
             { k: 'ARBORIZACION',  label: 'Arborización',  hint: 'Plantar en zona urbana',     icon: 'building' },
-            { k: 'REFORESTACION', label: 'Reforestación', hint: 'Replantar en zona natural',    icon: 'trees' },
-            { k: 'FORESTACION',   label: 'Forestación',   hint: 'Crear cobertura forestal',   icon: 'leaf' },
+            { k: 'REFORESTACION', label: 'Reforestación', hint: 'Plantar en zona natural',    icon: 'trees' },
+            { k: 'FORESTACION',   label: 'Forestación',   hint: 'Plantar y crear cobertura forestal',   icon: 'leaf' },
           ].map(t => {
             const isOn = t.k === tipo;
             return (

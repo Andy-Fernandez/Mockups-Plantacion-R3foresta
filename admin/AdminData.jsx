@@ -30,6 +30,8 @@ const METRICAS_GLOBALES = {
   co2Meta:                400,
   hectareas:             18.6,
   hectareasMeta:           30,
+  especiesPlantadas:       12,
+  especiesMeta:            18,
 };
 
 // ── Distribución de campañas paraguas por estado ─────────────────────────
