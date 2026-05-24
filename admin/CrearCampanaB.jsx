@@ -192,7 +192,7 @@ function CCStepEquipo({ equipoIds, onTogglePersona }) {
 
 // ── STEP 5 · Resumen ─────────────────────────────────────────────────────
 
-function CCStepResumen({ tipo, nombre, organizacion, descripcion, fechaInicio, fechaFin, hectareas, meta, especies, equipoIds, lotesIds }) {
+function CCStepResumen({ tipo, nombre, organizacion, organizacionesSeleccionadas, descripcion, fechaInicio, fechaFin, hectareas, meta, especies, equipoIds, lotesIds }) {
   const equipo = PERSONAS.filter(p => equipoIds.includes(p.id));
   const lotes = LOTES_VIVERO.filter(l => lotesIds.includes(l.id));
   const lotesSaldo = lotes.reduce((a, l) => a + l.saldo, 0);
@@ -207,10 +207,16 @@ function CCStepResumen({ tipo, nombre, organizacion, descripcion, fechaInicio, f
           </span>
         </div>
         <h2 className="mt-2 text-[22px] font-extrabold leading-tight tracking-tight">{nombre}</h2>
-        <p className="mt-0.5 flex items-center gap-1.5 text-sm font-bold text-white/85">
-          <Icon name="briefcase" className="h-3.5 w-3.5" />
-          {organizacion}
-        </p>
+        {organizacionesSeleccionadas?.length > 0 ? (
+          <div className="mt-3">
+            <OrgInlineList items={organizacionesSeleccionadas} light compact />
+          </div>
+        ) : (
+          <p className="mt-0.5 flex items-center gap-1.5 text-sm font-bold text-white/85">
+            <Icon name="briefcase" className="h-3.5 w-3.5" />
+            {organizacion}
+          </p>
+        )}
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-2xl bg-white/10 p-2.5 ring-1 ring-white/15">
             <p className="text-[10px] font-bold text-white/70 uppercase tracking-wider">Meta</p>
@@ -243,8 +249,14 @@ function CCStepResumen({ tipo, nombre, organizacion, descripcion, fechaInicio, f
         <div className="flex items-start gap-3 px-3 py-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><Icon name="briefcase" className="h-4 w-4" /></div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Organización asociada</p>
-            <p className="text-sm font-extrabold text-brand-800 leading-tight">{organizacion}</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Organizaciones asociadas</p>
+            {organizacionesSeleccionadas?.length > 0 ? (
+              <div className="mt-1">
+                <OrgInlineList items={organizacionesSeleccionadas} compact />
+              </div>
+            ) : (
+              <p className="text-sm font-extrabold text-brand-800 leading-tight">{organizacion}</p>
+            )}
           </div>
         </div>
         <div className="flex items-start gap-3 px-3 py-2.5">

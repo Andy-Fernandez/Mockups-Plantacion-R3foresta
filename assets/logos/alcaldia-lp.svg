@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Alcaldia La Paz">
+  <rect width="96" height="96" rx="24" fill="#e0f2fe"/>
+  <rect x="20" y="22" width="56" height="52" rx="14" fill="#0f766e"/>
+  <path d="M30 42h36M30 52h36M30 62h20" stroke="#ecfeff" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="66" cy="34" r="8" fill="#67e8f9"/>
+</svg>

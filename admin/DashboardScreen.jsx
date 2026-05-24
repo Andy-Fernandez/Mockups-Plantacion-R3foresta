@@ -199,6 +199,7 @@ function CampanaRow({ c, onTap }) {
   const pct = c.avancePct || 0;
   const resumenHijas = subcampanasResumen(c);
   const tieneCoordPend = c.coordinadoresPendientes > 0;
+  const organizaciones = c.organizaciones || [];
   const progressTone = c.estado === 'EN_MANTENIMIENTO'
     ? 'blue'
     : c.estado === 'MONITOREO_HISTORICO'
@@ -231,6 +232,18 @@ function CampanaRow({ c, onTap }) {
         <Icon name="trees" className="inline h-3 w-3 mr-1 -mt-0.5 text-brand-500" />
         {resumenHijas}
       </p>
+
+      {organizaciones.length > 0 && (
+        <div className="mt-2 flex items-center justify-between gap-3 rounded-2xl bg-[#f8fbf7] px-3 py-2.5 ring-1 ring-brand-100">
+          <div className="min-w-0 flex-1">
+            <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Organizaciones asociadas</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-slate-500 truncate">
+              {organizaciones.map((org) => org.nombre).join(' · ')}
+            </p>
+          </div>
+          <OrgLogoPile items={organizaciones} max={4} size={8} />
+        </div>
+      )}
 
       <div className="mt-2">
         <div className="flex items-baseline justify-between">

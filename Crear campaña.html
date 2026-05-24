@@ -282,12 +282,17 @@ function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
   const [nombre, setNombre] = React.useState('Arborización La Paz 2026');
-  const [organizacion, setOrganizacion] = React.useState('R3foresta');
+  const [organizacionesCatalogo, setOrganizacionesCatalogo] = React.useState(() => ORGANIZACIONES.map((org) => ({ ...org })));
+  const [organizacionIds, setOrganizacionIds] = React.useState(['org-1', 'org-2']);
   const [descripcion, setDescripcion] = React.useState('Campaña marco para coordinar comunidades, planificación territorial y metas de plantación.');
   const [subcampanas, setSubcampanas] = React.useState([]);
   const [subcampanaQuery, setSubcampanaQuery] = React.useState('');
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [activeSubcampanaId, setActiveSubcampanaId] = React.useState(null);
+  const organizacionesSeleccionadas = organizacionesCatalogo.filter((org) => organizacionIds.includes(org.id));
+  const organizacion = organizacionesSeleccionadas.length
+    ? organizacionesSeleccionadas.map((org) => org.nombre).join(' · ')
+    : 'Sin organizaciones asociadas';
   const subcampanaActiva = subcampanas.find((s) => s.id === activeSubcampanaId) || null;
   const tieneZonaActiva = subcampanaActiva?.tieneZona ?? false;
   const hectareasActiva = subcampanaActiva?.hectareas ?? 4.2;
@@ -386,9 +391,12 @@ function App() {
   const onChangeBasic = (k, v) => {
     if (k === 'tipo') setTweak('tipo', v);
     if (k === 'nombre') setNombre(v);
-    if (k === 'organizacion') setOrganizacion(v);
     if (k === 'descripcion') setDescripcion(v);
   };
+  const onToggleOrganizacion = (id) =>
+    setOrganizacionIds((prev) => (
+      prev.includes(id) ? prev.filter((value) => value !== id) : [...prev, id]
+    ));
   const onTogglePct = (especie, pct) =>
     updateActiveSubcampana((s) => ({
       ...s,
@@ -449,10 +457,14 @@ function App() {
           tipo={t.tipo}
           nombre={nombre}
           organizacion={organizacion}
+          organizacionIds={organizacionIds}
+          organizacionesCatalogo={organizacionesCatalogo}
+          organizacionesSeleccionadas={organizacionesSeleccionadas}
           descripcion={descripcion}
           fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel}
           fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
           onChange={onChangeBasic}
+          onToggleOrganizacion={onToggleOrganizacion}
           onBack={() => { window.location.href = 'Dashboard admin.html'; }}
           onContinue={() => setTweak({ view: 'subcampanas' })}
         />
@@ -460,7 +472,7 @@ function App() {
         <GestionSubcampanasScreen
           tipo={t.tipo}
           nombre={nombre}
-          organizacion={organizacion}
+          organizacionesSeleccionadas={organizacionesSeleccionadas}
           fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel}
           fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
           fechaInicioISO={CAMPANA_GENERAL_RANGE.inicioISO}
@@ -479,7 +491,7 @@ function App() {
       ) : (
         <CrearCampanaScreen
           paso={t.paso} onPaso={(v) => setTweak('paso', v)}
-          tipo={t.tipo} nombre={nombre} organizacion={organizacion} descripcion={descripcion}
+          tipo={t.tipo} nombre={nombre} organizacion={organizacion} organizacionesSeleccionadas={organizacionesSeleccionadas} descripcion={descripcion}
           fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel} fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
           fechaInicioISO={CAMPANA_GENERAL_RANGE.inicioISO} fechaFinISO={CAMPANA_GENERAL_RANGE.finISO}
           subcampanaActiva={subcampanaActiva}

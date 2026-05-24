@@ -2,7 +2,7 @@
 
 function CrearCampanaScreen({
   paso, onPaso,
-  tipo, nombre, organizacion, descripcion, fechaInicio, fechaFin, fechaInicioISO, fechaFinISO,
+  tipo, nombre, organizacion, organizacionesSeleccionadas, descripcion, fechaInicio, fechaFin, fechaInicioISO, fechaFinISO,
   subcampanaActiva,
   onSubcampanaCoordinador, onSubcampanaFecha,
   tieneZona, hectareas, onTieneZona,
@@ -79,7 +79,7 @@ function CrearCampanaScreen({
           )}
           {paso === 6 && (
             <CCStepResumen
-              tipo={tipo} nombre={nombre} organizacion={organizacion} descripcion={descripcion}
+              tipo={tipo} nombre={nombre} organizacion={organizacion} organizacionesSeleccionadas={organizacionesSeleccionadas} descripcion={descripcion}
               fechaInicio={subcampanaActiva?.fechaInicio ? formatSubcampanaDate(subcampanaActiva.fechaInicio) : fechaInicio}
               fechaFin={subcampanaActiva?.fechaFin ? formatSubcampanaDate(subcampanaActiva.fechaFin) : fechaFin}
               hectareas={hectareas} meta={meta} especies={especies}

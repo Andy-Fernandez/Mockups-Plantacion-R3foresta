@@ -183,6 +183,73 @@ function AvatarPile({ items, max = 4, size = 7 }) {
   );
 }
 
+function orgInitials(org) {
+  if (org?.iniciales) return org.iniciales;
+  return (org?.nombre || '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
+
+function OrgLogo({ org, size = 8, light = false }) {
+  if (!org) return null;
+  const shell = light ? 'bg-white/15 ring-white/25' : 'bg-white ring-black/5';
+  return (
+    <span className={`flex h-${size} w-${size} items-center justify-center overflow-hidden rounded-2xl shadow-soft ring-1 ${shell}`}>
+      {org.logoUrl ? (
+        <img src={org.logoUrl} alt={org.nombre} className="h-full w-full object-cover" />
+      ) : (
+        <span className={`text-[10px] font-extrabold ${light ? 'text-white' : 'text-brand-700'}`}>
+          {orgInitials(org)}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function OrgLogoPile({ items, max = 4, size = 8, light = false }) {
+  const shown = items.slice(0, max);
+  const rest = items.length - shown.length;
+  return (
+    <div className="flex items-center">
+      {shown.map((org, i) => (
+        <span key={org.id || i} style={{ marginLeft: i === 0 ? 0 : -10 }}>
+          <OrgLogo org={org} size={size} light={light} />
+        </span>
+      ))}
+      {rest > 0 && (
+        <span
+          className={`flex h-${size} w-${size} items-center justify-center rounded-2xl text-[10px] font-extrabold ring-2 ring-white ${light ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-600'}`}
+          style={{ marginLeft: -10 }}>
+          +{rest}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function OrgInlineList({ items, light = false, compact = false }) {
+  if (!items?.length) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((org) => (
+        <span
+          key={org.id}
+          className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 ring-1 ${light ? 'bg-white/15 text-white ring-white/20' : 'bg-white text-brand-800 ring-black/5'}`}>
+          <OrgLogo org={org} size={compact ? 6 : 7} light={light} />
+          <span className={`text-[10.5px] font-extrabold ${light ? 'text-white' : 'text-brand-800'}`}>{org.nombre}</span>
+          <span className={`text-[9px] font-bold uppercase tracking-[0.14em] ${light ? 'text-white/75' : 'text-slate-400'}`}>
+            {ORGANIZACION_TIPO_LABEL?.[org.tipo] || org.tipo}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 window.StateBadge = StateBadge;
 window.FaseBadge  = FaseBadge;
 window.TipoBadge  = TipoBadge;
@@ -190,5 +257,8 @@ window.Progress   = Progress;
 window.StatesDonut = StatesDonut;
 window.MiniMap    = MiniMap;
 window.AvatarPile = AvatarPile;
+window.OrgLogo = OrgLogo;
+window.OrgLogoPile = OrgLogoPile;
+window.OrgInlineList = OrgInlineList;
 window.ESTADO_META = ESTADO_META;
 window.FASE_META   = FASE_META;

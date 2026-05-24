@@ -20,6 +20,12 @@ const CC_TITLES = {
 };
 
 const SUBCAMPANA_COORDINADORES = PERSONAS.filter((p) => p.rol.toLowerCase().includes('coordin'));
+const ORGANIZACION_FORM_TYPES = [
+  { key: 'GOBIERNO',  label: 'Alcaldía',   tone: 'bg-sky-50 text-sky-700 ring-sky-100' },
+  { key: 'ONG',       label: 'ONG',        tone: 'bg-emerald-50 text-emerald-700 ring-emerald-100' },
+  { key: 'EMPRESA',   label: 'Empresa',    tone: 'bg-amber-50 text-amber-800 ring-amber-100' },
+  { key: 'FUNDACION', label: 'Fundación',  tone: 'bg-violet-50 text-violet-700 ring-violet-100' },
+];
 
 function formatSubcampanaDate(value) {
   if (!value) return 'Pendiente';
@@ -48,6 +54,147 @@ function getSubcampanaIssues(subcampana, generalRange) {
 function formatSubcampanaRange(subcampana) {
   if (!subcampana?.fechaInicio || !subcampana?.fechaFin) return 'Pendientes';
   return `${formatSubcampanaDate(subcampana.fechaInicio)} → ${formatSubcampanaDate(subcampana.fechaFin)}`;
+}
+
+function OrganizacionCatalogSelector({
+  organizacionesCatalogo,
+  organizacionIds,
+  onToggleOrganizacion,
+}) {
+  const [creating, setCreating] = React.useState(false);
+  const [draftNombre, setDraftNombre] = React.useState('');
+  const [draftTipo, setDraftTipo] = React.useState('ONG');
+  const [draftPreview, setDraftPreview] = React.useState(null);
+  const organizacionesSeleccionadas = organizacionesCatalogo.filter((org) => organizacionIds.includes(org.id));
+  const canCreate = draftNombre.trim().length > 2;
+
+  const submit = () => {
+    if (!canCreate) return;
+    setDraftPreview({ nombre: draftNombre.trim(), tipo: draftTipo });
+    setDraftNombre('');
+    setDraftTipo('ONG');
+    setCreating(false);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Organizaciones asociadas</label>
+          <p className="mt-1 text-[11px] font-semibold text-slate-500">
+            Selector múltiple del catálogo. Puedes asociar alcaldías, ONGs, empresas o fundaciones.
+          </p>
+        </div>
+        {organizacionesSeleccionadas.length > 0 && <OrgLogoPile items={organizacionesSeleccionadas} max={4} size={8} />}
+      </div>
+
+      <div className="grid grid-cols-1 gap-2">
+        {organizacionesCatalogo.map((org) => {
+          const selected = organizacionIds.includes(org.id);
+          const tipoMeta = ORGANIZACION_FORM_TYPES.find((item) => item.key === org.tipo);
+          return (
+            <button
+              key={org.id}
+              type="button"
+              onClick={() => onToggleOrganizacion(org.id)}
+              className={`flex items-center gap-3 rounded-3xl px-3 py-3 text-left shadow-soft ring-1 transition ${selected ? 'bg-brand-600 text-white ring-brand-700' : 'bg-[#f8fbf7] text-brand-800 ring-brand-100 hover:ring-brand-300'}`}>
+              <OrgLogo org={org} size={10} light={selected} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-extrabold leading-tight">{org.nombre}</p>
+                <div className="mt-1 flex items-center gap-2 flex-wrap">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${selected ? 'bg-white/15 text-white ring-white/20' : tipoMeta?.tone || 'bg-white text-slate-600 ring-slate-200'}`}>
+                    {ORGANIZACION_TIPO_LABEL?.[org.tipo] || org.tipo}
+                  </span>
+                  <span className={`text-[10.5px] font-semibold ${selected ? 'text-white/80' : 'text-slate-500'}`}>
+                    Logo mock referencial
+                  </span>
+                </div>
+              </div>
+              <div className={`flex h-8 w-8 items-center justify-center rounded-full ${selected ? 'bg-white text-brand-700' : 'bg-white text-slate-400 ring-1 ring-slate-200'}`}>
+                <Icon name={selected ? 'check' : 'plus'} className="h-4 w-4" />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {organizacionesSeleccionadas.length === 0 ? (
+        <div className="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-3">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-amber-700">Validación blanda</p>
+          <p className="mt-1 text-[11px] font-bold text-amber-900">Recomendamos al menos 1 organización asociada.</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-[#f8fbf7] px-3 py-3 ring-1 ring-brand-100">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Selección actual</p>
+          <div className="mt-2">
+            <OrgInlineList items={organizacionesSeleccionadas} compact />
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-3xl border border-dashed border-brand-200 bg-white px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Crear nueva organización</p>
+            <p className="mt-1 text-[11px] font-semibold text-slate-500">Solo mock visual. Muestra cómo se vería el alta inline.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCreating((value) => !value)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1.5 text-[11px] font-extrabold text-white hover:bg-brand-700">
+            <Icon name={creating ? 'minus' : 'plus'} className="h-3.5 w-3.5" />
+            {creating ? 'Cerrar' : 'Agregar'}
+          </button>
+        </div>
+
+        {creating && (
+          <div className="mt-3 space-y-2">
+            <input
+              type="text"
+              value={draftNombre}
+              onChange={(e) => setDraftNombre(e.target.value)}
+              placeholder="Ej. Fundación Valle Verde"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-extrabold text-brand-800 placeholder:font-medium placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            />
+            <select
+              value={draftTipo}
+              onChange={(e) => setDraftTipo(e.target.value)}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-extrabold text-brand-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100">
+              {ORGANIZACION_FORM_TYPES.map((tipo) => (
+                <option key={tipo.key} value={tipo.key}>{tipo.label}</option>
+              ))}
+            </select>
+            <div className="flex items-center justify-between gap-2 rounded-2xl bg-[#f8fbf7] px-3 py-2.5 ring-1 ring-brand-100">
+              <p className="text-[10.5px] font-semibold text-slate-500">Se generará con `assets/logos/org-placeholder.svg`.</p>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={!canCreate}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-extrabold ${canCreate ? 'bg-brand-600 text-white hover:bg-brand-700' : 'bg-slate-200 text-slate-400'}`}>
+                <Icon name="check" className="h-3.5 w-3.5" />
+                Crear
+              </button>
+            </div>
+          </div>
+        )}
+
+        {draftPreview && (
+          <div className="mt-3 rounded-2xl bg-[#f8fbf7] px-3 py-3 ring-1 ring-brand-100">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Vista previa mock</p>
+            <div className="mt-2 flex items-center gap-3">
+              <OrgLogo org={{ nombre: draftPreview.nombre, logoUrl: 'assets/logos/org-placeholder.svg' }} size={9} />
+              <div className="min-w-0">
+                <p className="text-sm font-extrabold text-brand-800">{draftPreview.nombre}</p>
+                <p className="text-[10.5px] font-semibold text-slate-500">
+                  {ORGANIZACION_TIPO_LABEL?.[draftPreview.tipo] || draftPreview.tipo} · logo placeholder
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function CCHeader({ paso, onBack, subcampanaNombre }) {
@@ -204,14 +351,18 @@ function CrearCampanaGeneralScreen({
   tipo,
   nombre,
   organizacion,
+  organizacionIds,
+  organizacionesCatalogo,
+  organizacionesSeleccionadas,
   descripcion,
   fechaInicio,
   fechaFin,
   onChange,
+  onToggleOrganizacion,
   onContinue,
   onBack,
 }) {
-  const canContinue = tipo && nombre.trim().length > 2 && organizacion.trim().length > 2;
+  const canContinue = tipo && nombre.trim().length > 2;
 
   return (
     <div data-screen-label="Campaña general" className="relative min-h-full bg-[#eef2ed] text-brand-700">
@@ -223,10 +374,14 @@ function CrearCampanaGeneralScreen({
             tipo={tipo}
             nombre={nombre}
             organizacion={organizacion}
+            organizacionIds={organizacionIds}
+            organizacionesCatalogo={organizacionesCatalogo}
+            organizacionesSeleccionadas={organizacionesSeleccionadas}
             descripcion={descripcion}
             fechaInicio={fechaInicio}
             fechaFin={fechaFin}
             onChange={onChange}
+            onToggleOrganizacion={onToggleOrganizacion}
           />
         </div>
 
@@ -304,7 +459,7 @@ function SubcampanaConfiguredExampleCard({ comunidad, fechaInicio, fechaFin }) {
 function GestionSubcampanasScreen({
   tipo,
   nombre,
-  organizacion,
+  organizacionesSeleccionadas,
   fechaInicio,
   fechaFin,
   fechaInicioISO,
@@ -368,7 +523,13 @@ function GestionSubcampanasScreen({
                 {subcampanas.length} sub-campaña{subcampanas.length === 1 ? '' : 's'}
               </span>
             </div>
-            <p className="mt-2 text-sm font-extrabold text-brand-800">{organizacion}</p>
+            <div className="mt-2">
+              {organizacionesSeleccionadas?.length > 0 ? (
+                <OrgInlineList items={organizacionesSeleccionadas} compact />
+              ) : (
+                <p className="text-sm font-extrabold text-amber-700">Sin organizaciones asociadas</p>
+              )}
+            </div>
             <p className="mt-0.5 text-[11px] font-semibold text-slate-500">{fechaInicio} → {fechaFin}</p>
           </div>
 
@@ -519,10 +680,14 @@ function CCStepDatos({
   tipo,
   nombre,
   organizacion,
+  organizacionIds,
+  organizacionesCatalogo,
+  organizacionesSeleccionadas,
   descripcion,
   fechaInicio,
   fechaFin,
   onChange,
+  onToggleOrganizacion,
 }) {
   return (
     <div className="space-y-4">
@@ -556,14 +721,12 @@ function CCStepDatos({
             className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-extrabold text-brand-800 placeholder:font-medium placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100" />
         </div>
 
-        <div>
-          <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Organización asociada</label>
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
-            <Icon name="briefcase" className="h-4 w-4 text-slate-400" />
-            <input type="text" value={organizacion} onChange={(e) => onChange('organizacion', e.target.value)} placeholder="R3foresta"
-              className="w-full bg-transparent text-sm font-extrabold text-brand-800 placeholder:font-medium placeholder:text-slate-400 focus:outline-none" />
-          </div>
-        </div>
+        <OrganizacionCatalogSelector
+          organizacionesCatalogo={organizacionesCatalogo}
+          organizacionIds={organizacionIds}
+          organizacionesSeleccionadas={organizacionesSeleccionadas}
+          onToggleOrganizacion={onToggleOrganizacion}
+        />
 
         <div>
           <label className="block text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500 mb-1">Descripción</label>

@@ -51,11 +51,18 @@ const PERSONAS = [
 const personaById = (id) => PERSONAS.find(p => p.id === id) || null;
 
 // ── Organizaciones asociadas a campañas paraguas ─────────────────────────
+const ORGANIZACION_TIPO_LABEL = {
+  GOBIERNO: 'Alcaldía',
+  ONG: 'ONG',
+  EMPRESA: 'Empresa',
+  FUNDACION: 'Fundación',
+};
+
 const ORGANIZACIONES = [
-  { id: 'org-r3', nombre: 'R3foresta' },
-  { id: 'org-gamlp', nombre: 'Gobierno Municipal de La Paz' },
-  { id: 'org-hamp', nombre: 'Comunidad Hampaturi' },
-  { id: 'org-jv', nombre: 'Junta vecinal' },
+  { id: 'org-1', nombre: 'Alcaldía La Paz',   tipo: 'GOBIERNO',  logoUrl: 'assets/logos/alcaldia-lp.svg',     iniciales: 'LP' },
+  { id: 'org-2', nombre: 'ONG VerdesAndinos', tipo: 'ONG',       logoUrl: 'assets/logos/verdes-andinos.svg',  iniciales: 'VA' },
+  { id: 'org-3', nombre: 'TIPNIS Foundation', tipo: 'FUNDACION', logoUrl: 'assets/logos/tipnis.svg',          iniciales: 'TF' },
+  { id: 'org-4', nombre: 'Coca-Cola Bolivia', tipo: 'EMPRESA',   logoUrl: 'assets/logos/coca-cola.svg',       iniciales: 'CC' },
 ];
 
 const organizacionById = (id) => ORGANIZACIONES.find(o => o.id === id) || null;
@@ -89,7 +96,7 @@ const CAMPANAS_ADMIN = [
     id: 'CAM-2026-014',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Arborización La Paz 2026',
-    organizacionIds: ['org-r3', 'org-gamlp'],
+    organizacionIds: ['org-1', 'org-2'],
     descripcion: 'Campaña marco para coordinar comunidades, planificación territorial y metas de plantación urbana.',
     fechaInicioEstimadaISO: '2026-03-12',
     fechaFinEstimadaISO:    '2026-11-30',
@@ -98,7 +105,7 @@ const CAMPANAS_ADMIN = [
     id: 'CAM-2026-007',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Reforestación Hampaturi F1',
-    organizacionIds: ['org-r3', 'org-hamp'],
+    organizacionIds: ['org-3', 'org-4'],
     descripcion: 'Recuperación de bosque nativo altoandino con especies de Polylepis en cuenca alta.',
     fechaInicioEstimadaISO: '2026-01-08',
     fechaFinEstimadaISO:    '2026-12-20',
@@ -107,7 +114,7 @@ const CAMPANAS_ADMIN = [
     id: 'CAM-2025-022',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Achumani Norte',
-    organizacionIds: ['org-r3', 'org-jv'],
+    organizacionIds: ['org-2', 'org-4'],
     descripcion: 'Arborización de barrio en ladera, frente al parque urbano.',
     fechaInicioEstimadaISO: '2025-09-15',
     fechaFinEstimadaISO:    '2026-03-15',
@@ -116,7 +123,7 @@ const CAMPANAS_ADMIN = [
     id: 'CAM-2025-019',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Sopocachi Verde',
-    organizacionIds: ['org-r3', 'org-gamlp'],
+    organizacionIds: ['org-1', 'org-3'],
     descripcion: 'Plan de arborización en aceras de barrio céntrico.',
     fechaInicioEstimadaISO: '2025-03-01',
     fechaFinEstimadaISO:    '2025-12-20',
@@ -517,7 +524,8 @@ function selectCampanaAgregado(campanaId) {
   if (!c) return null;
   const subs = subcampanasDe(campanaId);
   const estadoDerivado = deriveCampanaEstado(subs);
-  const organizacionLabels = (c.organizacionIds || []).map(id => organizacionById(id)?.nombre).filter(Boolean);
+  const organizaciones = (c.organizacionIds || []).map(organizacionById).filter(Boolean);
+  const organizacionLabels = organizaciones.map((org) => org.nombre);
 
   const meta       = subs.reduce((a, s) => a + (s.meta || 0), 0);
   const plantados  = subs.reduce((a, s) => a + (s.plantados || 0), 0);
@@ -586,7 +594,8 @@ function selectCampanaAgregado(campanaId) {
     fechaFin: formatDateShort(c.fechaFinEstimadaISO),
     zona: zonaResumenDe(subs),
     organizacion: organizacionLabels.join(' · '),
-    organizaciones: organizacionLabels,
+    organizaciones,
+    organizacionesCount: organizaciones.length,
     estado: estadoDerivado.estado,
     faseMantenimiento: estadoDerivado.faseMantenimiento,
     mesesRestantesMantenimiento: estadoDerivado.mesesRestantesMantenimiento,
@@ -682,6 +691,7 @@ window.CAMPANAS_ADMIN = CAMPANAS_ADMIN;
 window.CAMPANAS_ADMIN_AGREGADAS = CAMPANAS_ADMIN_AGREGADAS;
 window.SUBCAMPANAS_ADMIN = SUBCAMPANAS_ADMIN;
 window.ORGANIZACIONES = ORGANIZACIONES;
+window.ORGANIZACION_TIPO_LABEL = ORGANIZACION_TIPO_LABEL;
 window.PERSONAS = PERSONAS;
 window.LOTES_VIVERO = LOTES_VIVERO;
 window.CATALOGO_ESPECIES = CATALOGO_ESPECIES;
@@ -695,3 +705,4 @@ window.subcampanasDe = subcampanasDe;
 window.selectCampanaAgregado = selectCampanaAgregado;
 window.breadcrumbActividad = breadcrumbActividad;
 window.personaById = personaById;
+window.organizacionById = organizacionById;

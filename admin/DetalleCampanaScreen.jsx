@@ -61,7 +61,11 @@ function DCHeader({ campana, onBack, onMore }) {
           Campaña paraguas · {campana.id}
         </p>
         <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">{campana.nombre}</h1>
-        <p className="mt-1 text-[12.5px] font-medium text-white/85">{campana.organizacion}</p>
+        {campana.organizaciones?.length > 0 && (
+          <div className="mt-3">
+            <OrgInlineList items={campana.organizaciones} light compact />
+          </div>
+        )}
 
         <p className="mt-2 flex items-center gap-3 text-[11.5px] font-bold text-white/80">
           <span className="inline-flex items-center gap-1.5">
