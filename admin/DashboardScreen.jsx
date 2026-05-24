@@ -1,7 +1,7 @@
 // Dashboard admin · R3foresta Plantación
 // Mobile-first (max-w-md). Sections:
 //   [Hero header] → [Periodo tabs] → [Hero metric árboles] → [Metrics grid]
-//   → [Estado campañas (donut + list)] → [Campañas activas] → [Actividad reciente]
+//   → [Estado campañas + mantenimiento] → [Campañas activas] → [Actividad reciente]
 
 function DashboardHeader({ admin, hayAlertas, onAlertas }) {
   return (
@@ -120,6 +120,51 @@ function EstadosBreakdown({ data, total, onTap }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <p className="text-[20px] font-extrabold leading-none tabular-nums text-brand-800">{total}</p>
             <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-500">campañas</p>
+          </div>
+        </div>
+        <ul className="flex-1 space-y-1.5 min-w-0">
+          {items.map(it => (
+            <li key={it.key} className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ background: it.color }} />
+              <span className="flex-1 text-[11px] font-extrabold uppercase tracking-[0.1em] text-brand-700 truncate">{it.label}</span>
+              <span className="text-sm font-extrabold tabular-nums text-brand-800">{it.value}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function MantenimientoBreakdown({ data, total }) {
+  const ordered = ['MANTENIMIENTO_ACTIVO', 'MONITOREO_HISTORICO'];
+  const colorByKey = {
+    MANTENIMIENTO_ACTIVO: '#3b82f6',
+    MONITOREO_HISTORICO:  '#94a3b8',
+  };
+  const labelByKey = {
+    MANTENIMIENTO_ACTIVO: 'MANT. ACTIVO',
+    MONITOREO_HISTORICO:  'HISTORICO',
+  };
+  const items = ordered.map(k => ({ key: k, label: labelByKey[k], value: data[k] || 0, color: colorByKey[k] })).filter(d => d.value > 0);
+  if (!items.length) return null;
+
+  return (
+    <section className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Fase de mantenimiento</p>
+          <p className="mt-1 text-[11px] font-medium text-slate-500">Solo campañas ya cerradas</p>
+        </div>
+        <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-slate-400">{total} total</p>
+      </div>
+
+      <div className="mt-3 flex items-center gap-4">
+        <div className="relative flex-shrink-0">
+          <StatesDonut data={items} size={92} stroke={14} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <p className="text-[20px] font-extrabold leading-none tabular-nums text-brand-800">{total}</p>
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-brand-500">cerradas</p>
           </div>
         </div>
         <ul className="flex-1 space-y-1.5 min-w-0">
@@ -364,6 +409,7 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
     : CAMPANAS_ADMIN.filter(c => c.estado === filtroEstado);
 
   const totalCampanas = Object.values(CAMPANAS_ESTADOS).reduce((a, b) => a + b, 0);
+  const totalMantenimiento = Object.values(CAMPANAS_FASE_MANTENIMIENTO).reduce((a, b) => a + b, 0);
   const m = METRICAS_GLOBALES;
   const pctHa = Math.round((m.hectareas / m.hectareasMeta) * 100);
   const pctEsp = Math.round((m.especiesPlantadas / m.especiesMeta) * 100);
@@ -402,7 +448,10 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
               footer={`${CAMPANAS_ESTADOS.COMPLETADA} completadas · ${CAMPANAS_ESTADOS.FINALIZADA_PARCIAL} parciales`} />
           </div>
 
-          <EstadosBreakdown data={CAMPANAS_ESTADOS} total={totalCampanas} />
+          <div className="grid gap-3">
+            <EstadosBreakdown data={CAMPANAS_ESTADOS} total={totalCampanas} />
+            <MantenimientoBreakdown data={CAMPANAS_FASE_MANTENIMIENTO} total={totalMantenimiento} />
+          </div>
 
           {/* Campañas list */}
           <section>

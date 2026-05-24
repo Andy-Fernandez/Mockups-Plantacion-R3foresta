@@ -75,7 +75,7 @@ tailwind.config = {
       <div class="opt-list" id="opt-campana">
         <button data-val="CAM-2026-014" class="on">Arborización La Paz 2026 <span class="tag">ARBORIZACION</span></button>
         <button data-val="CAM-2026-007">Reforestación Hampaturi <span class="tag">REFORESTACION</span></button>
-        <button data-val="CAM-2025-022">Achumani Norte <span class="tag">PAUSADA</span></button>
+        <button data-val="CAM-2025-022">Achumani Norte <span class="tag">PARCIAL</span></button>
         <button data-val="CAM-2025-019">Sopocachi Verde <span class="tag">COMPLETADA</span></button>
       </div>
     </div>
@@ -84,8 +84,9 @@ tailwind.config = {
       <h3>Estado (override)</h3>
       <div class="seg" id="seg-estado">
         <button data-val="ACTIVA" class="on">Activa</button>
-        <button data-val="PAUSADA">Pausada</button>
+        <button data-val="BORRADOR">Borrador</button>
         <button data-val="COMPLETADA">Completada</button>
+        <button data-val="FINALIZADA_PARCIAL">Parcial</button>
       </div>
     </div>
 
@@ -112,9 +113,9 @@ tailwind.config = {
       <b>Reglas del paraguas</b>
       <ul>
         <li>La <b>meta</b> y los <b>plantados</b> del paraguas se <b>derivan</b> sumando sus sub-campañas.</li>
-        <li>El <b>pausar / reanudar / asignar equipo / asignar lotes</b> vive en cada sub-campaña, no aquí.</li>
-        <li>Una campaña paraguas solo se <b>cierra</b> cuando todas sus sub-campañas están COMPLETADAS.</li>
-        <li><b>Cancelar</b> el paraguas cancela también todas sus sub-campañas (doble confirmación).</li>
+        <li>El <b>estado visible</b> del paraguas se lee desde sus sub-campañas; este mock usa solo <b>BORRADOR / ACTIVA / COMPLETADA / FINALIZADA_PARCIAL</b>.</li>
+        <li>La gestión operativa vive abajo: <b>equipo, lotes y cierre parcial</b> se resuelven en cada sub-campaña, no aquí.</li>
+        <li>La <b>fase de mantenimiento</b> aparece como badge paralelo cuando la campaña ya está cerrada.</li>
         <li>El mapa muestra <b>un polígono por sub-campaña</b>, coloreado por su estado.</li>
       </ul>
     </div>
@@ -149,7 +150,7 @@ tailwind.config = {
 
 <script type="application/json" id="speaker-notes">
 [
-  "Detalle de campaña, el corazón de la gestión para la coordinadora. Header con foto + estado: ACTIVA verde, PAUSADA ámbar con motivo visible, COMPLETADA neutra. Tabs: Resumen (KPIs, mini-mapa, equipo y lotes preview), Equipo (lista con contribución), Lotes (saldo total y por lote), Mapa (todos los pines con clusters y nuevo del día). El menú de acciones es un bottom-sheet con permisos: editar, asignar, pausar/reanudar según estado, completar, exportar, cancelar. Las acciones destructivas requieren motivo y generan evento de auditoría — nada se edita en silencio."
+  "Detalle de campaña paraguas. El header muestra el estado operativo corto y, si corresponde, la fase de mantenimiento como badge paralelo. La pantalla es de coordinación: resume KPIs, hijas, mapa y recursos agregados usando el set corto de estados del mock actual."
 ]
 </script>
 
@@ -252,7 +253,7 @@ function App() {
                      options={['CAM-2026-014','CAM-2026-007','CAM-2025-022','CAM-2025-019']}
                      onChange={(v) => setTweak('campanaId', v)} />
         <TweakRadio label="Estado" value={t.estadoOverride}
-                    options={['ACTIVA','PAUSADA','COMPLETADA']}
+                    options={['ACTIVA','BORRADOR','COMPLETADA','FINALIZADA_PARCIAL']}
                     onChange={(v) => setTweak('estadoOverride', v)} />
         <TweakSection label="Navegación" />
         <TweakRadio label="Pestaña" value={t.tab}
@@ -262,7 +263,7 @@ function App() {
         <TweakToggle label="Menú de acciones" value={t.moreOpen}
                      onChange={(v) => setTweak('moreOpen', v)} />
         <TweakSelect label="Modal" value={t.modal}
-                     options={['none','pausar','reanudar','completar','cancelar']}
+                     options={['none','completar','cancelar']}
                      onChange={(v) => setTweak('modal', v)} />
       </TweaksPanel>
     </React.Fragment>

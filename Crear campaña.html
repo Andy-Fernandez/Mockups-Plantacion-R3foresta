@@ -216,7 +216,7 @@ const GENERAL_NOTE = {
 
 const SUB_NOTE = {
   title: 'Sub-campañas',
-  body: 'Cada comunidad agregada crea una card propia en estado pendiente. Desde aquí entrarás al flujo de configuración detallada.'
+  body: 'Cada comunidad agregada crea una card propia en estado BORRADOR. Desde aquí entrarás al flujo de configuración detallada.'
 };
 
 const CAMPANA_GENERAL_RANGE = {
@@ -241,7 +241,7 @@ function createSubcampana(comunidad, index) {
     comunidadId: comunidad.id,
     comunidadNombre: comunidad.nombre,
     municipio: comunidad.municipio,
-    estado: 'PENDIENTE',
+    estado: 'BORRADOR',
     progresoPaso: 0,
     coordinadorId: '',
     coordinador: null,
@@ -263,11 +263,8 @@ function hasSubcampanaFechasValidas(subcampana) {
 }
 
 function deriveSubcampanaEstado(subcampana) {
-  const completa = subcampana.progresoPaso >= 6 && !!subcampana.coordinadorId && hasSubcampanaFechasValidas(subcampana);
   if (subcampana.estado === 'ACTIVA') return 'ACTIVA';
-  if (completa) return 'CONFIGURADA';
-  if (subcampana.progresoPaso > 0 || subcampana.coordinadorId || subcampana.fechaInicio || subcampana.fechaFin) return 'EN_CONFIGURACION';
-  return 'PENDIENTE';
+  return 'BORRADOR';
 }
 
 const pasoToProgress = (paso) => paso;

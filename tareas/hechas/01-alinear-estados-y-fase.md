@@ -1,6 +1,10 @@
 # 01 — Alinear estados de subcampaña y fase de mantenimiento
 
-> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](00-README.md).
+> **Estado de revisión:** Hecha en el mock visual.
+> **Resumen:** los mocks activos ya usan `BORRADOR`, `ACTIVA`, `COMPLETADA`, `FINALIZADA_PARCIAL` y separan `faseMantenimiento` como badge paralelo. También se limpió el vocabulario viejo en los wrappers HTML para que la UX mostrada sea consistente.
+> **Alcance:** solo UI/UX mock con datos hardcodeados; sin lógica real ni transiciones funcionales.
+
+> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](../00-README.md).
 
 **Prioridad:** Crítica (base para todo lo demás)
 **Bloque:** A — Modelo

@@ -90,8 +90,9 @@ tailwind.config = {
       <div class="seg" id="seg-filtro">
         <button data-val="TODAS" class="on">Todas</button>
         <button data-val="ACTIVA">Activa</button>
-        <button data-val="PAUSADA">Pausada</button>
+        <button data-val="BORRADOR">Borrador</button>
         <button data-val="COMPLETADA">Completada</button>
+        <button data-val="FINALIZADA_PARCIAL">Parcial</button>
       </div>
     </div>
 
@@ -124,7 +125,7 @@ tailwind.config = {
         <li>El <b>avance</b> de un paraguas es la suma de plantados / suma de metas de sus sub-campañas — no se edita aquí.</li>
         <li>La <b>actividad reciente</b> lleva breadcrumb <code>Campaña › Sub-campaña</code> para no perder el origen del evento.</li>
         <li>"Sin coordinador" en una row indica que <b>al menos una sub-campaña</b> no tiene responsable asignado.</li>
-        <li>El <b>donut de estados</b> sigue siendo del paraguas; los estados de sub-campaña se ven al entrar al detalle.</li>
+        <li>El <b>primer donut</b> resume estado operativo del paraguas; el segundo resume la <b>fase de mantenimiento</b> de las campañas cerradas.</li>
       </ul>
     </div>
   </aside>
@@ -150,7 +151,7 @@ tailwind.config = {
 
 <script type="application/json" id="speaker-notes">
 [
-  "Dashboard del admin/coordinador. Es mobile-first porque queremos un único stack para todos los roles, pero el contenido aquí es agregado de programa, no de operación. El header recibe a la coordinadora por nombre y muestra el badge de alertas (rojo discreto en la campana). Las métricas son derivadas de los eventos append-only, jamás editables aquí. El donut respeta el orden semántico ACTIVA → PAUSADA → COMPLETADA → BORRADOR → CANCELADA. La lista de campañas se filtra con chips y cada tarjeta es enlace al Detalle. El FAB de 'Nueva campaña' solo aparece a roles con permiso CREATE_CAMPANA."
+  "Dashboard del admin/coordinador. Es mobile-first porque queremos un único stack para todos los roles, pero el contenido aquí es agregado de programa, no de operación. El header recibe a la coordinadora por nombre y muestra el badge de alertas. Las métricas son derivadas de los eventos append-only, jamás editables aquí. El primer donut usa el set corto BORRADOR, ACTIVA, COMPLETADA y FINALIZADA_PARCIAL; el segundo separa la fase de mantenimiento. La lista de campañas se filtra con chips y cada tarjeta es enlace al detalle."
 ]
 </script>
 
@@ -219,7 +220,7 @@ function App() {
                     onChange={(v) => setTweak('periodo', v)} />
         <TweakSection label="Campañas" />
         <TweakSelect label="Filtro" value={t.filtro}
-                     options={['TODAS','ACTIVA','PAUSADA','COMPLETADA','BORRADOR']}
+                     options={['TODAS','ACTIVA','BORRADOR','COMPLETADA','FINALIZADA_PARCIAL']}
                      onChange={(v) => setTweak('filtro', v)} />
         <TweakToggle label="Alertas pendientes" value={t.alertas}
                      onChange={(v) => setTweak('alertas', v)} />
