@@ -1,8 +1,8 @@
 // Asignar equipo y lotes — modal-style fullscreen screen.
-// Header con campaña destino · tabs Equipo / Lotes · listas seleccionables
+// Header con sub-campaña destino · tabs Equipo / Lotes · listas seleccionables
 // · footer pegajoso con seleccionados y CTA de confirmar.
 
-function AsignarHeader({ campana, onBack }) {
+function AsignarHeader({ sub, campana, onBack }) {
   return (
     <header className="bg-white shadow-soft">
       <div className="px-5 pt-5 pb-3">
@@ -16,10 +16,10 @@ function AsignarHeader({ campana, onBack }) {
           </span>
         </div>
         <p className="mt-3 text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-brand-500">Asignar a</p>
-        <h1 className="mt-0.5 text-[22px] font-extrabold leading-tight tracking-tight text-brand-800">{campana.nombre}</h1>
+        <h1 className="mt-0.5 text-[22px] font-extrabold leading-tight tracking-tight text-brand-800">{sub.nombre}</h1>
         <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
           <Icon name="pin" className="h-3 w-3 text-slate-400" />
-          {campana.zona} · {campana.id}
+          {sub.cobertura?.label || sub.municipio} · {campana.nombre}
         </p>
       </div>
     </header>
@@ -172,16 +172,16 @@ function EmptyState({ tipo, query }) {
 // ── Asignar Screen ───────────────────────────────────────────────────────
 
 function AsignarScreen({
-  campanaId, tab, onTab,
+  subcampanaId, tab, onTab,
   equipoSeleccionados, lotesSeleccionados,
   onTogglePersona, onToggleLote,
   query, onQuery,
   filtro, onFiltro,
   confirmando, onConfirmar,
 }) {
-  const campana = CAMPANAS_ADMIN.find(c => c.id === campanaId) || CAMPANAS_ADMIN[0];
-  const yaAsignados = ['op-1', 'op-2', 'co-1']; // mock — quienes ya están en el equipo
-  const lotesYaAsignados = ['VIV-000123-REC-000045']; // mock — quienes ya están asignados a la campaña
+  const sub = SUBCAMPANAS_ADMIN.find(s => s.id === subcampanaId) || SUBCAMPANAS_ADMIN[0];
+  const campana = selectCampanaAgregado(sub.campanaId) || CAMPANAS_ADMIN_AGREGADAS[0];
+  const yaAsignados = sub.equipoIds || [];
 
   const tabCounts = { equipo: equipoSeleccionados.length, lotes: lotesSeleccionados.length };
   const totalSeleccionados = tabCounts.equipo + tabCounts.lotes;
@@ -198,7 +198,7 @@ function AsignarScreen({
 
   const lotesFiltrados = LOTES_VIVERO.filter(l => {
     if (filtro === 'campana_match') {
-      const especies = campana.mixPlanificado.map(m => m.especie);
+      const especies = (sub.mixPlanificado || []).map(m => m.especie);
       if (!especies.includes(l.especie)) return false;
     }
     if (filtro === 'sol' && l.subetapa !== 'SOL_DIRECTO') return false;
@@ -209,7 +209,7 @@ function AsignarScreen({
   return (
     <div data-screen-label="Asignar equipo y lotes" className="relative min-h-full bg-[#eef2ed] text-brand-700">
       <div className="mx-auto flex min-h-full w-full max-w-md flex-col">
-        <AsignarHeader campana={campana} onBack={() => { window.location.href = 'Detalle de campaña.html'; }} />
+        <AsignarHeader sub={sub} campana={campana} onBack={() => { window.location.href = `Detalle sub-campaña.html?subcampanaId=${encodeURIComponent(sub.id)}`; }} />
         <AsignarTabs tab={tab} onTab={onTab} counts={tabCounts} />
 
         <div className="px-5 pt-3 pb-32 space-y-3 flex-1">
@@ -228,7 +228,7 @@ function AsignarScreen({
             <FilterChips value={filtro} onChange={onFiltro}
               options={[
                 { k: 'todos',          label: 'Todos los lotes' },
-                { k: 'campana_match',  label: `Especies de ${campana.nombre.split(' ')[0]}` },
+                { k: 'campana_match',  label: `Especies de ${sub.nombre.split(' ')[0]}` },
                 { k: 'sol',            label: 'Listos (sol directo)' },
               ]} />
           )}
@@ -252,8 +252,8 @@ function AsignarScreen({
             ) : (
               <ul className="space-y-2">
                 {lotesFiltrados.map(l => {
-                  const especiesCampana = campana.mixPlanificado.map(m => m.especie);
-                  const recomendado = especiesCampana.includes(l.especie) && l.subetapa === 'SOL_DIRECTO';
+                  const especiesSub = (sub.mixPlanificado || []).map(m => m.especie);
+                  const recomendado = especiesSub.includes(l.especie) && l.subetapa === 'SOL_DIRECTO';
                   return (
                     <LoteRow key={l.id} l={l}
                       isOn={lotesSeleccionados.includes(l.id)}
@@ -318,9 +318,9 @@ function AsignarScreen({
                 <p className="mt-2 text-sm font-semibold text-white/85 max-w-[280px] leading-relaxed">
                   <span className="font-extrabold text-white">{equipoSeleccionados.length}</span> personas y
                   <span className="font-extrabold text-white"> {lotesSeleccionados.length}</span> lotes asignados a
-                  <span className="font-extrabold text-white"> {campana.nombre}</span>.
+                  <span className="font-extrabold text-white"> {sub.nombre}</span>.
                 </p>
-                <button onClick={() => { window.location.href = 'Detalle de campaña.html'; }}
+                <button onClick={() => { window.location.href = `Detalle sub-campaña.html?subcampanaId=${encodeURIComponent(sub.id)}`; }}
                   className="mt-6 flex w-full max-w-[280px] items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-brand-700 shadow-soft active:scale-[0.99] hover:bg-brand-50">
                   Volver al detalle
                 </button>

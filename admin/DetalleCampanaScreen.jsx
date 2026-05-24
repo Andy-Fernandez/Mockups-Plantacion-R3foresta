@@ -37,7 +37,6 @@ function TipoSubBadge({ tipo }) {
 // ── Header hero ─────────────────────────────────────────────────────────
 
 function DCHeader({ campana, onBack, onMore }) {
-  const isCerrada = campana.estado === 'FINALIZADA_PARCIAL' || campana.estado === 'COMPLETADA';
   return (
     <header className="relative overflow-hidden rounded-b-3xl bg-brand-700 text-white shadow-soft">
       <img src="assets/plantacion.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
@@ -48,7 +47,6 @@ function DCHeader({ campana, onBack, onMore }) {
             <Icon name="arrow-left" className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            <TipoBadge tipo={campana.tipo} />
             <StateBadge estado={campana.estado} light compact />
             {campana.faseMantenimiento && (
               <FaseBadge fase={campana.faseMantenimiento} mesesRestantes={campana.mesesRestantesMantenimiento} light compact />
@@ -110,19 +108,19 @@ function DCHeader({ campana, onBack, onMore }) {
           })}
         </div>
 
-        {campana.estado === 'FINALIZADA_PARCIAL' && (
-          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-amber-400/15 px-3 py-2.5 ring-1 ring-amber-300/40">
-            <Icon name="flag" className="h-4 w-4 mt-0.5 text-amber-200 flex-shrink-0" />
-            <p className="text-[11.5px] font-bold text-amber-100 leading-snug">
-              <b className="text-white">Cerrada parcialmente:</b> {campana.motivoCierreParcial || 'cerrada antes de alcanzar la meta'}.
+        {campana.estado === 'EN_MANTENIMIENTO' && (
+          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-blue-400/15 px-3 py-2.5 ring-1 ring-blue-300/40">
+            <Icon name="shield" className="h-4 w-4 mt-0.5 text-blue-200 flex-shrink-0" />
+            <p className="text-[11.5px] font-bold text-blue-100 leading-snug">
+              <b className="text-white">Campaña en mantenimiento.</b> {campana.cierreTipoPrincipal === 'FINALIZADA_PARCIAL' ? 'Alguna hija cerró parcialmente.' : 'Las hijas ya cerraron su fase operativa.'}{campana.mesesRestantesMantenimiento != null ? ` · ${campana.mesesRestantesMantenimiento} meses restantes en la ventana activa.` : ''}
             </p>
           </div>
         )}
-        {campana.estado === 'COMPLETADA' && (
-          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-blue-400/15 px-3 py-2.5 ring-1 ring-blue-300/40">
-            <Icon name="flag" className="h-4 w-4 mt-0.5 text-blue-200 flex-shrink-0" />
-            <p className="text-[11.5px] font-bold text-blue-100 leading-snug">
-              <b className="text-white">Meta alcanzada.</b> {campana.faseMantenimiento === 'MANTENIMIENTO_ACTIVO' && campana.mesesRestantesMantenimiento != null ? `En mantenimiento activo · ${campana.mesesRestantesMantenimiento} meses restantes.` : ''}
+        {campana.estado === 'MONITOREO_HISTORICO' && (
+          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-slate-400/15 px-3 py-2.5 ring-1 ring-slate-300/40">
+            <Icon name="archive" className="h-4 w-4 mt-0.5 text-slate-200 flex-shrink-0" />
+            <p className="text-[11.5px] font-bold text-slate-100 leading-snug">
+              <b className="text-white">Monitoreo histórico.</b> Todas las sub-campañas ya salieron del mantenimiento activo.
             </p>
           </div>
         )}
@@ -817,7 +815,7 @@ function DCConfirmModal({ accion, onClose, onConfirm }) {
 
 function DetalleCampanaScreen({ campanaId, estadoOverride, tab, onTab, moreOpen, onMoreOpen, accion, onAccion }) {
   // Agregamos en cada render para reflejar estadoOverride al vuelo.
-  const baseAgg = selectCampanaAgregado(campanaId) || selectCampanaAgregado(CAMPANAS_ADMIN[0].id);
+  const baseAgg = selectCampanaAgregado(campanaId) || CAMPANAS_ADMIN_AGREGADAS[0];
   const campana = { ...baseAgg, estado: estadoOverride || baseAgg.estado };
 
   // Override visual: si el host pide COMPLETADA, mostrar como cerrada.

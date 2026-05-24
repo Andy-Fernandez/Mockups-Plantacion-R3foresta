@@ -46,9 +46,9 @@ Cada archivo es **una tarea autocontenida** con: estado actual, qué dice la gu�
 
 ### Hechas
 - [01 — Alinear estados y fase de mantenimiento](hechas/01-alinear-estados-y-fase.md)
+- [02 — Jerarquía Campaña vs Subcampaña según guía](hechas/02-jerarquia-campana-subcampana.md)
 
 ### Bloque A — Alinear modelo de datos (base para todo lo demás)
-- [02 — Jerarquía Campaña vs Subcampaña según guía](02-jerarquia-campana-subcampana.md)
 - [03 — Organizaciones asociadas](03-organizaciones-asociadas.md)
 - [04 — Tipos de subcampaña correctos](04-tipos-subcampana.md)
 - [05 — Asignaciones con propósito](05-asignaciones-con-proposito.md)

@@ -1,13 +1,15 @@
 // Shared UI atoms for admin screens. Header w/ image, state chips,
 // progress rings/bars, mini-map, etc. All mobile-first.
 
-// Estados operativos de sub-campaña (4 únicos según guía Módulo 3).
+// Estados operativos de sub-campaña + estados derivados de campaña paraguas.
 // `short` es para badges compactos (donut, listas densas); `label` para detalles.
 const ESTADO_META = {
   BORRADOR:           { label: 'BORRADOR',             short: 'BORRADOR',   tone: 'bg-slate-100 text-slate-700 ring-slate-200',     icon: 'pencil',       dot: 'bg-slate-400' },
   ACTIVA:             { label: 'ACTIVA',               short: 'ACTIVA',     tone: 'bg-emerald-50 text-emerald-800 ring-emerald-100', icon: 'check-circle', dot: 'bg-emerald-500' },
   COMPLETADA:         { label: 'META ALCANZADA',       short: 'COMPLETADA', tone: 'bg-blue-50 text-blue-800 ring-blue-100',          icon: 'flag',         dot: 'bg-blue-500' },
   FINALIZADA_PARCIAL: { label: 'CERRADA PARCIALMENTE', short: 'PARCIAL',    tone: 'bg-amber-50 text-amber-800 ring-amber-100',       icon: 'flag',         dot: 'bg-amber-500' },
+  EN_MANTENIMIENTO:   { label: 'EN MANTENIMIENTO',     short: 'MANTEN.',    tone: 'bg-cyan-50 text-cyan-800 ring-cyan-100',          icon: 'shield',       dot: 'bg-cyan-500' },
+  MONITOREO_HISTORICO:{ label: 'MONITOREO HISTÓRICO',  short: 'HISTÓRICO',  tone: 'bg-slate-100 text-slate-700 ring-slate-200',      icon: 'archive',      dot: 'bg-slate-400' },
 };
 
 // Fase de mantenimiento (paralela al estado, solo en COMPLETADA / FINALIZADA_PARCIAL).

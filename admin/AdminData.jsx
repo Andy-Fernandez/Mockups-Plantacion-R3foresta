@@ -34,21 +34,6 @@ const METRICAS_GLOBALES = {
   especiesMeta:            18,
 };
 
-// ── Distribución de sub-campañas por estado (mock para donut/breakdown) ──
-// 4 estados únicos según guía Módulo 3: BORRADOR / ACTIVA / COMPLETADA / FINALIZADA_PARCIAL.
-const CAMPANAS_ESTADOS = {
-  BORRADOR:           3,
-  ACTIVA:             4,
-  COMPLETADA:         6,
-  FINALIZADA_PARCIAL: 2,
-};
-
-// Distribución por fase de mantenimiento (solo aplica a COMPLETADA / FINALIZADA_PARCIAL).
-const CAMPANAS_FASE_MANTENIMIENTO = {
-  MANTENIMIENTO_ACTIVO: 5,
-  MONITOREO_HISTORICO:  3,
-};
-
 // ── Personas disponibles ─────────────────────────────────────────────────
 const PERSONAS = [
   { id: 'op-1', nombre: 'Juan Mamani',    rol: 'Operario',     iniciales: 'JM', plantadosTotal: 1240 },
@@ -64,6 +49,16 @@ const PERSONAS = [
 ];
 
 const personaById = (id) => PERSONAS.find(p => p.id === id) || null;
+
+// ── Organizaciones asociadas a campañas paraguas ─────────────────────────
+const ORGANIZACIONES = [
+  { id: 'org-r3', nombre: 'R3foresta' },
+  { id: 'org-gamlp', nombre: 'Gobierno Municipal de La Paz' },
+  { id: 'org-hamp', nombre: 'Comunidad Hampaturi' },
+  { id: 'org-jv', nombre: 'Junta vecinal' },
+];
+
+const organizacionById = (id) => ORGANIZACIONES.find(o => o.id === id) || null;
 
 // ── Lotes de vivero ──────────────────────────────────────────────────────
 const LOTES_VIVERO = [
@@ -87,69 +82,44 @@ const CATALOGO_ESPECIES = [
 ];
 
 // ── Campañas paraguas (metadatos de coordinación) ────────────────────────
-// Sin datos operativos. Los agregados (meta, plantados, equipo, mix…) se
-// computan desde sub-campañas y se cachean al final de este archivo.
+// Solo contienen información estratégica. Todo lo operativo vive en las
+// sub-campañas y se deriva al vuelo en `selectCampanaAgregado()`.
 const CAMPANAS_ADMIN = [
   {
     id: 'CAM-2026-014',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Arborización La Paz 2026',
-    organizacion: 'R3foresta',
+    organizacionIds: ['org-r3', 'org-gamlp'],
     descripcion: 'Campaña marco para coordinar comunidades, planificación territorial y metas de plantación urbana.',
-    tipo: 'ARBORIZACION',
-    estado: 'ACTIVA',
-    zona: 'San Miguel · La Paz',
-    fechaInicio: '12 mar 2026',
-    fechaFin:    '30 nov 2026',
-    fechaInicioISO: '2026-03-12',
-    fechaFinISO:    '2026-11-30',
+    fechaInicioEstimadaISO: '2026-03-12',
+    fechaFinEstimadaISO:    '2026-11-30',
   },
   {
     id: 'CAM-2026-007',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Reforestación Hampaturi F1',
-    organizacion: 'R3foresta',
+    organizacionIds: ['org-r3', 'org-hamp'],
     descripcion: 'Recuperación de bosque nativo altoandino con especies de Polylepis en cuenca alta.',
-    tipo: 'REFORESTACION',
-    estado: 'ACTIVA',
-    zona: 'Comunidad Hampaturi',
-    fechaInicio: '08 ene 2026',
-    fechaFin:    '20 dic 2026',
-    fechaInicioISO: '2026-01-08',
-    fechaFinISO:    '2026-12-20',
+    fechaInicioEstimadaISO: '2026-01-08',
+    fechaFinEstimadaISO:    '2026-12-20',
   },
   {
     id: 'CAM-2025-022',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Achumani Norte',
-    organizacion: 'R3foresta',
+    organizacionIds: ['org-r3', 'org-jv'],
     descripcion: 'Arborización de barrio en ladera, frente al parque urbano.',
-    tipo: 'ARBORIZACION',
-    estado: 'FINALIZADA_PARCIAL',
-    zona: 'Achumani · La Paz',
-    fechaInicio: '15 sep 2025',
-    fechaFin:    '15 mar 2026',
-    fechaInicioISO: '2025-09-15',
-    fechaFinISO:    '2026-03-15',
-    faseMantenimiento: 'MANTENIMIENTO_ACTIVO',
-    mesesRestantesMantenimiento: 26,
-    motivoCierreParcial: 'Lluvias intensas · cierre anticipado',
+    fechaInicioEstimadaISO: '2025-09-15',
+    fechaFinEstimadaISO:    '2026-03-15',
   },
   {
     id: 'CAM-2025-019',
     programaId: 'PRG-PLANTACION-2026',
     nombre: 'Sopocachi Verde',
-    organizacion: 'R3foresta',
+    organizacionIds: ['org-r3', 'org-gamlp'],
     descripcion: 'Plan de arborización en aceras de barrio céntrico.',
-    tipo: 'ARBORIZACION',
-    estado: 'COMPLETADA',
-    zona: 'Sopocachi · La Paz',
-    fechaInicio: '01 mar 2025',
-    fechaFin:    '20 dic 2025',
-    fechaInicioISO: '2025-03-01',
-    fechaFinISO:    '2025-12-20',
-    faseMantenimiento: 'MANTENIMIENTO_ACTIVO',
-    mesesRestantesMantenimiento: 31,
+    fechaInicioEstimadaISO: '2025-03-01',
+    fechaFinEstimadaISO:    '2025-12-20',
   },
 ];
 
@@ -410,8 +380,8 @@ const SUBCAMPANAS_ADMIN = [
     comunidad: 'Sopocachi',
     municipio: 'La Paz · Centro',
     estado: 'COMPLETADA',
-    faseMantenimiento: 'MANTENIMIENTO_ACTIVO',
-    mesesRestantesMantenimiento: 31,
+    faseMantenimiento: 'MONITOREO_HISTORICO',
+    mesesRestantesMantenimiento: null,
     coordinadorId: 'co-1',
     coordinador: 'María López',
     coordinadorIniciales: 'ML',
@@ -494,12 +464,60 @@ function subcampanasDe(campanaId) {
   return SUBCAMPANAS_ADMIN.filter(s => s.campanaId === campanaId);
 }
 
+const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+function formatDateShort(iso) {
+  if (!iso) return 'Sin fecha';
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return `${d.toString().padStart(2, '0')} ${MESES_CORTOS[m - 1]} ${y}`;
+}
+
+function zonaResumenDe(subs) {
+  const zonas = Array.from(new Set(subs.map(s => s.comunidad || s.municipio).filter(Boolean)));
+  if (zonas.length === 0) return 'Sin zona';
+  if (zonas.length === 1) return zonas[0];
+  if (zonas.length === 2) return `${zonas[0]} · ${zonas[1]}`;
+  return `${zonas[0]} +${zonas.length - 1} zonas`;
+}
+
+function deriveCampanaEstado(subs) {
+  if (!subs.length) {
+    return { estado: 'BORRADOR', faseMantenimiento: null, mesesRestantesMantenimiento: null, cierreTipoPrincipal: null };
+  }
+
+  const anyActiva = subs.some(s => s.estado === 'ACTIVA');
+  const allClosed = subs.every(s => s.estado === 'COMPLETADA' || s.estado === 'FINALIZADA_PARCIAL');
+  const allHistorico = allClosed && subs.every(s => s.faseMantenimiento === 'MONITOREO_HISTORICO');
+  const anyMantenimiento = allClosed && subs.some(s => s.faseMantenimiento === 'MANTENIMIENTO_ACTIVO');
+  const cierreTipoPrincipal = subs.some(s => s.estado === 'FINALIZADA_PARCIAL') ? 'FINALIZADA_PARCIAL' : 'COMPLETADA';
+  const mesesRestantesMantenimiento = anyMantenimiento
+    ? Math.max(...subs.map(s => s.faseMantenimiento === 'MANTENIMIENTO_ACTIVO' ? (s.mesesRestantesMantenimiento || 0) : 0))
+    : null;
+
+  if (anyActiva) {
+    return { estado: 'ACTIVA', faseMantenimiento: null, mesesRestantesMantenimiento: null, cierreTipoPrincipal };
+  }
+  if (allHistorico) {
+    return { estado: 'MONITOREO_HISTORICO', faseMantenimiento: 'MONITOREO_HISTORICO', mesesRestantesMantenimiento: null, cierreTipoPrincipal };
+  }
+  if (anyMantenimiento) {
+    return { estado: 'EN_MANTENIMIENTO', faseMantenimiento: 'MANTENIMIENTO_ACTIVO', mesesRestantesMantenimiento, cierreTipoPrincipal };
+  }
+  if (allClosed) {
+    return { estado: cierreTipoPrincipal, faseMantenimiento: null, mesesRestantesMantenimiento: null, cierreTipoPrincipal };
+  }
+  return { estado: 'BORRADOR', faseMantenimiento: null, mesesRestantesMantenimiento: null, cierreTipoPrincipal };
+}
+
 // Agrega los valores operativos de las hijas en un objeto plano. El paraguas
 // NO almacena estos valores; los recibe de aquí.
 function selectCampanaAgregado(campanaId) {
   const c = CAMPANAS_ADMIN.find(x => x.id === campanaId);
   if (!c) return null;
   const subs = subcampanasDe(campanaId);
+  const estadoDerivado = deriveCampanaEstado(subs);
+  const organizacionLabels = (c.organizacionIds || []).map(id => organizacionById(id)?.nombre).filter(Boolean);
 
   const meta       = subs.reduce((a, s) => a + (s.meta || 0), 0);
   const plantados  = subs.reduce((a, s) => a + (s.plantados || 0), 0);
@@ -523,6 +541,9 @@ function selectCampanaAgregado(campanaId) {
 
   const coordinadoresPendientes = subs.filter(s => !s.coordinadorId).length;
   const comunidadesCubiertas = new Set(subs.map(s => s.comunidad).filter(Boolean)).size;
+  const operariosCount = Array.from(new Set(
+    subs.flatMap(s => (s.equipoIds || []).filter(id => personaById(id)?.rol === 'Operario'))
+  )).length;
 
   // Último evento del paraguas: el más reciente entre las hijas (heurística:
   // hijas ACTIVA primero, ordenadas por su ultimoEvento textual).
@@ -553,9 +574,7 @@ function selectCampanaAgregado(campanaId) {
     pctObjetivo: meta ? Math.round((m.plantadosObjetivo / meta) * 100) : 0,
   })).sort((a, b) => b.plantadosObjetivo - a.plantadosObjetivo);
 
-  // "Coordinadora visible": para mantener compatibilidad con AsignarScreen,
-  // exponemos la coordinadora más recurrente entre las hijas. UI nueva no
-  // debería depender de este campo.
+  // Coordinador más frecuente entre hijas. Se usa solo como resumen visual.
   const coordCount = {};
   subs.forEach(s => { if (s.coordinadorId) coordCount[s.coordinadorId] = (coordCount[s.coordinadorId] || 0) + 1; });
   const coordTopId = Object.keys(coordCount).sort((a, b) => coordCount[b] - coordCount[a])[0] || null;
@@ -563,6 +582,15 @@ function selectCampanaAgregado(campanaId) {
 
   return {
     ...c,
+    fechaInicio: formatDateShort(c.fechaInicioEstimadaISO),
+    fechaFin: formatDateShort(c.fechaFinEstimadaISO),
+    zona: zonaResumenDe(subs),
+    organizacion: organizacionLabels.join(' · '),
+    organizaciones: organizacionLabels,
+    estado: estadoDerivado.estado,
+    faseMantenimiento: estadoDerivado.faseMantenimiento,
+    mesesRestantesMantenimiento: estadoDerivado.mesesRestantesMantenimiento,
+    cierreTipoPrincipal: estadoDerivado.cierreTipoPrincipal,
     // Derivados — agregados
     meta,
     plantados,
@@ -574,6 +602,7 @@ function selectCampanaAgregado(campanaId) {
     ultimoEvento,
     equipoTotal,           // string[] de personaIds
     equipoCount: equipoTotal.length,
+    operariosCount,
     lotesComprometidos,    // string[] de loteIds
     lotesCount: lotesComprometidos.length,
     distribucionEstados,
@@ -586,20 +615,26 @@ function selectCampanaAgregado(campanaId) {
       maxPct: m.pctObjetivo || 0,
       plantados: m.plantados,
     })),
-    coordinadora: coordTop?.nombre || null,
-    coordinadoraIniciales: coordTop?.iniciales || null,
+    coordinadorResumen: coordTop?.nombre || null,
+    coordinadorResumenIniciales: coordTop?.iniciales || null,
     subcampanas: subs,
     subcampanasCount: subs.length,
   };
 }
 
-// Mutar cada CAMPANAS_ADMIN con los agregados, para que screens legacy
-// (AsignarScreen, CrearCampanaScreen) que esperan campos planos sigan
-// funcionando sin cambios.
-CAMPANAS_ADMIN.forEach(c => {
-  const agg = selectCampanaAgregado(c.id);
-  if (agg) Object.assign(c, agg);
-});
+const CAMPANAS_ADMIN_AGREGADAS = CAMPANAS_ADMIN
+  .map(c => selectCampanaAgregado(c.id))
+  .filter(Boolean);
+
+const CAMPANAS_ESTADOS = CAMPANAS_ADMIN_AGREGADAS.reduce((acc, c) => {
+  acc[c.estado] = (acc[c.estado] || 0) + 1;
+  return acc;
+}, {});
+
+const CAMPANAS_FASE_MANTENIMIENTO = CAMPANAS_ADMIN_AGREGADAS.reduce((acc, c) => {
+  if (c.faseMantenimiento) acc[c.faseMantenimiento] = (acc[c.faseMantenimiento] || 0) + 1;
+  return acc;
+}, {});
 
 // ── Actividad reciente (con breadcrumb campaña › sub-campaña) ───────────
 const ACTIVIDAD_RECIENTE = [
@@ -631,7 +666,7 @@ const ACTIVIDAD_RECIENTE = [
 
 // Resolver breadcrumb legible a partir de IDs.
 function breadcrumbActividad(a) {
-  const c = CAMPANAS_ADMIN.find(x => x.id === a.campanaId);
+  const c = selectCampanaAgregado(a.campanaId);
   const s = SUBCAMPANAS_ADMIN.find(x => x.id === a.subcampanaId);
   if (!c) return '';
   if (!s) return c.nombre;
@@ -644,7 +679,9 @@ window.METRICAS_GLOBALES = METRICAS_GLOBALES;
 window.CAMPANAS_ESTADOS = CAMPANAS_ESTADOS;
 window.CAMPANAS_FASE_MANTENIMIENTO = CAMPANAS_FASE_MANTENIMIENTO;
 window.CAMPANAS_ADMIN = CAMPANAS_ADMIN;
+window.CAMPANAS_ADMIN_AGREGADAS = CAMPANAS_ADMIN_AGREGADAS;
 window.SUBCAMPANAS_ADMIN = SUBCAMPANAS_ADMIN;
+window.ORGANIZACIONES = ORGANIZACIONES;
 window.PERSONAS = PERSONAS;
 window.LOTES_VIVERO = LOTES_VIVERO;
 window.CATALOGO_ESPECIES = CATALOGO_ESPECIES;

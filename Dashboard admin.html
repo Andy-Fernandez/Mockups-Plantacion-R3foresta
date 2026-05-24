@@ -91,8 +91,8 @@ tailwind.config = {
         <button data-val="TODAS" class="on">Todas</button>
         <button data-val="ACTIVA">Activa</button>
         <button data-val="BORRADOR">Borrador</button>
-        <button data-val="COMPLETADA">Completada</button>
-        <button data-val="FINALIZADA_PARCIAL">Parcial</button>
+        <button data-val="EN_MANTENIMIENTO">Manten.</button>
+        <button data-val="MONITOREO_HISTORICO">Histórico</button>
       </div>
     </div>
 
@@ -151,7 +151,7 @@ tailwind.config = {
 
 <script type="application/json" id="speaker-notes">
 [
-  "Dashboard del admin/coordinador. Es mobile-first porque queremos un único stack para todos los roles, pero el contenido aquí es agregado de programa, no de operación. El header recibe a la coordinadora por nombre y muestra el badge de alertas. Las métricas son derivadas de los eventos append-only, jamás editables aquí. El primer donut usa el set corto BORRADOR, ACTIVA, COMPLETADA y FINALIZADA_PARCIAL; el segundo separa la fase de mantenimiento. La lista de campañas se filtra con chips y cada tarjeta es enlace al detalle."
+  "Dashboard del admin/coordinador. Es mobile-first porque queremos un único stack para todos los roles, pero el contenido aquí es agregado de programa, no de operación. El header recibe a la coordinadora por nombre y muestra el badge de alertas. Las métricas se derivan desde las sub-campañas. El primer donut resume el estado paraguas derivado; el segundo separa la fase de mantenimiento. La lista de campañas se filtra con chips y cada tarjeta es enlace al detalle."
 ]
 </script>
 
@@ -220,7 +220,7 @@ function App() {
                     onChange={(v) => setTweak('periodo', v)} />
         <TweakSection label="Campañas" />
         <TweakSelect label="Filtro" value={t.filtro}
-                     options={['TODAS','ACTIVA','BORRADOR','COMPLETADA','FINALIZADA_PARCIAL']}
+                     options={['TODAS','ACTIVA','BORRADOR','EN_MANTENIMIENTO','MONITOREO_HISTORICO']}
                      onChange={(v) => setTweak('filtro', v)} />
         <TweakToggle label="Alertas pendientes" value={t.alertas}
                      onChange={(v) => setTweak('alertas', v)} />

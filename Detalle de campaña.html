@@ -73,10 +73,10 @@ tailwind.config = {
     <div class="block">
       <h3>Campaña activa</h3>
       <div class="opt-list" id="opt-campana">
-        <button data-val="CAM-2026-014" class="on">Arborización La Paz 2026 <span class="tag">ARBORIZACION</span></button>
-        <button data-val="CAM-2026-007">Reforestación Hampaturi <span class="tag">REFORESTACION</span></button>
-        <button data-val="CAM-2025-022">Achumani Norte <span class="tag">PARCIAL</span></button>
-        <button data-val="CAM-2025-019">Sopocachi Verde <span class="tag">COMPLETADA</span></button>
+        <button data-val="CAM-2026-014" class="on">Arborización La Paz 2026 <span class="tag">4 HIJAS</span></button>
+        <button data-val="CAM-2026-007">Reforestación Hampaturi <span class="tag">3 HIJAS</span></button>
+        <button data-val="CAM-2025-022">Achumani Norte <span class="tag">MANTEN.</span></button>
+        <button data-val="CAM-2025-019">Sopocachi Verde <span class="tag">HIST.</span></button>
       </div>
     </div>
 
@@ -85,8 +85,8 @@ tailwind.config = {
       <div class="seg" id="seg-estado">
         <button data-val="ACTIVA" class="on">Activa</button>
         <button data-val="BORRADOR">Borrador</button>
-        <button data-val="COMPLETADA">Completada</button>
-        <button data-val="FINALIZADA_PARCIAL">Parcial</button>
+        <button data-val="EN_MANTENIMIENTO">Manten.</button>
+        <button data-val="MONITOREO_HISTORICO">Histórico</button>
       </div>
     </div>
 
@@ -113,7 +113,7 @@ tailwind.config = {
       <b>Reglas del paraguas</b>
       <ul>
         <li>La <b>meta</b> y los <b>plantados</b> del paraguas se <b>derivan</b> sumando sus sub-campañas.</li>
-        <li>El <b>estado visible</b> del paraguas se lee desde sus sub-campañas; este mock usa solo <b>BORRADOR / ACTIVA / COMPLETADA / FINALIZADA_PARCIAL</b>.</li>
+        <li>El <b>estado visible</b> del paraguas se deriva desde sus hijas; este mock usa <b>BORRADOR / ACTIVA / EN_MANTENIMIENTO / MONITOREO_HISTORICO</b>.</li>
         <li>La gestión operativa vive abajo: <b>equipo, lotes y cierre parcial</b> se resuelven en cada sub-campaña, no aquí.</li>
         <li>La <b>fase de mantenimiento</b> aparece como badge paralelo cuando la campaña ya está cerrada.</li>
         <li>El mapa muestra <b>un polígono por sub-campaña</b>, coloreado por su estado.</li>
@@ -253,7 +253,7 @@ function App() {
                      options={['CAM-2026-014','CAM-2026-007','CAM-2025-022','CAM-2025-019']}
                      onChange={(v) => setTweak('campanaId', v)} />
         <TweakRadio label="Estado" value={t.estadoOverride}
-                    options={['ACTIVA','BORRADOR','COMPLETADA','FINALIZADA_PARCIAL']}
+                    options={['ACTIVA','BORRADOR','EN_MANTENIMIENTO','MONITOREO_HISTORICO']}
                     onChange={(v) => setTweak('estadoOverride', v)} />
         <TweakSection label="Navegación" />
         <TweakRadio label="Pestaña" value={t.tab}

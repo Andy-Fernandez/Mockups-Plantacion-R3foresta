@@ -93,18 +93,18 @@ function MetricCard({ label, value, unit, pct, target, tone = 'brand', icon, foo
 }
 
 function EstadosBreakdown({ data, total, onTap }) {
-  const ordered = ['ACTIVA', 'BORRADOR', 'COMPLETADA', 'FINALIZADA_PARCIAL'];
+  const ordered = ['ACTIVA', 'BORRADOR', 'EN_MANTENIMIENTO', 'MONITOREO_HISTORICO'];
   const colorByKey = {
-    ACTIVA:             '#10b981',
-    BORRADOR:           '#94a3b8',
-    COMPLETADA:         '#3b82f6',
-    FINALIZADA_PARCIAL: '#f59e0b',
+    ACTIVA:               '#10b981',
+    BORRADOR:             '#94a3b8',
+    EN_MANTENIMIENTO:     '#06b6d4',
+    MONITOREO_HISTORICO:  '#64748b',
   };
   const labelByKey = {
-    ACTIVA:             'ACTIVA',
-    BORRADOR:           'BORRADOR',
-    COMPLETADA:         'COMPLETADA',
-    FINALIZADA_PARCIAL: 'PARCIAL',
+    ACTIVA:               'ACTIVA',
+    BORRADOR:             'BORRADOR',
+    EN_MANTENIMIENTO:     'MANTEN.',
+    MONITOREO_HISTORICO:  'HISTORICO',
   };
   const items = ordered.map(k => ({ key: k, label: labelByKey[k], value: data[k] || 0, color: colorByKey[k] })).filter(d => d.value > 0);
   return (
@@ -199,15 +199,19 @@ function CampanaRow({ c, onTap }) {
   const pct = c.avancePct || 0;
   const resumenHijas = subcampanasResumen(c);
   const tieneCoordPend = c.coordinadoresPendientes > 0;
+  const progressTone = c.estado === 'EN_MANTENIMIENTO'
+    ? 'blue'
+    : c.estado === 'MONITOREO_HISTORICO'
+    ? 'amber'
+    : 'brand';
   return (
     <button onClick={() => onTap && onTap(c)} className="block w-full text-left rounded-2xl bg-white p-3.5 shadow-soft ring-1 ring-black/5 hover:ring-brand-300 active:scale-[0.995] transition">
       <div className="flex items-start gap-2">
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
-          <Icon name={c.tipo === 'ARBORIZACION' ? 'building' : 'trees'} className="h-5 w-5" />
+          <Icon name="trees" className="h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <TipoBadge tipo={c.tipo} />
             <StateBadge estado={c.estado} compact />
             {c.faseMantenimiento && (
               <FaseBadge fase={c.faseMantenimiento} mesesRestantes={c.mesesRestantesMantenimiento} compact />
@@ -236,7 +240,7 @@ function CampanaRow({ c, onTap }) {
             <span className="ml-1.5 text-brand-500">{pct}%</span>
           </p>
         </div>
-        <div className="mt-1"><Progress pct={pct} tone={c.estado === 'FINALIZADA_PARCIAL' ? 'amber' : c.estado === 'COMPLETADA' ? 'blue' : 'brand'} height={6} /></div>
+        <div className="mt-1"><Progress pct={pct} tone={progressTone} height={6} /></div>
       </div>
 
       <div className="mt-2.5 flex items-center justify-between gap-2">
@@ -261,7 +265,7 @@ function ActividadRow({ a }) {
     EQUIPO:     { icon: 'users',        tone: 'bg-blue-50 text-blue-700' },
     PAUSA:      { icon: 'pause',        tone: 'bg-amber-50 text-amber-800' },
   }[a.kind] || { icon: 'dot', tone: 'bg-slate-50 text-slate-700' };
-  const camp = CAMPANAS_ADMIN.find(c => c.id === a.campanaId);
+  const camp = selectCampanaAgregado(a.campanaId);
   const sub  = SUBCAMPANAS_ADMIN.find(s => s.id === a.subcampanaId);
   return (
     <li className="flex items-start gap-3 px-3 py-2.5">
@@ -404,9 +408,10 @@ function CO2LiveHero({ baseToneladas, meta, arbolesPlantados, arbolesMeta, arbol
 }
 
 function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hayAlertas, onNuevaCampana, onAbrirCampana }) {
+  const campanasBase = CAMPANAS_ADMIN_AGREGADAS;
   const campanas = filtroEstado === 'TODAS'
-    ? CAMPANAS_ADMIN
-    : CAMPANAS_ADMIN.filter(c => c.estado === filtroEstado);
+    ? campanasBase
+    : campanasBase.filter(c => c.estado === filtroEstado);
 
   const totalCampanas = Object.values(CAMPANAS_ESTADOS).reduce((a, b) => a + b, 0);
   const totalMantenimiento = Object.values(CAMPANAS_FASE_MANTENIMIENTO).reduce((a, b) => a + b, 0);
@@ -445,7 +450,7 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
             <MetricCard
               label="Campañas activas" value={CAMPANAS_ESTADOS.ACTIVA} unit=""
               icon="planting" tone="brand"
-              footer={`${CAMPANAS_ESTADOS.COMPLETADA} completadas · ${CAMPANAS_ESTADOS.FINALIZADA_PARCIAL} parciales`} />
+              footer={`${CAMPANAS_ESTADOS.EN_MANTENIMIENTO || 0} en mantenimiento · ${CAMPANAS_ESTADOS.MONITOREO_HISTORICO || 0} históricas`} />
           </div>
 
           <div className="grid gap-3">
@@ -465,8 +470,8 @@ function DashboardScreen({ periodo, onPeriodo, filtroEstado, onFiltroEstado, hay
                   { k: 'TODAS',              label: 'TODAS' },
                   { k: 'ACTIVA',             label: 'ACTIVA' },
                   { k: 'BORRADOR',           label: 'BORRADOR' },
-                  { k: 'COMPLETADA',         label: 'COMPLETADA' },
-                  { k: 'FINALIZADA_PARCIAL', label: 'PARCIAL' },
+                  { k: 'EN_MANTENIMIENTO',   label: 'MANTEN.' },
+                  { k: 'MONITOREO_HISTORICO', label: 'HISTÓRICO' },
                 ].map(({ k, label }) => {
                   const isOn = k === filtroEstado;
                   return (

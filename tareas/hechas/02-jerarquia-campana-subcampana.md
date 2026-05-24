@@ -1,6 +1,10 @@
 # 02 — Jerarquía Campaña vs Subcampaña según guía
 
-> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](00-README.md).
+> **Estado de revisión:** Hecha en el mock visual.
+> **Resumen:** la campaña paraguas quedó como contenedor estratégico y las pantallas activas ahora consumen un agregado derivado desde sus subcampañas. `Asignar` también pasó a trabajar sobre subcampaña, no sobre campaña.
+> **Alcance:** solo UI/UX mock con datos hardcodeados; sin lógica real ni persistencia.
+
+> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](../00-README.md).
 
 **Prioridad:** Crítica
 **Bloque:** A — Modelo

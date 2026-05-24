@@ -69,13 +69,14 @@ tailwind.config = {
   <aside class="sidebar">
     <p class="eyebrow">R3foresta · Plantación</p>
     <h1>Asignar equipo y lotes</h1>
-    <p class="lead">Modal full-screen para agregar personas o lotes de vivero a una campaña existente.</p>
+    <p class="lead">Modal full-screen para agregar personas o lotes de vivero a una sub-campaña operativa.</p>
 
     <div class="block">
-      <h3>Campaña destino</h3>
-      <div class="opt-list" id="opt-campana">
-        <button data-val="CAM-2026-014" class="on">Arborización La Paz 2026 <span class="tag">ARBORIZACION</span></button>
-        <button data-val="CAM-2026-007">Reforestación Hampaturi <span class="tag">REFORESTACION</span></button>
+      <h3>Sub-campaña destino</h3>
+      <div class="opt-list" id="opt-sub">
+        <button data-val="SUB-014-B" class="on">Achocalla <span class="tag">ACTIVA</span></button>
+        <button data-val="SUB-014-C">Av. Camacho <span class="tag">ACTIVA</span></button>
+        <button data-val="SUB-007-A">Queñua Norte <span class="tag">ACTIVA</span></button>
       </div>
     </div>
 
@@ -110,7 +111,7 @@ tailwind.config = {
       <ul>
         <li>Multi-selección. Se puede asignar y desasignar en una sola sesión.</li>
         <li>Personas <b>ya en el equipo</b> aparecen marcadas con badge — se pueden quitar tocando.</li>
-        <li>Lotes <b>recomendados</b> = especies del mix planificado + subetapa <code>SOL_DIRECTO</code>.</li>
+        <li>Lotes <b>recomendados</b> = especies del mix de la sub-campaña + subetapa <code>SOL_DIRECTO</code>.</li>
         <li>El saldo total se calcula en vivo en el footer.</li>
         <li>Confirmar genera un evento <code>ASIGNACION</code> en auditoría y notifica al equipo.</li>
       </ul>
@@ -120,14 +121,14 @@ tailwind.config = {
       <h3>Pantallas relacionadas</h3>
       <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
         <a href="Dashboard admin.html" class="nav-link">← Dashboard admin</a>
-        <a href="Detalle de campaña.html" class="nav-link">← Detalle de campaña</a>
+        <a href="Detalle sub-campaña.html" class="nav-link">← Detalle de sub-campaña</a>
       </div>
     </div>
   </aside>
 
   <div>
     <div class="stage-title">
-      <h2 id="stage-label">Asignar · Arborización La Paz 2026</h2>
+      <h2 id="stage-label">Asignar · Achocalla</h2>
       <span>Mobile · 400×860</span>
     </div>
     <div class="phone-wrap">
@@ -145,7 +146,7 @@ tailwind.config = {
 
 <script type="application/json" id="speaker-notes">
 [
-  "Asignar equipo y lotes — modal full-screen, no pantalla aparte, porque siempre se entra desde una campaña existente. La cabecera blanca reemplaza el patrón verde de header para enfatizar que es un modo de tarea, no de navegación. Tabs Equipo y Lotes con contador de seleccionados. Búsqueda + chips de filtro. Personas ya en el equipo se marcan con un badge — se pueden quitar tocando, no es bloqueo. En lotes, los que matchean las especies de la campaña y están en sol directo aparecen con el sugerido en ámbar. Footer pegajoso muestra cuántas personas y lotes vas a asignar y el saldo total disponible, para evitar sorpresas. Confirmar es un evento de auditoría que notifica al equipo."
+  "Asignar equipo y lotes — modal full-screen, no pantalla aparte, porque siempre se entra desde una sub-campaña existente. La cabecera blanca reemplaza el patrón verde de header para enfatizar que es un modo de tarea, no de navegación. Tabs Equipo y Lotes con contador de seleccionados. Búsqueda + chips de filtro. Personas ya en el equipo se marcan con un badge — se pueden quitar tocando, no es bloqueo. En lotes, los que matchean las especies de la sub-campaña y están en sol directo aparecen con el sugerido en ámbar. Footer pegajoso muestra cuántas personas y lotes vas a asignar y el saldo total disponible."
 ]
 </script>
 
@@ -161,7 +162,7 @@ tailwind.config = {
 
 <script type="text/babel">
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "campanaId": "CAM-2026-014",
+  "subcampanaId": "SUB-014-B",
   "tab": "equipo",
   "filtro": "todos",
   "confirmacion": "idle"
@@ -175,10 +176,10 @@ function App() {
   const [query, setQuery] = React.useState('');
 
   React.useEffect(() => {
-    const c = CAMPANAS_ADMIN.find(x => x.id === t.campanaId) || CAMPANAS_ADMIN[0];
+    const sub = SUBCAMPANAS_ADMIN.find(x => x.id === t.subcampanaId) || SUBCAMPANAS_ADMIN[0];
     const label = document.getElementById('stage-label');
-    if (label) label.textContent = `Asignar · ${c.nombre}`;
-  }, [t.campanaId]);
+    if (label) label.textContent = `Asignar · ${sub.nombre}`;
+  }, [t.subcampanaId]);
 
   // Map filtro tweak → real filtro string used in the component
   const filtroReal = (() => {
@@ -205,18 +206,18 @@ function App() {
       return () => node.removeEventListener('click', onClick);
     };
     const offs = [
-      wire('opt-campana',  'campanaId',    t.campanaId),
+      wire('opt-sub',      'subcampanaId', t.subcampanaId),
       wire('seg-tab',      'tab',          t.tab),
       wire('seg-filtro',   'filtro',       t.filtro),
       wire('seg-confirm',  'confirmacion', t.confirmacion),
     ];
     return () => offs.forEach(o => o && o());
-  }, [t.campanaId, t.tab, t.filtro, t.confirmacion, setTweak]);
+  }, [t.subcampanaId, t.tab, t.filtro, t.confirmacion, setTweak]);
 
   React.useEffect(() => {
     const sc = document.getElementById('scroller');
     if (sc) sc.scrollTop = 0;
-  }, [t.tab, t.campanaId]);
+  }, [t.tab, t.subcampanaId]);
 
   const onTogglePersona = (id) => setEquipoSel(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   const onToggleLote    = (id) => setLotesSel(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -224,7 +225,7 @@ function App() {
   return (
     <React.Fragment>
       <AsignarScreen
-        campanaId={t.campanaId}
+        subcampanaId={t.subcampanaId}
         tab={t.tab} onTab={(v) => setTweak('tab', v)}
         equipoSeleccionados={equipoSel} lotesSeleccionados={lotesSel}
         onTogglePersona={onTogglePersona} onToggleLote={onToggleLote}
@@ -235,9 +236,9 @@ function App() {
       />
       <TweaksPanel>
         <TweakSection label="Contexto" />
-        <TweakSelect label="Campaña" value={t.campanaId}
-                     options={['CAM-2026-014','CAM-2026-007']}
-                     onChange={(v) => setTweak('campanaId', v)} />
+        <TweakSelect label="Sub-campaña" value={t.subcampanaId}
+                     options={['SUB-014-B','SUB-014-C','SUB-007-A']}
+                     onChange={(v) => setTweak('subcampanaId', v)} />
         <TweakRadio label="Pestaña" value={t.tab}
                     options={['equipo','lotes']}
                     onChange={(v) => setTweak('tab', v)} />

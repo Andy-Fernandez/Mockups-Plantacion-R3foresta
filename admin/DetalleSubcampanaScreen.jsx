@@ -26,7 +26,6 @@ function DSCHeader({ sub, campana, onBack, onMore }) {
             <Icon name="arrow-left" className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            <TipoBadge tipo={campana?.tipo} />
             <DSCBadge estado={sub.estado} />
             {sub.faseMantenimiento && (
               <FaseBadge fase={sub.faseMantenimiento} mesesRestantes={sub.mesesRestantesMantenimiento} light compact />
@@ -363,7 +362,7 @@ function DSCMoreSheet({ open, sub, onClose, onEstado }) {
 
 function DetalleSubcampanaScreen({ subcampanaId, tab, onTab, moreOpen, onMoreOpen, estadoOverride, onEstadoOverride }) {
   const base = SUBCAMPANAS_ADMIN.find((s) => s.id === subcampanaId) || SUBCAMPANAS_ADMIN[0];
-  const campana = CAMPANAS_ADMIN.find((c) => c.id === base.campanaId) || CAMPANAS_ADMIN[0];
+  const campana = selectCampanaAgregado(base.campanaId) || CAMPANAS_ADMIN_AGREGADAS[0];
   const sub = { ...base, estado: estadoOverride || base.estado };
 
   return (
