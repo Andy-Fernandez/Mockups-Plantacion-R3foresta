@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion diff --stat HEAD)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion diff publico/PublicoData.jsx)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion diff HEAD publico/PublicoData.jsx)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion show HEAD:publico/PublicoData.jsx)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion show HEAD:publico/HomePublicaScreen.jsx)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion show --stat HEAD)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion rm tareas/07-detalle-publico.md)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion add tareas/hechas/07-detalle-publico.md)",
+      "Bash(git -C /Users/pabloandresfernandezcari/Desktop/R3foresta-Plantacion commit -m ' *)"
+    ]
+  }
+}
