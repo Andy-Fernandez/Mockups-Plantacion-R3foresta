@@ -264,12 +264,13 @@ function _CampanaCard({ campana, mostrarBlockchain }) {
         )}
       </div>
 
-      {/* Link a detalle (placeholder tarea 07) */}
+      {/* Link a detalle (tarea 07) */}
       <div className="px-4 py-3 border-t border-slate-100">
-        <button className="flex w-full items-center justify-between text-[11px] font-extrabold text-brand-600 hover:text-brand-800 transition-colors">
+        <a href={`Detalle publico campana.html?id=${campana.id}`}
+          className="flex w-full items-center justify-between text-[11px] font-extrabold text-brand-600 hover:text-brand-800 transition-colors">
           <span>Ver detalle público</span>
           <Icon name="chevron-right" className="h-4 w-4" />
-        </button>
+        </a>
       </div>
     </div>
   );
