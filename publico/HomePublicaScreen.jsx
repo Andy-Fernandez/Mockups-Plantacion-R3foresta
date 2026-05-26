@@ -38,7 +38,7 @@ function _HeroSection({ totales, mostrarBlockchain }) {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-brand-800 to-brand-900 px-5 pt-5 pb-7">
+    <div className="relative bg-gradient-to-b from-brand-800 to-brand-900 px-5 pt-5 pb-7">
       {/* Decorative arc */}
       <div className="pointer-events-none absolute inset-x-0 top-0 overflow-hidden" style={{ height: 220 }}>
         <svg viewBox="0 0 380 220" className="absolute inset-0 w-full h-full opacity-10" preserveAspectRatio="none">
@@ -181,13 +181,6 @@ function _SubcampanasActivasSection({ subcampanas }) {
 function _CampanaCard({ campana, mostrarBlockchain }) {
   const [expandida, setExpandida] = React.useState(false);
   const visibleSubs = campana.subcampanas || [];
-  const COLORES_ESTADO = {
-    ACTIVA: 'text-emerald-700',
-    EN_MANTENIMIENTO: 'text-cyan-700',
-    MONITOREO_HISTORICO: 'text-slate-500',
-    COMPLETADA: 'text-blue-700',
-    FINALIZADA_PARCIAL: 'text-amber-700',
-  };
 
   return (
     <div className="rounded-2xl bg-white ring-1 ring-black/5 shadow-soft overflow-hidden">
