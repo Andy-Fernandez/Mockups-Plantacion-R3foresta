@@ -26,6 +26,8 @@ const ICONS = {
   x: <path d="M6 6l12 12M18 6L6 18" strokeWidth="2.2" />,
   planting: <path d="M12 21V9M12 9c-3-3-6-3-6 0M12 9c3-3 6-3 6 0M5 21h14" />,
   map: <path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14" />,
+  loss: <path d="M5 12c2 4 5 6 7 6s5-2 7-6M12 4v8M9 9l3 3 3-3" />,
+  refresh: <path d="M4 12a8 8 0 0 1 14-5l2-2M20 4v5h-5M20 12a8 8 0 0 1-14 5l-2 2M4 20v-5h5" />,
 };
 
 function Icon({ name, className = 'h-5 w-5' }) {

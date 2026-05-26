@@ -2,7 +2,7 @@
 // Visual rhythm follows the rest of the kit: rounded-2xl/3xl cards on a #eef2ed canvas,
 // brand-600 primary, white scrim cards, eyebrows in tracking-[0.18em] brand-500.
 
-const STEPS = [
+const PLANTACION_STEPS = [
   { n: 1, label: 'Campaña' },
   { n: 2, label: 'Foto + GPS' },
   { n: 3, label: 'Especies' },
@@ -13,9 +13,30 @@ const STEPS = [
 
 // ── Sticky header with title, step counter, progress bar, connection pill ──
 
-function PlantHeader({ paso, conexion, onBack }) {
-  const pct = ((paso - 1) / (STEPS.length - 1)) * 100;
-  const current = STEPS[paso - 1];
+function plantacionStepTitle(paso) {
+  if (paso === 1) return 'Elige la campaña';
+  if (paso === 2) return 'Foto y ubicación';
+  if (paso === 3) return 'Especies plantadas';
+  if (paso === 4) return '¿Plantaste con alguien?';
+  if (paso === 5) return 'Observaciones';
+  return 'Confirma y registra';
+}
+
+function PlantHeader({
+  paso,
+  conexion,
+  onBack,
+  steps = PLANTACION_STEPS,
+  eyebrow = 'Plantación',
+  title,
+  titleByStep = plantacionStepTitle,
+  heroImage = assetPath('plantacion.jpg'),
+  badges = [],
+}) {
+  const current = steps[paso - 1] || steps[0];
+  const resolvedTitle = title || (typeof titleByStep === 'function'
+    ? titleByStep(paso, current)
+    : (titleByStep && titleByStep[paso]) || current?.label || '');
 
   const conexionMeta = {
     online:  { label: 'En línea',         icon: 'signal',     tone: 'bg-emerald-400/20 text-emerald-100 ring-emerald-200/40' },
@@ -25,7 +46,7 @@ function PlantHeader({ paso, conexion, onBack }) {
 
   return (
     <header className="relative overflow-hidden rounded-b-3xl bg-brand-700 text-white shadow-soft">
-      <img src="assets/plantacion.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
+      <img src={heroImage} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
       <div className="absolute inset-0 bg-gradient-to-b from-brand-700/85 via-brand-700/85 to-brand-700" />
 
       <div className="relative px-5 pt-5 pb-4">
@@ -33,26 +54,29 @@ function PlantHeader({ paso, conexion, onBack }) {
           <button onClick={onBack} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 transition" aria-label="Volver">
             <Icon name="arrow-left" className="h-5 w-5" />
           </button>
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide ring-1 ${conexionMeta.tone}`}>
-            <Icon name={conexionMeta.icon} className="h-3.5 w-3.5" />
-            {conexionMeta.label}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {badges.map((badge) => (
+              <span key={badge.label} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide ring-1 ${badge.tone}`}>
+                {badge.icon && <Icon name={badge.icon} className="h-3.5 w-3.5" />}
+                {badge.label}
+              </span>
+            ))}
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-extrabold tracking-wide ring-1 ${conexionMeta.tone}`}>
+              <Icon name={conexionMeta.icon} className="h-3.5 w-3.5" />
+              {conexionMeta.label}
+            </span>
+          </div>
         </div>
 
         <p className="mt-4 text-[10.5px] font-extrabold uppercase tracking-[0.24em] text-white/85">
-          Plantación · Paso {paso} de {STEPS.length}
+          {eyebrow} · Paso {paso} de {steps.length}
         </p>
         <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">
-          {current.n === 1 && 'Elige la campaña'}
-          {current.n === 2 && 'Foto y ubicación'}
-          {current.n === 3 && 'Especies plantadas'}
-          {current.n === 4 && '¿Plantaste con alguien?'}
-          {current.n === 5 && 'Observaciones'}
-          {current.n === 6 && 'Confirma y registra'}
+          {resolvedTitle}
         </h1>
 
         <div className="mt-4 flex items-center gap-2">
-          {STEPS.map((s, i) => {
+          {steps.map((s, i) => {
             const done = i + 1 < paso;
             const active = i + 1 === paso;
             return (
@@ -348,4 +372,5 @@ window.StepFooter = StepFooter;
 window.StepCampana = StepCampana;
 window.StepFotoGps = StepFotoGps;
 window.StepEspecies = StepEspecies;
-window.STEPS = STEPS;
+window.PLANTACION_STEPS = PLANTACION_STEPS;
+window.STEPS = PLANTACION_STEPS;

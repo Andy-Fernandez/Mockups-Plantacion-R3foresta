@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Registrar reposición · R3foresta</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',
+          500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f',
+        },
+      },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  html, body { background:#d8e0d3; min-height:100%; font-family:'Manrope', system-ui, sans-serif; margin:0; }
+  body { padding:28px 16px 80px; display:flex; justify-content:center; }
+  .stage { display:grid; grid-template-columns:1fr; gap:28px; max-width:1180px; width:100%; }
+  @media (min-width:980px) { .stage { grid-template-columns:360px 1fr; align-items:start; } }
+  .sidebar { background:#fff; border-radius:24px; padding:22px 22px 18px; box-shadow:0 10px 30px rgba(0,0,0,.05); position:sticky; top:20px; max-height:calc(100vh - 40px); overflow-y:auto; }
+  .sidebar .eyebrow { font-size:10.5px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:#1f613b; }
+  .sidebar h1 { font-size:22px; font-weight:800; color:#0f3b23; letter-spacing:-.02em; margin:4px 0 0; }
+  .sidebar p.lead { font-size:13px; color:#1f613b; margin-top:6px; font-weight:500; line-height:1.45; }
+  .sidebar .block { margin-top:18px; }
+  .sidebar .block h3 { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#1f613b; margin:0 0 8px; }
+  .seg, .opt-list { display:flex; flex-wrap:wrap; gap:6px; }
+  .seg { padding:4px; background:#f0f6f2; border-radius:14px; }
+  .seg button, .opt-list button { padding:8px 10px; font-size:11px; font-weight:800; color:#0f3b23; background:#f6faf6; border:1px solid #d9e8dd; border-radius:12px; cursor:default; text-align:left; transition:background .15s,color .15s,border-color .15s; }
+  .seg button.on, .opt-list button.on { background:#0f3b23; color:#fff; border-color:#0f3b23; }
+  .opt-list { flex-direction:column; }
+  .legend { margin-top:18px; padding-top:14px; border-top:1px solid #e5ebe2; font-size:11px; color:#475569; line-height:1.5; }
+  .legend b { color:#0f3b23; }
+  .legend ul { padding-left:16px; margin:6px 0 0; }
+  .legend li { margin:3px 0; }
+  .step-note { margin-top:14px; padding:12px 14px; background:#f6faf6; border:1px solid #d9e8dd; border-radius:14px; font-size:11.5px; color:#0f3b23; line-height:1.5; }
+  .step-note b { color:#164d2f; font-weight:800; }
+  .step-note .num { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:9999px; background:#0f3b23; color:#fff; font-size:10px; font-weight:800; margin-right:6px; vertical-align:1px; }
+  .phone-wrap { display:flex; justify-content:center; }
+  .phone { width:400px; height:860px; border-radius:46px; background:#f6f7f3; box-shadow:0 30px 80px rgba(8,30,19,.18), inset 0 0 0 10px #1a1d1a; position:relative; overflow:hidden; }
+  .phone-screen { position:absolute; inset:10px; border-radius:36px; overflow:hidden; background:#eef2ed; }
+  .phone-notch { position:absolute; top:14px; left:50%; transform:translateX(-50%); width:104px; height:28px; background:#0c0e0c; border-radius:18px; z-index:50; }
+  .scroller { width:100%; height:100%; overflow-y:auto; overflow-x:hidden; }
+  .scroller::-webkit-scrollbar { width:6px; }
+  .scroller::-webkit-scrollbar-thumb { background:#cbd5c5; border-radius:9999px; }
+  .stage-title { display:flex; align-items:baseline; justify-content:space-between; max-width:420px; margin:0 auto 14px; padding:0 6px; }
+  .stage-title h2 { font-size:13.5px; font-weight:800; color:#0f3b23; letter-spacing:.04em; margin:0; }
+  .stage-title span { font-size:10.5px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:#1f613b; }
+  @media (max-width: 767px) {
+    html, body { background:#eef2ed; }
+    body { padding:0; display:block; }
+    .stage { max-width:none; gap:0; }
+    .sidebar, .stage-title, .phone-notch { display:none; }
+    .phone-wrap { display:block; }
+    .phone { width:100vw; height:100dvh; border-radius:0; background:#eef2ed; box-shadow:none; }
+    .phone-screen { inset:0; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="sidebar">
+    <p class="eyebrow">R3foresta · Plantación</p>
+    <h1>Registrar reposición</h1>
+    <p class="lead">Mock mobile-first del flujo de reposición con pre-confirmación bloqueante, badge por fase y filtro de lotes con propósito <b>REPOSICION</b>.</p>
+
+    <div class="block">
+      <h3>Paso del wizard</h3>
+      <div class="seg" id="seg-paso">
+        <button data-val="1">1</button><button data-val="2">2</button><button data-val="3">3</button><button data-val="4">4</button>
+        <button data-val="5">5</button><button data-val="6">6</button><button data-val="7">7</button><button data-val="8">8</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Subcampaña</h3>
+      <div class="opt-list" id="opt-subcampania"></div>
+    </div>
+
+    <div class="block">
+      <h3>Grupo origen</h3>
+      <div class="opt-list" id="opt-registro"></div>
+    </div>
+
+    <div class="block">
+      <h3>Escenario</h3>
+      <div class="seg" id="seg-draft">
+        <button data-val="activa">Activa</button>
+        <button data-val="single-lote">1 lote</button>
+        <button data-val="historica">Histórica</button>
+        <button data-val="excede">Excede</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Estado GPS</h3>
+      <div class="seg" id="seg-gps">
+        <button data-val="capturado">Dentro</button>
+        <button data-val="capturando">Activando</button>
+        <button data-val="sin-senal">Sin señal</button>
+        <button data-val="fuera-poligono">Fuera</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Fotos</h3>
+      <div class="seg" id="seg-fotos">
+        <button data-val="0">0</button>
+        <button data-val="1">1</button>
+        <button data-val="2">2</button>
+        <button data-val="3">3</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Conexión</h3>
+      <div class="seg" id="seg-conexion">
+        <button data-val="online">Online</button>
+        <button data-val="sync">Sync</button>
+        <button data-val="offline">Offline</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Confirmación</h3>
+      <div class="seg" id="seg-confirmacion">
+        <button data-val="idle">Inactiva</button>
+        <button data-val="guardando">Guardando</button>
+        <button data-val="exito">Éxito</button>
+      </div>
+    </div>
+
+    <div class="step-note" id="step-note"></div>
+
+    <div class="legend">
+      <b>Reglas visibles en el mock</b>
+      <ul>
+        <li><b>Sin mortandad previa no hay reposición.</b> El selector de grupo ya llega filtrado.</li>
+        <li><b>Hard gate:</b> el total repuesto no puede superar la mortandad pendiente del grupo.</li>
+        <li><b>Solo lotes REPOSICION.</b> El paso 6 no muestra asignaciones iniciales.</li>
+        <li><b>Especie libre.</b> La especie repuesta puede cambiar sin invalidar el grupo origen.</li>
+        <li><b>Badge por fase.</b> Naranja para mantenimiento activo, gris para reposición histórica.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div>
+    <div class="stage-title">
+      <h2 id="stage-label">Paso 1 de 8 · Sub-campaña</h2>
+      <span>Mobile · 400×860</span>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="scroller" id="scroller"><div id="root"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="plantacion/Icon.jsx"></script>
+<script type="text/babel" src="plantacion/tweaks-panel.jsx"></script>
+<script type="text/babel" src="plantacion/PlantacionData.jsx"></script>
+<script type="text/babel" src="plantacion/PlantacionSteps.jsx"></script>
+<script type="text/babel" src="plantacion/RegistrarReposicionScreen.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "paso": 5,
+  "subcampaniaId": "SUB-007-B",
+  "registroId": "REG-007B-01",
+  "draftMode": "activa",
+  "gps": "capturado",
+  "fotos": 1,
+  "conexion": "online",
+  "confirmacion": "idle"
+}/*EDITMODE-END*/;
+
+const STEP_NOTES = {
+  1: { title: 'Selección de sub-campaña', body: 'Solo aparecen sub-campañas con grupos que ya tienen mortandad reportada.' },
+  2: { title: 'Grupo origen', body: 'El grupo se filtra a casos con mortandad previa, porque sin ese antecedente la reposición no está permitida.' },
+  3: { title: 'Pre-confirmación bloqueante', body: 'Aquí se muestran <b>plantado inicial</b>, <b>muerta acumulada</b>, <b>repuesta acumulada</b> y <b>pendiente</b> antes de capturar el resto.' },
+  4: { title: 'Foto + GPS', body: 'Mismo bloqueo funcional del flujo de plantación: mínimo 1 foto y GPS dentro de tolerancia.' },
+  5: { title: 'Especies', body: 'La especie es libre. La reposición aumenta saldo vivo del grupo, pero <b>no avanza la meta</b> de la sub-campaña.' },
+  6: { title: 'Lotes filtrados', body: 'Solo se ven asignaciones activas con propósito <b>REPOSICION</b>. Si queda un solo lote, la UI lo preselecciona.' },
+  7: { title: 'Co-responsables', body: 'El subconjunto se toma del equipo operativo de la sub-campaña.' },
+  8: { title: 'Confirmar', body: 'Si el total excede la cantidad pendiente, el CTA final queda bloqueado.' },
+};
+
+function buildReposicionDraft(mode, subcampaniaId) {
+  if (subcampaniaId === 'SUB-019-A' || mode === 'historica') {
+    return {
+      especies: [
+        { id: 'esp-h-1', especie: 'Tarco', cantidad: 3, lotes: [{ loteId: 'VIV-000170-REP-01', cantidad: 3 }] },
+        { id: 'esp-h-2', especie: 'Ceibo', cantidad: 3, lotes: [{ loteId: 'VIV-000118-REP-02', cantidad: 3 }] },
+      ],
+      coResponsables: ['op-2'],
+    };
+  }
+  if (subcampaniaId === 'SUB-022-A' || mode === 'single-lote') {
+    return {
+      especies: [
+        { id: 'esp-s-1', especie: 'Jacarandá', cantidad: 8, lotes: [{ loteId: 'VIV-000123-REP-01', cantidad: 8 }] },
+      ],
+      coResponsables: ['op-2', 'op-3'],
+    };
+  }
+  if (mode === 'excede') {
+    return {
+      especies: [
+        { id: 'esp-x-1', especie: 'Queñua', cantidad: 10, lotes: [{ loteId: 'VIV-000142-REP-04', cantidad: 10 }] },
+        { id: 'esp-x-2', especie: 'Kewiña', cantidad: 8, lotes: [{ loteId: 'VIV-000145-REP-02', cantidad: 8 }] },
+      ],
+      coResponsables: ['op-4', 'op-7'],
+    };
+  }
+  return {
+    especies: [
+      { id: 'esp-a-1', especie: 'Queñua', cantidad: 7, lotes: [{ loteId: 'VIV-000142-REP-04', cantidad: 7 }] },
+      { id: 'esp-a-2', especie: 'Kewiña', cantidad: 5, lotes: [{ loteId: 'VIV-000145-REP-02', cantidad: 5 }] },
+    ],
+    coResponsables: ['op-4'],
+  };
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const initialDraft = buildReposicionDraft(TWEAK_DEFAULTS.draftMode, TWEAK_DEFAULTS.subcampaniaId);
+  const [especies, setEspecies] = React.useState(initialDraft.especies);
+  const [coResponsables, setCoResponsables] = React.useState(initialDraft.coResponsables);
+
+  React.useEffect(() => {
+    const grupos = registrosConMortandadDeSubcampana(t.subcampaniaId);
+    if (!grupos.some((item) => item.id === t.registroId)) {
+      setTweak('registroId', grupos[0]?.id || '');
+    }
+  }, [t.subcampaniaId, t.registroId, setTweak]);
+
+  React.useEffect(() => {
+    const draft = buildReposicionDraft(t.draftMode, t.subcampaniaId);
+    setEspecies(draft.especies);
+    setCoResponsables(draft.coResponsables);
+  }, [t.draftMode, t.subcampaniaId, t.registroId]);
+
+  React.useEffect(() => {
+    const labels = ['', 'Sub-campaña', 'Grupo origen', 'Pre-check', 'Foto + GPS', 'Especies', 'Lotes', 'Equipo', 'Confirmar'];
+    const label = document.getElementById('stage-label');
+    if (label) label.textContent = `Paso ${t.paso} de 8 · ${labels[t.paso]}`;
+    const note = document.getElementById('step-note');
+    if (note && STEP_NOTES[t.paso]) {
+      note.innerHTML = `<span class="num">${t.paso}</span><b>${STEP_NOTES[t.paso].title}.</b> ${STEP_NOTES[t.paso].body}`;
+    }
+  }, [t.paso]);
+
+  React.useEffect(() => {
+    const wire = (root, key, current, transform = (v) => v) => {
+      const node = document.getElementById(root);
+      if (!node) return () => {};
+      const onClick = (event) => {
+        const button = event.target.closest('button[data-val]');
+        if (!button) return;
+        setTweak(key, transform(button.dataset.val));
+      };
+      node.addEventListener('click', onClick);
+      [...node.querySelectorAll('button[data-val]')].forEach((button) => {
+        button.classList.toggle('on', transform(button.dataset.val) === current);
+      });
+      return () => node.removeEventListener('click', onClick);
+    };
+
+    const subNode = document.getElementById('opt-subcampania');
+    if (subNode) {
+      subNode.innerHTML = SUBCAMPANIAS_OPERATIVAS.filter((sub) => registrosConMortandadDeSubcampana(sub.id).length > 0).map((sub) => (
+        `<button data-val="${sub.id}" class="${sub.id === t.subcampaniaId ? 'on' : ''}">${sub.nombre} · ${sub.fase}</button>`
+      )).join('');
+    }
+    const regNode = document.getElementById('opt-registro');
+    if (regNode) {
+      regNode.innerHTML = registrosConMortandadDeSubcampana(t.subcampaniaId).map((item) => (
+        `<button data-val="${item.id}" class="${item.id === t.registroId ? 'on' : ''}">${item.nombreGrupo} · pendiente ${item.resumen.reponible}</button>`
+      )).join('');
+    }
+
+    const offs = [
+      wire('seg-paso', 'paso', t.paso, (v) => parseInt(v, 10)),
+      wire('opt-subcampania', 'subcampaniaId', t.subcampaniaId),
+      wire('opt-registro', 'registroId', t.registroId),
+      wire('seg-draft', 'draftMode', t.draftMode),
+      wire('seg-gps', 'gps', t.gps),
+      wire('seg-fotos', 'fotos', t.fotos, (v) => parseInt(v, 10)),
+      wire('seg-conexion', 'conexion', t.conexion),
+      wire('seg-confirmacion', 'confirmacion', t.confirmacion),
+    ];
+    return () => offs.forEach((off) => off && off());
+  }, [t, setTweak]);
+
+  React.useEffect(() => {
+    const scroller = document.getElementById('scroller');
+    if (scroller) scroller.scrollTop = 0;
+  }, [t.paso, t.subcampaniaId, t.registroId, t.draftMode]);
+
+  return (
+    <React.Fragment>
+      <RegistrarReposicionScreen
+        paso={t.paso}
+        onPaso={(value) => setTweak('paso', value)}
+        subcampaniaId={t.subcampaniaId}
+        onSubcampaniaId={(value) => setTweak('subcampaniaId', value)}
+        registroId={t.registroId}
+        onRegistroId={(value) => setTweak('registroId', value)}
+        fotos={t.fotos}
+        onFotos={(value) => setTweak('fotos', value)}
+        gps={t.gps}
+        onGps={(value) => setTweak('gps', value)}
+        especies={especies}
+        onEspecies={setEspecies}
+        coResponsables={coResponsables}
+        onCoResponsables={setCoResponsables}
+        conexion={t.conexion}
+        confirmacion={t.confirmacion}
+        onConfirmacion={(value) => setTweak('confirmacion', value)}
+      />
+
+      <TweaksPanel>
+        <TweakSection label="Paso" />
+        <TweakSelect label="Paso" value={String(t.paso)} options={['1','2','3','4','5','6','7','8']} onChange={(value) => setTweak('paso', parseInt(value, 10))} />
+        <TweakSection label="Escenario" />
+        <TweakRadio label="Draft" value={t.draftMode} options={['activa', 'single-lote', 'historica', 'excede']} onChange={(value) => setTweak('draftMode', value)} />
+        <TweakRadio label="GPS" value={t.gps} options={['capturado', 'capturando', 'sin-senal', 'fuera-poligono']} onChange={(value) => setTweak('gps', value)} />
+        <TweakSlider label="Fotos" value={t.fotos} min={0} max={3} step={1} onChange={(value) => setTweak('fotos', value)} />
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

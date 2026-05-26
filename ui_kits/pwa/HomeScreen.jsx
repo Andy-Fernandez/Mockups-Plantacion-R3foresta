@@ -16,6 +16,10 @@ const HOME_RECENT = [
   { title: 'Riego completado', time: '08:10', meta: 'Germinación · Sector B' },
   { title: 'Captura de CO₂', time: 'Ayer', meta: '+0,3 T estimadas' },
 ];
+const HOME_OPERATIVE_SHORTCUTS = [
+  { label: 'Reportar mortandad', href: '../../Reportar%20mortandad.html', icon: 'loss', detail: 'Foto + GPS + causa obligatoria', tone: 'from-red-500/90 to-orange-500/85' },
+  { label: 'Registrar reposición', href: '../../Registrar%20reposicion.html', icon: 'refresh', detail: 'Solo lotes con propósito REPOSICION', tone: 'from-orange-500/90 to-amber-500/85' },
+];
 
 function HomeScreen({ onNav, profileIncomplete }) {
   return (
@@ -79,6 +83,34 @@ function HomeScreen({ onNav, profileIncomplete }) {
             <span>Elementos pendientes de sincronización</span>
             <span className="text-xs font-normal text-brand-500">6 registros se cargarán cuando haya señal estable.</span>
           </div>
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-base font-semibold text-brand-700">Accesos operativos</h2>
+          <span className="text-xs text-brand-500">Mantenimiento</span>
+        </div>
+        <div className="mt-3 grid grid-cols-1 gap-3">
+          {HOME_OPERATIVE_SHORTCUTS.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => { window.location.href = item.href; }}
+              className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${item.tone} p-4 text-left text-white shadow-soft transition active:scale-[0.99]`}
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_42%)]" />
+              <div className="relative flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-white/75">Captura crítica</p>
+                  <h3 className="mt-1 text-lg font-semibold leading-tight">{item.label}</h3>
+                  <p className="mt-2 text-xs font-medium text-white/85">{item.detail}</p>
+                </div>
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20">
+                  <Icon name={item.icon} className="h-5 w-5" />
+                </div>
+              </div>
+            </button>
+          ))}
         </div>
       </section>
 

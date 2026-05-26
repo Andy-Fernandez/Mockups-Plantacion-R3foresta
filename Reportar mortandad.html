@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Reportar mortandad · R3foresta</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="colors_and_type.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50:'#f0f6f2',100:'#d9e8dd',200:'#b8d2c2',300:'#8fb89e',400:'#5f9a78',
+          500:'#1f613b',600:'#164d2f',700:'#0f3b23',800:'#0c2e1c',900:'#08140f',
+        },
+      },
+      boxShadow: { soft: '0 10px 30px rgba(0,0,0,0.06)' },
+      fontFamily: { sans: ['Manrope','system-ui','-apple-system','Segoe UI','sans-serif'] },
+    },
+  },
+};
+</script>
+<style>
+  html, body { background: #d8e0d3; min-height: 100%; font-family: 'Manrope', system-ui, sans-serif; margin:0; }
+  body { padding: 28px 16px 80px; display:flex; justify-content:center; }
+  .stage { display:grid; grid-template-columns: 1fr; gap:28px; max-width: 1180px; width:100%; }
+  @media (min-width: 980px) { .stage { grid-template-columns: 360px 1fr; align-items: start; } }
+  .sidebar { background:#fff; border-radius:24px; padding:22px 22px 18px; box-shadow:0 10px 30px rgba(0,0,0,.05); position:sticky; top:20px; max-height:calc(100vh - 40px); overflow-y:auto; }
+  .sidebar .eyebrow { font-size:10.5px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:#1f613b }
+  .sidebar h1 { font-size:22px; font-weight:800; color:#0f3b23; letter-spacing:-.02em; margin:4px 0 0; }
+  .sidebar p.lead { font-size:13px; color:#1f613b; margin-top:6px; font-weight:500; line-height:1.45; }
+  .sidebar .block { margin-top:18px; }
+  .sidebar .block h3 { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#1f613b; margin:0 0 8px; }
+  .seg, .opt-list { display:flex; flex-wrap:wrap; gap:6px; }
+  .seg { padding:4px; background:#f0f6f2; border-radius:14px; }
+  .seg button, .opt-list button { padding:8px 10px; font-size:11px; font-weight:800; color:#0f3b23; background:#f6faf6; border:1px solid #d9e8dd; border-radius:12px; cursor:default; text-align:left; transition:background .15s,color .15s,border-color .15s; }
+  .seg button.on, .opt-list button.on { background:#0f3b23; color:#fff; border-color:#0f3b23; }
+  .opt-list { flex-direction:column; }
+  .legend { margin-top:18px; padding-top:14px; border-top:1px solid #e5ebe2; font-size:11px; color:#475569; line-height:1.5; }
+  .legend b { color:#0f3b23 }
+  .legend ul { padding-left:16px; margin:6px 0 0; }
+  .legend li { margin:3px 0; }
+  .step-note { margin-top:14px; padding:12px 14px; background:#f6faf6; border:1px solid #d9e8dd; border-radius:14px; font-size:11.5px; color:#0f3b23; line-height:1.5; }
+  .step-note b { color:#164d2f; font-weight:800 }
+  .step-note .num { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:9999px; background:#0f3b23; color:#fff; font-size:10px; font-weight:800; margin-right:6px; vertical-align:1px; }
+  .phone-wrap { display:flex; justify-content:center; }
+  .phone { width:400px; height:860px; border-radius:46px; background:#f6f7f3; box-shadow:0 30px 80px rgba(8,30,19,.18), inset 0 0 0 10px #1a1d1a; position:relative; overflow:hidden; }
+  .phone-screen { position:absolute; inset:10px; border-radius:36px; overflow:hidden; background:#eef2ed; }
+  .phone-notch { position:absolute; top:14px; left:50%; transform:translateX(-50%); width:104px; height:28px; background:#0c0e0c; border-radius:18px; z-index:50; }
+  .scroller { width:100%; height:100%; overflow-y:auto; overflow-x:hidden; }
+  .scroller::-webkit-scrollbar { width:6px; }
+  .scroller::-webkit-scrollbar-thumb { background:#cbd5c5; border-radius:9999px; }
+  .stage-title { display:flex; align-items:baseline; justify-content:space-between; max-width:420px; margin:0 auto 14px; padding:0 6px; }
+  .stage-title h2 { font-size:13.5px; font-weight:800; color:#0f3b23; letter-spacing:.04em; margin:0 }
+  .stage-title span { font-size:10.5px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:#1f613b }
+  @media (max-width: 767px) {
+    html, body { background:#eef2ed; }
+    body { padding:0; display:block; }
+    .stage { max-width:none; gap:0; }
+    .sidebar, .stage-title, .phone-notch { display:none; }
+    .phone-wrap { display:block; }
+    .phone { width:100vw; height:100dvh; border-radius:0; background:#eef2ed; box-shadow:none; }
+    .phone-screen { inset:0; border-radius:0; }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <aside class="sidebar">
+    <p class="eyebrow">R3foresta · Plantación</p>
+    <h1>Reportar mortandad</h1>
+    <p class="lead">Mock operativo mobile-first del flujo append-only con histórico previo, foto + GPS obligatorios y bloqueo por tolerancia.</p>
+
+    <div class="block">
+      <h3>Paso del wizard</h3>
+      <div class="seg" id="seg-paso">
+        <button data-val="1">1</button><button data-val="2">2</button><button data-val="3">3</button><button data-val="4">4</button>
+        <button data-val="5">5</button><button data-val="6">6</button><button data-val="7">7</button><button data-val="8">8</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Subcampaña</h3>
+      <div class="opt-list" id="opt-subcampania"></div>
+    </div>
+
+    <div class="block">
+      <h3>Grupo</h3>
+      <div class="opt-list" id="opt-registro"></div>
+    </div>
+
+    <div class="block">
+      <h3>Estado GPS</h3>
+      <div class="seg" id="seg-gps">
+        <button data-val="capturado">Dentro</button>
+        <button data-val="capturando">Activando</button>
+        <button data-val="sin-senal">Sin señal</button>
+        <button data-val="fuera-poligono">Fuera</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Fotos</h3>
+      <div class="seg" id="seg-fotos">
+        <button data-val="0">0</button>
+        <button data-val="1">1</button>
+        <button data-val="2">2</button>
+        <button data-val="3">3</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Delta mock</h3>
+      <div class="seg" id="seg-delta">
+        <button data-val="cero">0</button>
+        <button data-val="recomendado">Válido</button>
+        <button data-val="excede">Excede</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Causa</h3>
+      <div class="seg" id="seg-causa">
+        <button data-val="EXCESO_AGUA">Exceso agua</button>
+        <button data-val="COMPETENCIA_MALEZA">Maleza</button>
+        <button data-val="OTRO">Otro</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Conexión</h3>
+      <div class="seg" id="seg-conexion">
+        <button data-val="online">Online</button>
+        <button data-val="sync">Sync</button>
+        <button data-val="offline">Offline</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Confirmación</h3>
+      <div class="seg" id="seg-confirmacion">
+        <button data-val="idle">Inactiva</button>
+        <button data-val="guardando">Guardando</button>
+        <button data-val="exito">Éxito</button>
+      </div>
+    </div>
+
+    <div class="step-note" id="step-note"></div>
+
+    <div class="legend">
+      <b>Reglas visibles en el mock</b>
+      <ul>
+        <li><b>Histórico obligatorio antes del input.</b> Se muestra plantado inicial, muertos previos, reposiciones y vivos estimados.</li>
+        <li><b>Foto mínimo 1 + GPS válido.</b> Sin eso no se avanza.</li>
+        <li><b>GPS fuera de tolerancia bloquea.</b> No es advertencia blanda.</li>
+        <li><b>Append-only.</b> No existen acciones de editar o borrar mortandad.</li>
+        <li><b>OTRO</b> obliga a dejar observación escrita.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <div>
+    <div class="stage-title">
+      <h2 id="stage-label">Paso 1 de 8 · Sub-campaña</h2>
+      <span>Mobile · 400×860</span>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="scroller" id="scroller"><div id="root"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="plantacion/Icon.jsx"></script>
+<script type="text/babel" src="plantacion/tweaks-panel.jsx"></script>
+<script type="text/babel" src="plantacion/PlantacionData.jsx"></script>
+<script type="text/babel" src="plantacion/PlantacionSteps.jsx"></script>
+<script type="text/babel" src="plantacion/ReportarMortandadScreen.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "paso": 4,
+  "subcampaniaId": "SUB-022-A",
+  "registroId": "REG-022A-01",
+  "gps": "capturado",
+  "fotos": 2,
+  "deltaPreset": "recomendado",
+  "causa": "COMPETENCIA_MALEZA",
+  "conexion": "online",
+  "confirmacion": "idle"
+}/*EDITMODE-END*/;
+
+const STEP_NOTES = {
+  1: { title: 'Selección de sub-campaña', body: 'Solo aparecen sub-campañas en estados permitidos y con fases de mantenimiento compatibles.' },
+  2: { title: 'Grupo afectado', body: 'La tarjeta del grupo ya muestra semáforo de supervivencia para reducir doble conteo y priorizar inspección.' },
+  3: { title: 'Histórico previo', body: 'Este paso existe para que el usuario vea <b>plantado inicial</b>, <b>muertos previos</b>, <b>reposiciones</b> y <b>vivos estimados</b> antes de registrar un nuevo delta.' },
+  4: { title: 'Foto + GPS', body: 'El GPS debe quedar dentro del polígono con tolerancia de <b>50 m</b>. Fuera de eso, el flujo se bloquea.' },
+  5: { title: 'Delta adicional', body: 'La cantidad ingresada es <b>incremental</b>, no acumulada. Debe respetar el máximo vivo estimado del grupo.' },
+  6: { title: 'Catálogo cerrado', body: 'El selector usa el enum de negocio. <b>OTRO</b> obliga a detallar en observaciones.' },
+  7: { title: 'Observación', body: 'Paso opcional salvo cuando la causa es <b>OTRO</b>.' },
+  8: { title: 'Confirmar', body: 'El evento queda append-only. Si luego hay corrección, debe registrarse un nuevo evento.' },
+};
+
+function getDeltaPresetValue(preset, registroId) {
+  const resumen = resumenRegistro(registroId);
+  if (!resumen) return 0;
+  if (preset === 'cero') return 0;
+  if (preset === 'excede') return resumen.maxNuevaMortandad + 2;
+  return Math.max(1, Math.min(6, resumen.maxNuevaMortandad));
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [delta, setDelta] = React.useState(getDeltaPresetValue(TWEAK_DEFAULTS.deltaPreset, TWEAK_DEFAULTS.registroId));
+  const [observaciones, setObservaciones] = React.useState('Maleza cerró la base de varios individuos.');
+
+  React.useEffect(() => {
+    const grupos = registrosDeSubcampana(t.subcampaniaId);
+    if (!grupos.some((item) => item.id === t.registroId)) {
+      setTweak('registroId', grupos[0]?.id || '');
+    }
+  }, [t.subcampaniaId, t.registroId, setTweak]);
+
+  React.useEffect(() => {
+    setDelta(getDeltaPresetValue(t.deltaPreset, t.registroId));
+  }, [t.deltaPreset, t.registroId]);
+
+  React.useEffect(() => {
+    if (t.causa === 'OTRO' && !observaciones.trim()) {
+      setObservaciones('Rotura de tutor por obra civil cercana.');
+    }
+    if (t.causa !== 'OTRO' && observaciones === 'Rotura de tutor por obra civil cercana.') {
+      setObservaciones('Maleza cerró la base de varios individuos.');
+    }
+  }, [t.causa, observaciones]);
+
+  React.useEffect(() => {
+    const labels = ['', 'Sub-campaña', 'Grupo', 'Histórico', 'Foto + GPS', 'Delta', 'Causa', 'Notas', 'Confirmar'];
+    const label = document.getElementById('stage-label');
+    if (label) label.textContent = `Paso ${t.paso} de 8 · ${labels[t.paso]}`;
+    const note = document.getElementById('step-note');
+    if (note && STEP_NOTES[t.paso]) {
+      note.innerHTML = `<span class="num">${t.paso}</span><b>${STEP_NOTES[t.paso].title}.</b> ${STEP_NOTES[t.paso].body}`;
+    }
+  }, [t.paso]);
+
+  React.useEffect(() => {
+    const wire = (root, key, current, transform = (v) => v) => {
+      const node = document.getElementById(root);
+      if (!node) return () => {};
+      const onClick = (event) => {
+        const button = event.target.closest('button[data-val]');
+        if (!button) return;
+        setTweak(key, transform(button.dataset.val));
+      };
+      node.addEventListener('click', onClick);
+      [...node.querySelectorAll('button[data-val]')].forEach((button) => {
+        button.classList.toggle('on', transform(button.dataset.val) === current);
+      });
+      return () => node.removeEventListener('click', onClick);
+    };
+
+    const subNode = document.getElementById('opt-subcampania');
+    if (subNode) {
+      subNode.innerHTML = SUBCAMPANIAS_OPERATIVAS.map((sub) => (
+        `<button data-val="${sub.id}" class="${sub.id === t.subcampaniaId ? 'on' : ''}">${sub.nombre} · ${sub.fase}</button>`
+      )).join('');
+    }
+    const regNode = document.getElementById('opt-registro');
+    if (regNode) {
+      regNode.innerHTML = registrosDeSubcampana(t.subcampaniaId).map((item) => (
+        `<button data-val="${item.id}" class="${item.id === t.registroId ? 'on' : ''}">${item.nombreGrupo} · vivos ${item.resumen.vivosEstimados}</button>`
+      )).join('');
+    }
+
+    const offs = [
+      wire('seg-paso', 'paso', t.paso, (v) => parseInt(v, 10)),
+      wire('opt-subcampania', 'subcampaniaId', t.subcampaniaId),
+      wire('opt-registro', 'registroId', t.registroId),
+      wire('seg-gps', 'gps', t.gps),
+      wire('seg-fotos', 'fotos', t.fotos, (v) => parseInt(v, 10)),
+      wire('seg-delta', 'deltaPreset', t.deltaPreset),
+      wire('seg-causa', 'causa', t.causa),
+      wire('seg-conexion', 'conexion', t.conexion),
+      wire('seg-confirmacion', 'confirmacion', t.confirmacion),
+    ];
+    return () => offs.forEach((off) => off && off());
+  }, [t, setTweak]);
+
+  React.useEffect(() => {
+    const scroller = document.getElementById('scroller');
+    if (scroller) scroller.scrollTop = 0;
+  }, [t.paso, t.subcampaniaId, t.registroId]);
+
+  return (
+    <React.Fragment>
+      <ReportarMortandadScreen
+        paso={t.paso}
+        onPaso={(value) => setTweak('paso', value)}
+        subcampaniaId={t.subcampaniaId}
+        onSubcampaniaId={(value) => setTweak('subcampaniaId', value)}
+        registroId={t.registroId}
+        onRegistroId={(value) => setTweak('registroId', value)}
+        fotos={t.fotos}
+        onFotos={(value) => setTweak('fotos', value)}
+        gps={t.gps}
+        onGps={(value) => setTweak('gps', value)}
+        delta={delta}
+        onDelta={setDelta}
+        causa={t.causa}
+        onCausa={(value) => setTweak('causa', value)}
+        observaciones={observaciones}
+        onObservaciones={setObservaciones}
+        conexion={t.conexion}
+        confirmacion={t.confirmacion}
+        onConfirmacion={(value) => setTweak('confirmacion', value)}
+      />
+
+      <TweaksPanel>
+        <TweakSection label="Paso" />
+        <TweakSelect label="Paso" value={String(t.paso)} options={['1','2','3','4','5','6','7','8']} onChange={(value) => setTweak('paso', parseInt(value, 10))} />
+        <TweakSection label="Estado" />
+        <TweakRadio label="GPS" value={t.gps} options={['capturado', 'capturando', 'sin-senal', 'fuera-poligono']} onChange={(value) => setTweak('gps', value)} />
+        <TweakSlider label="Fotos" value={t.fotos} min={0} max={3} step={1} onChange={(value) => setTweak('fotos', value)} />
+        <TweakRadio label="Delta mock" value={t.deltaPreset} options={['cero', 'recomendado', 'excede']} onChange={(value) => setTweak('deltaPreset', value)} />
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

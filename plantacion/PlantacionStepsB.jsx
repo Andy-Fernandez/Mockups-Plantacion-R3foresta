@@ -194,7 +194,7 @@ function SuccessOverlay({ phase, campana, total, onContinue }) {
   // phase: 'guardando' | 'exito'
   return (
     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-brand-700/95 backdrop-blur-sm px-6 text-center text-white">
-      <img src="assets/plantacion.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
+      <img src={assetPath('plantacion.jpg')} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />
       <div className="relative flex flex-col items-center">
         {phase === 'guardando' ? (
           <React.Fragment>
