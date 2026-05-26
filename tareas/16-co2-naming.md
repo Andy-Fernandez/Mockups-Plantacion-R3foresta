@@ -1,9 +1,11 @@
 # 16 — CO₂ "estimado/proyectado" vs métrica física real
 
-> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](00-README.md).
+> **Pulido de honestidad técnica.** Importante para un proyecto blockchain de transparencia: no decir "capturado" cuando es proyección.
 
 **Prioridad:** Baja (pulido de copy)
 **Bloque:** D — Componentes y copy
+**Referencia funcional:** sec. 2.4, 3.1, 3.3, 7 procesos; RF-PLA-15 (vista pública). No es requerimiento explícito en el JSON, pero es coherencia con el espíritu del proyecto.
+**Rol:** Cross-cutting (cualquier pantalla que muestre CO₂).
 
 ## Estado actual
 

@@ -1,9 +1,11 @@
 # 12 — Dashboard admin con tabs operativas
 
-> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](00-README.md).
+> **Mockup hi-fi con énfasis funcional.** Visión de comando central — KPIs reales del módulo + tabs operativas + alertas accionables. Detalle en [00-README.md](00-README.md).
 
 **Prioridad:** Media
 **Bloque:** C — Mejoras
+**Referencia funcional:** Cross-cutting de RF-PLA-01…17. Vista de comando del ADMIN.
+**Rol:** ADMIN principalmente. COORDINADOR ve versión filtrada (solo sus sub-campañas).
 
 ## Estado actual
 
@@ -45,36 +47,68 @@ Cambiar el grid 2x2 actual a los 4 KPIs específicos de la guía:
 
 ### 3. Agregar tabs principales bajo el hero
 ```
-[ Campañas ]  [ Subcampañas ]  [ Asignaciones ]  [ Alertas ]
+[ Campañas ]  [ Sub-campañas ]  [ Asignaciones ]  [ Alertas ]
 ```
 
 Cada tab muestra una vista distinta:
-- **Campañas:** lo que hoy es el listado (con subcampañas anidadas en cada row).
-- **Subcampañas:** vista plana, ordenada por % avance o por fecha.
-- **Asignaciones:** tabla nueva (depende de tarea 05).
-- **Alertas:** lista de subcampañas con problemas:
-  - Sin coordinador.
-  - Stock asignado < 50% de meta.
-  - Mantenimiento próximo a terminar (faltan <3 meses).
-  - Supervivencia <70%.
+
+#### Tab "Campañas"
+- Lista actual con sub-campañas anidadas en cada row.
+- Mostrar logos de organizaciones asociadas y **estado derivado** (sec. 2.2 docs).
+- Acción inline: "Ver detalle" + "Agregar sub-campaña".
+
+#### Tab "Sub-campañas"
+- Tabla plana de **todas** las sub-campañas (sin agrupar por campaña).
+- Columnas: nombre, campaña padre, tipo, estado, fase mantenimiento, coordinador (snapshot), % avance, eventos recientes.
+- Filtros: por estado operativo, por fase de mantenimiento, por zona, por coordinador.
+- Sort: por % avance, por fecha de cierre, por nombre.
+
+#### Tab "Asignaciones"
+Reusa `ASIGNACIONES_ADMIN` ya en `AdminData.jsx` (creado en tarea 05).
+- Columnas: sub-campaña destino, lote, especie principal, **propósito** (badge), cantidad asignada, consumida, devuelta, disponible, estado (ACTIVA/AGOTADA/DEVUELTA), fecha asignación.
+- Filtros: por propósito, por estado, por sub-campaña.
+- Acción inline: "Devolver al vivero" (solo si `estado === ACTIVA && cantidad_disponible > 0`).
+- Reusa `PropositoBadge` y `EstadoAsignacionBadge` ya en `AdminShell.jsx`.
+
+#### Tab "Alertas"
+Sub-campañas con problemas accionables. Reglas concretas:
+| Tipo | Regla | Color |
+|---|---|---|
+| Sin coordinador | `coordinadorId === null` en sub-campaña ACTIVA | rojo |
+| Stock crítico | `stock_asignado_pendiente < 30% meta` en ACTIVA | ámbar |
+| Mantenimiento por vencer | `fase === MANTENIMIENTO_ACTIVO && meses_restantes < 3` | ámbar |
+| Supervivencia baja | `supervivencia < 70%` en cualquier estado | rojo |
+| Asignación inactiva | asignación ACTIVA sin consumo en >30 días en sub-campaña ACTIVA | ámbar |
+| Meta alcanzable | `(plantados + saldo_disponible) >= meta * 0.95` en ACTIVA | verde — info, no alerta |
+
+Cada alerta es clickable → navega al detalle de la sub-campaña.
 
 ### 4. CTAs visibles
-Tres botones globales:
-- "Crear campaña" (FAB actual — mantener).
-- "Crear subcampaña".
-- "Asignar lotes".
+Tres botones globales (FAB o barra superior):
+- **"Crear campaña"** (ADMIN only) → tarea 10.
+- **"Crear sub-campaña"** (ADMIN only) → tarea 11. Si no hay campañas, el botón muestra "Crear campaña primero".
+- **"Asignar lotes"** (ADMIN o COORDINADOR de la sub-campaña destino) → pantalla `Asignar equipo y lotes.html`.
+
+### 5. Vista del COORDINADOR
+- Mismo dashboard pero las tabs "Campañas" y "Sub-campañas" filtran a **solo** sus sub-campañas (donde es COORDINADOR).
+- Tab "Alertas" filtra igual.
+- CTAs visibles: solo "Asignar lotes" (no puede crear campañas ni sub-campañas).
+
+En el mock, usar un tweak de "Rol actual" (ADMIN / COORDINADOR) para alternar entre vistas.
 
 ## Archivos afectados
 
-- `admin/DashboardScreen.jsx` — refactor del layout.
-- `admin/AdminData.jsx` — generar dataset de alertas y asignaciones.
+- `admin/DashboardScreen.jsx` — refactor del layout: insertar tabs entre el hero y el contenido actual.
+- `admin/AdminData.jsx` — generar `ALERTAS` mock (lista de items con tipo, sub-campaña, mensaje, severidad). Las asignaciones ya existen tras tarea 05.
 
 ## Dependencias / orden
 
-- Depende de 01, 02, 05.
+- Depende de 01, 02 ✅, 05 ✅.
 - Puede ir en paralelo con 13.
 
 ## Notas
 
-- En mobile (max-w-md), los tabs son scrolleables horizontalmente — ya hay precedente con el filtro de estado actual.
+- En mobile (max-w-md), los tabs son scrolleables horizontalmente — ya hay precedente.
 - La actividad reciente queda como sección al final, independiente de los tabs.
+- Las alertas son **vista**, no notificaciones push. No bloquean nada.
+- Los KPIs en el hero deben usar copy honesto de CO₂ (ver tarea 16).
