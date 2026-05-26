@@ -113,13 +113,54 @@ function PersonaRow({ p, isOn, onToggle, yaAsignada }) {
   );
 }
 
+// ── Selector de propósito (PLANTACION_INICIAL / REPOSICION) ─────────────
+// Toggle segmentado embebido en una fila de lote seleccionada. Bloquea la
+// opción PLANTACION_INICIAL cuando la sub-campaña está cerrada.
+
+function PropositoToggle({ value, onChange, permitidos }) {
+  const opciones = [
+    { k: 'PLANTACION_INICIAL', label: 'Inicial',     icon: 'sprout' },
+    { k: 'REPOSICION',         label: 'Reposición',  icon: 'refresh' },
+  ];
+  return (
+    <div className="rounded-2xl bg-white/15 p-1 ring-1 ring-white/20">
+      <div className="flex gap-1">
+        {opciones.map((o) => {
+          const isOn = o.k === value;
+          const disabled = !permitidos.includes(o.k);
+          return (
+            <button
+              key={o.k}
+              type="button"
+              onClick={() => { if (!disabled) onChange(o.k); }}
+              disabled={disabled}
+              title={disabled && o.k === 'PLANTACION_INICIAL'
+                ? 'Solo reposición está permitida en sub-campañas cerradas'
+                : undefined}
+              className={`flex-1 flex items-center justify-center gap-1 rounded-xl px-2 py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.12em] transition
+                ${disabled ? 'opacity-40 cursor-not-allowed text-white/60'
+                  : isOn
+                    ? (o.k === 'PLANTACION_INICIAL' ? 'bg-emerald-400 text-emerald-900 ring-1 ring-emerald-200' : 'bg-orange-300 text-orange-900 ring-1 ring-orange-200')
+                    : 'text-white/85 hover:bg-white/10'}`}>
+              <Icon name={o.icon} className="h-3.5 w-3.5" />
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Lote row ─────────────────────────────────────────────────────────────
 
-function LoteRow({ l, isOn, onToggle, recomendado }) {
+function LoteRow({ l, isOn, onToggle, recomendado, proposito, onProposito, propositosPermitidosLote }) {
+  const propMeta = isOn ? PROPOSITO_ASIGNACION_META[proposito] : null;
   return (
-    <li>
-      <button onClick={() => onToggle(l.id)}
-        className={`flex w-full items-start gap-3 rounded-2xl px-3 py-3 text-left transition shadow-soft ring-1 ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-black/5 hover:ring-brand-300'}`}>
+    <li
+      className={`overflow-hidden rounded-2xl shadow-soft ring-1 transition
+        ${isOn ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-black/5 hover:ring-brand-300'}`}>
+      <button type="button" onClick={() => onToggle(l.id)} className="flex w-full items-start gap-3 px-3 py-3 text-left">
         <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl ${isOn ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700'}`}>
           <Icon name="package" className="h-5 w-5" />
         </div>
@@ -127,6 +168,13 @@ function LoteRow({ l, isOn, onToggle, recomendado }) {
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-extrabold leading-tight">{l.especie}</p>
             {recomendado && !isOn && <span className="rounded-full bg-amber-50 px-1.5 py-0 text-[9px] font-extrabold uppercase tracking-[0.14em] text-amber-800 ring-1 ring-amber-100">Sugerido</span>}
+            {isOn && propMeta && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0 text-[9px] font-extrabold uppercase tracking-[0.14em] ring-1
+                ${proposito === 'PLANTACION_INICIAL' ? 'bg-emerald-400/20 text-emerald-100 ring-emerald-300/30' : 'bg-orange-400/20 text-orange-100 ring-orange-300/30'}`}>
+                <Icon name={propMeta.icon} className="h-3 w-3" />
+                {propMeta.short}
+              </span>
+            )}
           </div>
           <p className={`text-[10.5px] italic ${isOn ? 'text-white/85' : 'text-slate-500'}`}>{l.cientifico}</p>
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] font-bold">
@@ -149,6 +197,16 @@ function LoteRow({ l, isOn, onToggle, recomendado }) {
           </div>
         </div>
       </button>
+      {isOn && (
+        <div className="px-3 pb-3 -mt-1">
+          <p className="mb-1 text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-white/75">Propósito de la asignación</p>
+          <PropositoToggle
+            value={proposito}
+            onChange={(v) => onProposito(l.id, v)}
+            permitidos={propositosPermitidosLote}
+          />
+        </div>
+      )}
     </li>
   );
 }
@@ -183,9 +241,51 @@ function AsignarScreen({
   const campana = selectCampanaAgregado(sub.campanaId) || CAMPANAS_ADMIN_AGREGADAS[0];
   const yaAsignados = sub.equipoIds || [];
 
+  // Propósito por lote — estado interno: si la sub-campaña está cerrada,
+  // todos los nuevos lotes arrancan en REPOSICION; si está ACTIVA, en
+  // PLANTACION_INICIAL.
+  const permitidosSub = propositosPermitidos(sub.estado);
+  const propositoDefault = permitidosSub[0] || 'PLANTACION_INICIAL';
+  const [lotesProposito, setLotesProposito] = React.useState({});
+
+  // Asegura un propósito válido para cada lote seleccionado.
+  React.useEffect(() => {
+    setLotesProposito((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      lotesSeleccionados.forEach((id) => {
+        if (!next[id] || !permitidosSub.includes(next[id])) {
+          next[id] = propositoDefault;
+          changed = true;
+        }
+      });
+      // Limpia los que ya no están seleccionados.
+      Object.keys(next).forEach((id) => {
+        if (!lotesSeleccionados.includes(id)) {
+          delete next[id];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [lotesSeleccionados.join('|'), sub.estado]);
+
+  const setProposito = (loteId, value) => {
+    setLotesProposito((prev) => ({ ...prev, [loteId]: value }));
+  };
+
   const tabCounts = { equipo: equipoSeleccionados.length, lotes: lotesSeleccionados.length };
   const totalSeleccionados = tabCounts.equipo + tabCounts.lotes;
-  const saldoLotes = LOTES_VIVERO.filter(l => lotesSeleccionados.includes(l.id)).reduce((a, l) => a + l.saldo, 0);
+  const lotesObjs = LOTES_VIVERO.filter(l => lotesSeleccionados.includes(l.id));
+  const saldoLotes = lotesObjs.reduce((a, l) => a + l.saldo, 0);
+  const breakdown = lotesObjs.reduce((acc, l) => {
+    const p = lotesProposito[l.id] || propositoDefault;
+    acc[p] = (acc[p] || 0) + 1;
+    return acc;
+  }, {});
+
+  const subCerrada = sub.estado === 'COMPLETADA' || sub.estado === 'FINALIZADA_PARCIAL';
+  const subBorrador = sub.estado === 'BORRADOR';
 
   // Filtered lists
   const personasFiltradas = PERSONAS.filter(p => {
@@ -213,6 +313,34 @@ function AsignarScreen({
         <AsignarTabs tab={tab} onTab={onTab} counts={tabCounts} />
 
         <div className="px-5 pt-3 pb-32 space-y-3 flex-1">
+          {/* Banner contextual de propósito según estado de sub-campaña */}
+          {tab === 'lotes' && subCerrada && (
+            <div className="flex items-start gap-2.5 rounded-2xl bg-orange-50 px-3 py-2.5 ring-1 ring-orange-100">
+              <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+                <Icon name="refresh" className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-orange-800">Solo reposición</p>
+                <p className="mt-0.5 text-[11.5px] font-semibold leading-snug text-orange-900/80">
+                  La sub-campaña está {sub.estado === 'COMPLETADA' ? 'completada' : 'cerrada parcialmente'}. Las nuevas asignaciones solo se aceptan con propósito <b>reposición</b> para mantenimiento.
+                </p>
+              </div>
+            </div>
+          )}
+          {tab === 'lotes' && subBorrador && (
+            <div className="flex items-start gap-2.5 rounded-2xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
+              <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                <Icon name="alert" className="h-3.5 w-3.5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700">Sub-campaña en borrador</p>
+                <p className="mt-0.5 text-[11.5px] font-semibold leading-snug text-slate-600">
+                  Las asignaciones se aceptan cuando la sub-campaña se active. Puedes prepararlas igualmente.
+                </p>
+              </div>
+            </div>
+          )}
+
           <SearchBar value={query} onChange={onQuery}
             placeholder={tab === 'equipo' ? 'Buscar persona…' : 'Buscar lote, especie o vivero…'} />
 
@@ -254,11 +382,15 @@ function AsignarScreen({
                 {lotesFiltrados.map(l => {
                   const especiesSub = (sub.mixPlanificado || []).map(m => m.especie);
                   const recomendado = especiesSub.includes(l.especie) && l.subetapa === 'SOL_DIRECTO';
+                  const isOn = lotesSeleccionados.includes(l.id);
                   return (
                     <LoteRow key={l.id} l={l}
-                      isOn={lotesSeleccionados.includes(l.id)}
+                      isOn={isOn}
                       onToggle={onToggleLote}
-                      recomendado={recomendado} />
+                      recomendado={recomendado}
+                      proposito={lotesProposito[l.id] || propositoDefault}
+                      onProposito={setProposito}
+                      propositosPermitidosLote={permitidosSub.length ? permitidosSub : ['PLANTACION_INICIAL', 'REPOSICION']} />
                   );
                 })}
               </ul>
@@ -269,17 +401,35 @@ function AsignarScreen({
         {/* Footer */}
         <div className="absolute inset-x-0 bottom-0 z-30">
           <div className="px-5 pb-5 pt-3 bg-gradient-to-t from-[#eef2ed] via-[#eef2ed]/95 to-transparent">
-            <div className="flex items-center justify-between rounded-2xl bg-white px-3.5 py-2.5 shadow-soft ring-1 ring-black/5 mb-2">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Vas a asignar</p>
-                <p className="text-sm font-extrabold text-brand-800">
-                  <span className="tabular-nums">{equipoSeleccionados.length}</span> personas · <span className="tabular-nums">{lotesSeleccionados.length}</span> lotes
-                </p>
+            <div className="rounded-2xl bg-white px-3.5 py-2.5 shadow-soft ring-1 ring-black/5 mb-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Vas a asignar</p>
+                  <p className="text-sm font-extrabold text-brand-800">
+                    <span className="tabular-nums">{equipoSeleccionados.length}</span> personas · <span className="tabular-nums">{lotesSeleccionados.length}</span> lotes
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-bold text-slate-500">Saldo total</p>
+                  <p className="text-sm font-extrabold text-brand-800 tabular-nums">{saldoLotes} plantas</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-[10px] font-bold text-slate-500">Saldo total</p>
-                <p className="text-sm font-extrabold text-brand-800 tabular-nums">{saldoLotes} plantas</p>
-              </div>
+              {lotesSeleccionados.length > 0 && (breakdown.PLANTACION_INICIAL || breakdown.REPOSICION) && (
+                <div className="mt-2 flex items-center gap-1.5 border-t border-slate-100 pt-2">
+                  {breakdown.PLANTACION_INICIAL > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-emerald-800 ring-1 ring-emerald-100">
+                      <Icon name="sprout" className="h-3 w-3" />
+                      {breakdown.PLANTACION_INICIAL} inicial
+                    </span>
+                  )}
+                  {breakdown.REPOSICION > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-orange-800 ring-1 ring-orange-100">
+                      <Icon name="refresh" className="h-3 w-3" />
+                      {breakdown.REPOSICION} reposición
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <button onClick={onConfirmar}
               disabled={totalSeleccionados === 0}

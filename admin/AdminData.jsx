@@ -9,8 +9,8 @@
 // no escribe nunca su propia meta/plantados/equipo/mix — los recibe agregados
 // de sus hijas al cargar el módulo.
 //
-// Sub-campaña ≡ Etapa: misma tabla técnica, discriminada por `tipo`
-// (COMUNIDAD · ETAPA · URBANA). El label visible depende de `tipo`.
+// Sub-campaña: misma tabla técnica, discriminada por `tipo`
+// (REFORESTACION · ARBORIZACION · FORESTACION). El label visible depende de `tipo`.
 
 // ── Programa (constante por tenant) ──────────────────────────────────────
 const PROGRAMA = {
@@ -136,7 +136,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-014-A',
     campanaId: 'CAM-2026-014',
-    tipo: 'COMUNIDAD',
+    tipo: 'ARBORIZACION',
     nombre: 'San Miguel',
     comunidad: 'San Miguel',
     municipio: 'La Paz · Sur',
@@ -166,7 +166,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-014-B',
     campanaId: 'CAM-2026-014',
-    tipo: 'COMUNIDAD',
+    tipo: 'ARBORIZACION',
     nombre: 'Achocalla',
     comunidad: 'Achocalla',
     municipio: 'La Paz · Sur',
@@ -197,7 +197,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-014-C',
     campanaId: 'CAM-2026-014',
-    tipo: 'URBANA',
+    tipo: 'ARBORIZACION',
     nombre: 'Etapa central · Av. Camacho',
     comunidad: null,
     municipio: 'La Paz · Centro',
@@ -227,7 +227,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-014-D',
     campanaId: 'CAM-2026-014',
-    tipo: 'COMUNIDAD',
+    tipo: 'ARBORIZACION',
     nombre: 'Mallasa',
     comunidad: 'Mallasa',
     municipio: 'La Paz · Sur',
@@ -256,7 +256,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-007-A',
     campanaId: 'CAM-2026-007',
-    tipo: 'COMUNIDAD',
+    tipo: 'REFORESTACION',
     nombre: 'Hampaturi Alto',
     comunidad: 'Hampaturi Alto',
     municipio: 'Hampaturi',
@@ -286,7 +286,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-007-B',
     campanaId: 'CAM-2026-007',
-    tipo: 'COMUNIDAD',
+    tipo: 'REFORESTACION',
     nombre: 'Hampaturi Bajo',
     comunidad: 'Hampaturi Bajo',
     municipio: 'Hampaturi',
@@ -316,7 +316,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-007-C',
     campanaId: 'CAM-2026-007',
-    tipo: 'ETAPA',
+    tipo: 'FORESTACION',
     nombre: 'Etapa 2 · Pinar Sur',
     comunidad: 'Hampaturi Sur',
     municipio: 'Hampaturi',
@@ -347,7 +347,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-022-A',
     campanaId: 'CAM-2025-022',
-    tipo: 'COMUNIDAD',
+    tipo: 'ARBORIZACION',
     nombre: 'Achumani Norte',
     comunidad: 'Achumani',
     municipio: 'La Paz · Sur',
@@ -382,7 +382,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-019-A',
     campanaId: 'CAM-2025-019',
-    tipo: 'COMUNIDAD',
+    tipo: 'ARBORIZACION',
     nombre: 'Sopocachi',
     comunidad: 'Sopocachi',
     municipio: 'La Paz · Centro',
@@ -461,10 +461,119 @@ const FASE_MANTENIMIENTO_META = {
 
 // Label de tipo (sub-campaña) — derivado del enum.
 const TIPO_SUBCAMPANA_LABEL = {
-  COMUNIDAD: 'COMUNIDAD',
-  ETAPA:     'ETAPA',
-  URBANA:    'URBANA',
+  REFORESTACION: 'REFORESTACIÓN',
+  ARBORIZACION:  'ARBORIZACIÓN',
+  FORESTACION:   'FORESTACIÓN',
 };
+
+// ── Asignaciones lote → sub-campaña con propósito ────────────────────────
+// Una asignación reserva saldo vivo de un LOTE_VIVERO hacia una sub-campaña
+// con un propósito explícito:
+//   · PLANTACION_INICIAL: el stock sale en plantaciones iniciales (avanzan meta).
+//     Solo permitido en sub-campañas ACTIVA.
+//   · REPOSICION: el stock sale exclusivamente en reposiciones (no avanzan meta).
+//     Permitido en ACTIVA, COMPLETADA y FINALIZADA_PARCIAL.
+//
+// Estado derivado:
+//   · ACTIVA   = saldo disponible > 0 y sub-campaña no terminal.
+//   · AGOTADA  = todo el saldo asignado se consumió.
+//   · DEVUELTA = todo el saldo asignado se devolvió al vivero.
+const PROPOSITO_ASIGNACION_META = {
+  PLANTACION_INICIAL: {
+    label: 'PLANTACIÓN INICIAL',
+    short: 'INICIAL',
+    desc:  'Stock que arranca la sub-campaña y avanza la meta',
+    tone:  'bg-emerald-50 text-emerald-800 ring-emerald-100',
+    lightTone: 'bg-emerald-400/20 text-emerald-100 ring-emerald-300/30',
+    dot:   'bg-emerald-500',
+    icon:  'sprout',
+  },
+  REPOSICION: {
+    label: 'REPOSICIÓN',
+    short: 'REPOS.',
+    desc:  'Stock que solo se usa para reponer árboles muertos',
+    tone:  'bg-orange-50 text-orange-800 ring-orange-100',
+    lightTone: 'bg-orange-400/20 text-orange-100 ring-orange-300/30',
+    dot:   'bg-orange-500',
+    icon:  'refresh',
+  },
+};
+
+const ESTADO_ASIGNACION_META = {
+  ACTIVA:   { label: 'ACTIVA',   tone: 'bg-emerald-50 text-emerald-700 ring-emerald-100', dot: 'bg-emerald-500' },
+  AGOTADA:  { label: 'AGOTADA',  tone: 'bg-slate-100 text-slate-600 ring-slate-200',      dot: 'bg-slate-400' },
+  DEVUELTA: { label: 'DEVUELTA', tone: 'bg-amber-50 text-amber-800 ring-amber-100',       dot: 'bg-amber-500' },
+};
+
+// Mock de asignaciones. Las cantidades son coherentes con `sub.plantados` y
+// `LOTES_VIVERO[].saldo` pero no se validan en vivo: este es un mock visual.
+const ASIGNACIONES_ADMIN = [
+  // ── SUB-014-B · Achocalla (ACTIVA, 720/900) ──
+  { id: 'ASG-001', subcampanaId: 'SUB-014-B', loteId: 'VIV-000123-REC-000045', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 500, cantidadConsumida: 290, cantidadDevuelta: 0,  fechaAsignacionISO: '2026-03-12', usuarioAsignacionId: 'co-1' },
+  { id: 'ASG-002', subcampanaId: 'SUB-014-B', loteId: 'VIV-000131-REC-000051', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 600, cantidadConsumida: 430, cantidadDevuelta: 0,  fechaAsignacionISO: '2026-03-12', usuarioAsignacionId: 'co-1' },
+
+  // ── SUB-014-C · Av. Camacho (ACTIVA, 520/700) ──
+  { id: 'ASG-003', subcampanaId: 'SUB-014-C', loteId: 'VIV-000131-REC-000051', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 500, cantidadConsumida: 312, cantidadDevuelta: 0,  fechaAsignacionISO: '2026-03-20', usuarioAsignacionId: 'co-3' },
+  { id: 'ASG-004', subcampanaId: 'SUB-014-C', loteId: 'VIV-000118-REC-000038', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 400, cantidadConsumida: 208, cantidadDevuelta: 0,  fechaAsignacionISO: '2026-03-22', usuarioAsignacionId: 'co-3' },
+
+  // ── SUB-007-A · Hampaturi Alto (ACTIVA, 1670/2000) ──
+  { id: 'ASG-005', subcampanaId: 'SUB-007-A', loteId: 'VIV-000142-REC-000062', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 1100, cantidadConsumida: 820, cantidadDevuelta: 0, fechaAsignacionISO: '2026-01-09', usuarioAsignacionId: 'co-1' },
+  { id: 'ASG-006', subcampanaId: 'SUB-007-A', loteId: 'VIV-000145-REC-000065', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 1000, cantidadConsumida: 850, cantidadDevuelta: 0, fechaAsignacionISO: '2026-01-09', usuarioAsignacionId: 'co-1' },
+
+  // ── SUB-007-B · Hampaturi Bajo (ACTIVA, 1200/2000) ──
+  { id: 'ASG-007', subcampanaId: 'SUB-007-B', loteId: 'VIV-000145-REC-000065', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 800, cantidadConsumida: 620, cantidadDevuelta: 0,  fechaAsignacionISO: '2026-01-15', usuarioAsignacionId: 'co-2' },
+  { id: 'ASG-008', subcampanaId: 'SUB-007-B', loteId: 'VIV-000139-REC-000058', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 700, cantidadConsumida: 580, cantidadDevuelta: 50, fechaAsignacionISO: '2026-01-15', usuarioAsignacionId: 'co-2' },
+
+  // ── SUB-022-A · Achumani Norte (FINALIZADA_PARCIAL, 380/1200, mantenimiento activo) ──
+  // Inicial cerrada (agotada / devuelta) + REPOSICION activa para mantenimiento.
+  { id: 'ASG-009', subcampanaId: 'SUB-022-A', loteId: 'VIV-000123-REC-000045', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 230, cantidadConsumida: 230, cantidadDevuelta: 0,   fechaAsignacionISO: '2025-09-16', usuarioAsignacionId: 'co-2' },
+  { id: 'ASG-010', subcampanaId: 'SUB-022-A', loteId: 'VIV-000118-REC-000038', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 200, cantidadConsumida: 150, cantidadDevuelta: 50,  fechaAsignacionISO: '2025-09-16', usuarioAsignacionId: 'co-2' },
+  { id: 'ASG-011', subcampanaId: 'SUB-022-A', loteId: 'VIV-000123-REC-000045', proposito: 'REPOSICION',         cantidadAsignada: 80,  cantidadConsumida: 25,  cantidadDevuelta: 0,   fechaAsignacionISO: '2026-04-10', usuarioAsignacionId: 'co-2' },
+
+  // ── SUB-019-A · Sopocachi (COMPLETADA, 812/800, monitoreo histórico) ──
+  { id: 'ASG-012', subcampanaId: 'SUB-019-A', loteId: 'VIV-000131-REC-000051', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 410, cantidadConsumida: 410, cantidadDevuelta: 0, fechaAsignacionISO: '2025-03-02', usuarioAsignacionId: 'co-1' },
+  { id: 'ASG-013', subcampanaId: 'SUB-019-A', loteId: 'VIV-000118-REC-000038', proposito: 'PLANTACION_INICIAL', cantidadAsignada: 402, cantidadConsumida: 402, cantidadDevuelta: 0, fechaAsignacionISO: '2025-03-02', usuarioAsignacionId: 'co-1' },
+  { id: 'ASG-014', subcampanaId: 'SUB-019-A', loteId: 'VIV-000139-REC-000058', proposito: 'REPOSICION',         cantidadAsignada: 30,  cantidadConsumida: 30,  cantidadDevuelta: 0, fechaAsignacionISO: '2025-11-04', usuarioAsignacionId: 'co-1' },
+];
+
+// Hidrata una asignación con datos derivados (saldo disponible, estado, snapshots).
+function hydrateAsignacion(a) {
+  const disponible = Math.max(0, (a.cantidadAsignada || 0) - (a.cantidadConsumida || 0) - (a.cantidadDevuelta || 0));
+  let estado = 'ACTIVA';
+  if ((a.cantidadDevuelta || 0) >= (a.cantidadAsignada || 0)) estado = 'DEVUELTA';
+  else if (disponible === 0) estado = 'AGOTADA';
+  const lote = LOTES_VIVERO.find(l => l.id === a.loteId) || null;
+  const sub  = SUBCAMPANAS_ADMIN.find(s => s.id === a.subcampanaId) || null;
+  const consumidoPct = a.cantidadAsignada ? Math.round(((a.cantidadConsumida || 0) / a.cantidadAsignada) * 100) : 0;
+  return {
+    ...a,
+    cantidadDisponible: disponible,
+    estado,
+    lote,
+    sub,
+    consumidoPct,
+  };
+}
+
+const ASIGNACIONES_HIDRATADAS = ASIGNACIONES_ADMIN.map(hydrateAsignacion);
+
+function asignacionesDeSubcampana(subcampanaId) {
+  return ASIGNACIONES_HIDRATADAS.filter(a => a.subcampanaId === subcampanaId);
+}
+
+// Gate de propósito según estado de sub-campaña.
+//   · BORRADOR              → ningún propósito permitido (la sub-campaña no opera).
+//   · ACTIVA                → ambos propósitos permitidos.
+//   · COMPLETADA / PARCIAL  → solo REPOSICION.
+function propositosPermitidos(estadoSub) {
+  if (estadoSub === 'ACTIVA') return ['PLANTACION_INICIAL', 'REPOSICION'];
+  if (estadoSub === 'COMPLETADA' || estadoSub === 'FINALIZADA_PARCIAL') return ['REPOSICION'];
+  return [];
+}
+
+function puedeAsignarConProposito(estadoSub, proposito) {
+  return propositosPermitidos(estadoSub).includes(proposito);
+}
 
 // ── Selectores derivados ────────────────────────────────────────────────
 function subcampanasDe(campanaId) {
@@ -700,6 +809,12 @@ window.TRANSICIONES_SUBCAMPANA = TRANSICIONES_SUBCAMPANA;
 window.ESTADO_SUBCAMPANA_META = ESTADO_SUBCAMPANA_META;
 window.FASE_MANTENIMIENTO_META = FASE_MANTENIMIENTO_META;
 window.TIPO_SUBCAMPANA_LABEL = TIPO_SUBCAMPANA_LABEL;
+window.PROPOSITO_ASIGNACION_META = PROPOSITO_ASIGNACION_META;
+window.ESTADO_ASIGNACION_META = ESTADO_ASIGNACION_META;
+window.ASIGNACIONES_ADMIN = ASIGNACIONES_HIDRATADAS;
+window.asignacionesDeSubcampana = asignacionesDeSubcampana;
+window.propositosPermitidos = propositosPermitidos;
+window.puedeAsignarConProposito = puedeAsignarConProposito;
 window.puedeTransitionar = puedeTransitionar;
 window.subcampanasDe = subcampanasDe;
 window.selectCampanaAgregado = selectCampanaAgregado;

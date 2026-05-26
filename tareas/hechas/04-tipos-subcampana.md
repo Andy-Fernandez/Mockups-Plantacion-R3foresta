@@ -1,6 +1,10 @@
 # 04 — Tipos de subcampaña correctos
 
-> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](00-README.md).
+> **Estado de revisión:** Hecha en el mock visual.
+> **Resumen:** el modelo mock quedó alineado a `REFORESTACION`, `ARBORIZACION` y `FORESTACION`; también existe badge visual para los 3 tipos y selector con cards en creación.
+> **Alcance:** solo UI/UX mock con datos hardcodeados; sin lógica real ni persistencia.
+
+> **Solo mockup visual** — pantallas estáticas con datos hardcodeados en `*Data.jsx`. Sin lógica real, sin transiciones funcionales, sin cálculos en vivo. La idea es mostrar **cómo se ve**, no cómo funciona. Detalle en [00-README.md](../00-README.md).
 
 **Prioridad:** Media
 **Bloque:** A — Modelo

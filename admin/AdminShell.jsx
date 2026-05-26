@@ -19,9 +19,27 @@ const FASE_META = {
 };
 
 const TIPO_META = {
-  ARBORIZACION:  { label: 'ARBORIZACIÓN',  tone: 'bg-amber-50 text-amber-800 ring-amber-100' },
-  REFORESTACION: { label: 'REFORESTACIÓN', tone: 'bg-emerald-50 text-emerald-700 ring-emerald-100' },
-  FORESTACION:   { label: 'FORESTACIÓN',   tone: 'bg-brand-50 text-brand-700 ring-brand-100' },
+  REFORESTACION: {
+    label: 'REFORESTACIÓN',
+    desc: 'Replantar bosque donde antes había cobertura.',
+    icon: 'trees',
+    tone: 'bg-brand-50 text-brand-700 ring-brand-100',
+    lightTone: 'bg-emerald-400/20 text-emerald-100 ring-emerald-300/30',
+  },
+  ARBORIZACION: {
+    label: 'ARBORIZACIÓN',
+    desc: 'Plantación para calles, avenidas y tejido urbano.',
+    icon: 'building',
+    tone: 'bg-amber-50 text-amber-800 ring-amber-100',
+    lightTone: 'bg-amber-400/20 text-amber-100 ring-amber-300/30',
+  },
+  FORESTACION: {
+    label: 'FORESTACIÓN',
+    desc: 'Crear bosque nuevo donde antes no existía.',
+    icon: 'sprout',
+    tone: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+    lightTone: 'bg-cyan-400/20 text-cyan-100 ring-cyan-300/30',
+  },
 };
 
 function StateBadge({ estado, light, compact }) {
@@ -61,11 +79,37 @@ function FaseBadge({ fase, mesesRestantes, light, compact }) {
   );
 }
 
-function TipoBadge({ tipo }) {
+function TipoBadge({ tipo, light = false, compact = false }) {
   const m = TIPO_META[tipo];
   if (!m) return null;
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${m.tone}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${light ? m.lightTone : m.tone}`}>
+      <Icon name={m.icon} className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+      {m.label}
+    </span>
+  );
+}
+
+// Propósito de la asignación (PLANTACION_INICIAL / REPOSICION).
+function PropositoBadge({ proposito, light = false, compact = false }) {
+  const m = PROPOSITO_ASIGNACION_META?.[proposito];
+  if (!m) return null;
+  const text = compact ? m.short : m.label;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${light ? m.lightTone : m.tone}`}>
+      <Icon name={m.icon} className={compact ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
+      {text}
+    </span>
+  );
+}
+
+// Estado derivado de asignación (ACTIVA · AGOTADA · DEVUELTA).
+function EstadoAsignacionBadge({ estado, compact = false }) {
+  const m = ESTADO_ASIGNACION_META?.[estado];
+  if (!m) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] ring-1 ${m.tone}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
       {m.label}
     </span>
   );
@@ -253,6 +297,8 @@ function OrgInlineList({ items, light = false, compact = false }) {
 window.StateBadge = StateBadge;
 window.FaseBadge  = FaseBadge;
 window.TipoBadge  = TipoBadge;
+window.PropositoBadge = PropositoBadge;
+window.EstadoAsignacionBadge = EstadoAsignacionBadge;
 window.Progress   = Progress;
 window.StatesDonut = StatesDonut;
 window.MiniMap    = MiniMap;
@@ -260,5 +306,6 @@ window.AvatarPile = AvatarPile;
 window.OrgLogo = OrgLogo;
 window.OrgLogoPile = OrgLogoPile;
 window.OrgInlineList = OrgInlineList;
+window.TIPO_META = TIPO_META;
 window.ESTADO_META = ESTADO_META;
 window.FASE_META   = FASE_META;

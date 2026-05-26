@@ -38,7 +38,7 @@ Cada archivo es **una tarea autocontenida** con: estado actual, qué dice la gu�
 | ✅ | Estados operativos alineados al mock actual: BORRADOR, ACTIVA, COMPLETADA, FINALIZADA_PARCIAL |
 | ✅ | Fase de mantenimiento visible como eje paralelo en el mock actual |
 | ⚠️ | Falta concepto de "organizaciones asociadas" |
-| ⚠️ | Tipos de subcampaña no coinciden (URBANA/COMUNIDAD vs guía REFORESTACION/ARBORIZACION/FORESTACION) |
+| ✅ | Tipos de subcampaña alineados a REFORESTACION / ARBORIZACION / FORESTACION |
 | ⚠️ | Falta propósito en asignaciones (PLANTACION_INICIAL / REPOSICION) |
 | ❌ | Faltan 5 pantallas: Home pública mapa, Detalle público subcampaña, Mortandad, Reposición, Finalizar parcial |
 
@@ -47,10 +47,10 @@ Cada archivo es **una tarea autocontenida** con: estado actual, qué dice la gu�
 ### Hechas
 - [01 — Alinear estados y fase de mantenimiento](hechas/01-alinear-estados-y-fase.md)
 - [02 — Jerarquía Campaña vs Subcampaña según guía](hechas/02-jerarquia-campana-subcampana.md)
+- [04 — Tipos de subcampaña correctos](hechas/04-tipos-subcampana.md)
 
 ### Bloque A — Alinear modelo de datos (base para todo lo demás)
 - [03 — Organizaciones asociadas](03-organizaciones-asociadas.md)
-- [04 — Tipos de subcampaña correctos](04-tipos-subcampana.md)
 - [05 — Asignaciones con propósito](05-asignaciones-con-proposito.md)
 
 ### Bloque B — Pantallas nuevas

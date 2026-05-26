@@ -27,11 +27,7 @@ function SubcampanaBadge({ estado }) {
 
 function TipoSubBadge({ tipo }) {
   if (!tipo) return null;
-  return (
-    <span className="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-700 ring-1 ring-brand-100">
-      {TIPO_SUBCAMPANA_LABEL[tipo] || tipo}
-    </span>
-  );
+  return <TipoBadge tipo={tipo} compact />;
 }
 
 // ── Header hero ─────────────────────────────────────────────────────────

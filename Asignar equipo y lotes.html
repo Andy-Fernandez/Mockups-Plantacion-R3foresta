@@ -77,6 +77,9 @@ tailwind.config = {
         <button data-val="SUB-014-B" class="on">Achocalla <span class="tag">ACTIVA</span></button>
         <button data-val="SUB-014-C">Av. Camacho <span class="tag">ACTIVA</span></button>
         <button data-val="SUB-007-A">Queñua Norte <span class="tag">ACTIVA</span></button>
+        <button data-val="SUB-022-A">Achumani Norte <span class="tag">PARCIAL</span></button>
+        <button data-val="SUB-019-A">Sopocachi <span class="tag">COMPLETADA</span></button>
+        <button data-val="SUB-014-A">San Miguel <span class="tag">BORRADOR</span></button>
       </div>
     </div>
 
@@ -237,7 +240,7 @@ function App() {
       <TweaksPanel>
         <TweakSection label="Contexto" />
         <TweakSelect label="Sub-campaña" value={t.subcampanaId}
-                     options={['SUB-014-B','SUB-014-C','SUB-007-A']}
+                     options={['SUB-014-B','SUB-014-C','SUB-007-A','SUB-022-A','SUB-019-A','SUB-014-A']}
                      onChange={(v) => setTweak('subcampanaId', v)} />
         <TweakRadio label="Pestaña" value={t.tab}
                     options={['equipo','lotes']}

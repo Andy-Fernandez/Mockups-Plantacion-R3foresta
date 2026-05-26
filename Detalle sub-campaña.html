@@ -83,7 +83,7 @@ tailwind.config = {
       <div class="seg" id="seg-tab">
         <button data-val="resumen" class="on">Resumen</button>
         <button data-val="equipo">Equipo</button>
-        <button data-val="lotes">Lotes</button>
+        <button data-val="asignaciones">Asignaciones</button>
         <button data-val="mapa">Mapa</button>
       </div>
     </div>
@@ -220,7 +220,7 @@ function App() {
           }} />
         <TweakSection label="Navegación" />
         <TweakRadio label="Pestaña" value={t.tab}
-          options={['resumen','equipo','lotes','mapa']}
+          options={['resumen','equipo','asignaciones','mapa']}
           onChange={(v) => setTweak('tab', v)} />
       </TweaksPanel>
     </React.Fragment>

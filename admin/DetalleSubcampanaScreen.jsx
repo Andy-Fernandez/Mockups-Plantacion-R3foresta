@@ -40,6 +40,9 @@ function DSCHeader({ sub, campana, onBack, onMore }) {
           {campana?.nombre || 'Campaña'} › {sub.id}
         </p>
         <h1 className="mt-0.5 text-[26px] font-extrabold leading-[1.1] tracking-tight">{sub.nombre}</h1>
+        <div className="mt-2">
+          <TipoBadge tipo={sub.tipo} light compact />
+        </div>
         <p className="mt-1 text-[12.5px] font-medium text-white/85">
           {sub.comunidad || sub.municipio || (campana?.zona || '')}
         </p>
@@ -99,7 +102,7 @@ function DSCTabs({ active, onChange }) {
   const tabs = [
     { k: 'resumen', label: 'Resumen' },
     { k: 'equipo', label: 'Equipo' },
-    { k: 'lotes', label: 'Lotes' },
+    { k: 'asignaciones', label: 'Asign.' },
     { k: 'mapa', label: 'Mapa' },
   ];
   return (
@@ -245,45 +248,126 @@ function DSCEquipo({ sub }) {
   );
 }
 
-function DSCLotes({ sub }) {
-  const lotes = (sub.lotesIds || []).map(id => LOTES_VIVERO.find(l => l.id === id)).filter(Boolean);
-  const totalSaldo = lotes.reduce((a, l) => a + l.saldo, 0);
+function DSCAsignaciones({ sub }) {
+  const asignaciones = asignacionesDeSubcampana(sub.id);
+  const totalAsignada    = asignaciones.reduce((a, x) => a + (x.cantidadAsignada || 0), 0);
+  const totalConsumida   = asignaciones.reduce((a, x) => a + (x.cantidadConsumida || 0), 0);
+  const totalDevuelta    = asignaciones.reduce((a, x) => a + (x.cantidadDevuelta || 0), 0);
+  const totalDisponible  = asignaciones.reduce((a, x) => a + (x.cantidadDisponible || 0), 0);
+  const subCerrada = sub.estado === 'COMPLETADA' || sub.estado === 'FINALIZADA_PARCIAL';
+  const ctaProposito = subCerrada ? 'Asignar reposición' : 'Asignar lotes';
+
   return (
     <div className="space-y-3">
+      {/* Hero: resumen de saldo */}
       <div className="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-700 p-4 text-white shadow-soft">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/80">Saldo asignado</p>
-        <div className="mt-1 flex items-end justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[36px] font-extrabold leading-none tracking-tight tabular-nums">{totalSaldo.toLocaleString('es-BO')}</p>
-            <p className="mt-1 text-[11px] font-bold text-white/80">en {lotes.length} lotes</p>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/80">Saldo asignado disponible</p>
+            <p className="mt-1 text-[36px] font-extrabold leading-none tracking-tight tabular-nums">{totalDisponible.toLocaleString('es-BO')}</p>
+            <p className="mt-1 text-[11px] font-bold text-white/80">
+              de <span className="tabular-nums">{totalAsignada.toLocaleString('es-BO')}</span> en {asignaciones.length} {asignaciones.length === 1 ? 'asignación' : 'asignaciones'}
+            </p>
           </div>
-          <button onClick={() => { window.location.href = 'Asignar equipo y lotes.html'; }} className="rounded-2xl bg-white/15 px-3 py-2 text-[11px] font-extrabold text-white hover:bg-white/20">
-            Ajustar
+          <button onClick={() => { window.location.href = `Asignar equipo y lotes.html?subcampanaId=${encodeURIComponent(sub.id)}`; }}
+            className="flex items-center gap-1.5 rounded-2xl bg-white/15 px-3 py-2 text-[11px] font-extrabold text-white hover:bg-white/20">
+            <Icon name="plus" className="h-3.5 w-3.5" />
+            {ctaProposito}
           </button>
         </div>
-      </div>
-      <ul className="space-y-2">
-        {lotes.map((l) => (
-          <li key={l.id} className="rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                <Icon name="package" className="h-5 w-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-extrabold text-brand-800 leading-tight">{l.especie}</p>
-                <p className="text-[10.5px] italic text-slate-500">{l.cientifico}</p>
-                <p className="mt-1 text-[10.5px] font-bold text-slate-400">
-                  <span className="text-brand-700">{l.id.split('-').slice(0, 2).join('-')}</span> · {l.vivero}
-                </p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-lg font-extrabold text-brand-800 tabular-nums">{l.saldo.toLocaleString('es-BO')}</p>
-                <p className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider">saldo</p>
-              </div>
+        {totalAsignada > 0 && (
+          <div className="mt-3">
+            <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
+              <div className="absolute inset-y-0 left-0 bg-emerald-300" style={{ width: `${(totalConsumida / totalAsignada) * 100}%` }} />
+              <div className="absolute inset-y-0 bg-amber-300" style={{ left: `${(totalConsumida / totalAsignada) * 100}%`, width: `${(totalDevuelta / totalAsignada) * 100}%` }} />
             </div>
-          </li>
-        ))}
-      </ul>
+            <div className="mt-1.5 flex items-center gap-3 text-[10px] font-bold text-white/80">
+              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-300" /> consumido <span className="tabular-nums text-white">{totalConsumida.toLocaleString('es-BO')}</span></span>
+              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-300" /> devuelto <span className="tabular-nums text-white">{totalDevuelta.toLocaleString('es-BO')}</span></span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Empty state */}
+      {asignaciones.length === 0 && (
+        <div className="rounded-3xl bg-white p-6 text-center shadow-soft ring-1 ring-black/5">
+          <Icon name="package" className="mx-auto h-10 w-10 text-slate-300" />
+          <p className="mt-2 text-sm font-extrabold text-brand-800">Sin asignaciones todavía</p>
+          <p className="mt-1 text-[11.5px] font-semibold text-slate-500">
+            {sub.estado === 'BORRADOR'
+              ? 'Activa la sub-campaña para asignar lotes.'
+              : `Asigna lotes del vivero con propósito ${subCerrada ? 'reposición' : 'plantación inicial o reposición'}.`}
+          </p>
+        </div>
+      )}
+
+      {/* Listado de asignaciones */}
+      {asignaciones.length > 0 && (
+        <ul className="space-y-2">
+          {asignaciones.map((a) => {
+            const propMeta  = PROPOSITO_ASIGNACION_META[a.proposito];
+            const consumPct = a.cantidadAsignada ? Math.round((a.cantidadConsumida / a.cantidadAsignada) * 100) : 0;
+            const devolPct  = a.cantidadAsignada ? Math.round((a.cantidadDevuelta  / a.cantidadAsignada) * 100) : 0;
+            const lote = a.lote;
+            const puedeDevolver = a.estado === 'ACTIVA' && a.cantidadDisponible > 0;
+            return (
+              <li key={a.id} className="rounded-2xl bg-white p-3 shadow-soft ring-1 ring-black/5">
+                <div className="flex items-start gap-3">
+                  <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl ${a.proposito === 'PLANTACION_INICIAL' ? 'bg-emerald-50 text-emerald-700' : 'bg-orange-50 text-orange-700'}`}>
+                    <Icon name={propMeta?.icon || 'package'} className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-sm font-extrabold text-brand-800 leading-tight">{lote?.especie || 'Lote'}</p>
+                      <PropositoBadge proposito={a.proposito} compact />
+                      <EstadoAsignacionBadge estado={a.estado} />
+                    </div>
+                    {lote && <p className="text-[10.5px] italic text-slate-500">{lote.cientifico}</p>}
+                    <p className="mt-1 text-[10.5px] font-bold text-slate-400">
+                      <span className="text-brand-700">{(lote?.id || a.loteId).split('-').slice(0, 2).join('-')}</span>
+                      {lote?.vivero ? ` · ${lote.vivero}` : ''}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-lg font-extrabold text-brand-800 tabular-nums">{a.cantidadDisponible.toLocaleString('es-BO')}</p>
+                    <p className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider">disponible</p>
+                  </div>
+                </div>
+
+                {/* Barra de consumo + devolución */}
+                <div className="mt-2.5">
+                  <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className="absolute inset-y-0 left-0 bg-emerald-500" style={{ width: `${consumPct}%` }} />
+                    <div className="absolute inset-y-0 bg-amber-400" style={{ left: `${consumPct}%`, width: `${devolPct}%` }} />
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-[10px] font-bold text-slate-500">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> <span className="tabular-nums text-brand-800">{a.cantidadConsumida.toLocaleString('es-BO')}</span> consumido</span>
+                      {a.cantidadDevuelta > 0 && (
+                        <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> <span className="tabular-nums text-brand-800">{a.cantidadDevuelta.toLocaleString('es-BO')}</span> devuelto</span>
+                      )}
+                    </span>
+                    <span className="tabular-nums">de {a.cantidadAsignada.toLocaleString('es-BO')}</span>
+                  </div>
+                </div>
+
+                {/* Acción inline: devolver al vivero (deshabilitado para mock) */}
+                {puedeDevolver && (
+                  <div className="mt-2.5 flex items-center justify-end gap-2 border-t border-slate-100 pt-2">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[10.5px] font-extrabold text-amber-800 ring-1 ring-amber-100 hover:bg-amber-100">
+                      <Icon name="arrow-left" className="h-3 w-3" />
+                      Devolver al vivero
+                    </button>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
@@ -379,7 +463,7 @@ function DetalleSubcampanaScreen({ subcampanaId, tab, onTab, moreOpen, onMoreOpe
           <DSCTabs active={tab} onChange={onTab} />
           {tab === 'resumen' && <DSCResumen sub={sub} campana={campana} onTabMapa={() => onTab('mapa')} />}
           {tab === 'equipo' && <DSCEquipo sub={sub} />}
-          {tab === 'lotes' && <DSCLotes sub={sub} />}
+          {(tab === 'asignaciones' || tab === 'lotes') && <DSCAsignaciones sub={sub} />}
           {tab === 'mapa' && <DSCMapa sub={sub} />}
         </div>
       </div>

@@ -235,12 +235,13 @@ const SUBCAMPANA_ESPECIES_BASE = [
 const SUBCAMPANA_EQUIPO_BASE = ['op-1', 'op-2', 'op-3', 'co-1'];
 const SUBCAMPANA_LOTES_BASE = ['VIV-000123-REC-000045', 'VIV-000131-REC-000051'];
 
-function createSubcampana(comunidad, index) {
+function createSubcampana(comunidad, index, tipo) {
   return {
     id: `sub-${index + 1}`,
     comunidadId: comunidad.id,
     comunidadNombre: comunidad.nombre,
     municipio: comunidad.municipio,
+    tipo: tipo || 'REFORESTACION',
     estado: 'BORRADOR',
     progresoPaso: 0,
     coordinadorId: '',
@@ -416,6 +417,8 @@ function App() {
         ? s.lotesIds.filter((x) => x !== id)
         : [...s.lotesIds, id],
     }));
+  const onChangeSubcampanaTipo = (tipo) =>
+    updateActiveSubcampana({ tipo });
   const onChangeSubcampanaCoordinador = (id) => {
     const persona = PERSONAS.find((p) => p.id === id) || null;
     updateActiveSubcampana({
@@ -426,7 +429,7 @@ function App() {
   const onChangeSubcampanaFecha = (field, value) =>
     updateActiveSubcampana({ [field]: value });
   const onAddSubcampana = (comunidad) => {
-    setSubcampanas((prev) => [...prev, createSubcampana(comunidad, prev.length)]);
+    setSubcampanas((prev) => [...prev, createSubcampana(comunidad, prev.length, t.tipo)]);
     setSubcampanaQuery('');
     setPickerOpen(false);
   };
@@ -495,6 +498,7 @@ function App() {
           fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel} fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
           fechaInicioISO={CAMPANA_GENERAL_RANGE.inicioISO} fechaFinISO={CAMPANA_GENERAL_RANGE.finISO}
           subcampanaActiva={subcampanaActiva}
+          onSubcampanaTipo={onChangeSubcampanaTipo}
           onSubcampanaCoordinador={onChangeSubcampanaCoordinador}
           onSubcampanaFecha={onChangeSubcampanaFecha}
           tieneZona={tieneZonaActiva} hectareas={hectareasActiva}
