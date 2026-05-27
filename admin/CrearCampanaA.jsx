@@ -26,8 +26,6 @@ const ORGANIZACION_FORM_TYPES = [
   { key: 'EMPRESA',   label: 'Empresa',    tone: 'bg-amber-50 text-amber-800 ring-amber-100' },
   { key: 'FUNDACION', label: 'Fundación',  tone: 'bg-violet-50 text-violet-700 ring-violet-100' },
 ];
-const SUBCAMPANA_TIPO_OPTIONS = ['REFORESTACION', 'ARBORIZACION', 'FORESTACION'];
-
 function formatSubcampanaDate(value) {
   if (!value) return 'Pendiente';
   const [year, month, day] = value.split('-');
@@ -198,38 +196,29 @@ function OrganizacionCatalogSelector({
   );
 }
 
-function SubcampanaTipoSelector({ value, onChange }) {
+// El tipo de la sub-campaña se hereda directamente de la campaña paraguas.
+// No se elige por sub-campaña: una campaña de Forestación tiene sub-campañas
+// de Forestación. Mostrado como lectura para que el coordinador sepa con qué
+// tipo está trabajando.
+function SubcampanaTipoInheritedCard({ value }) {
+  const meta = TIPO_META?.[value];
+  if (!meta) return null;
   return (
-    <div className="rounded-2xl bg-[#f8fbf7] px-3 py-3">
+    <div className="rounded-2xl bg-[#f8fbf7] px-3 py-3 ring-1 ring-brand-100">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Tipo</p>
+        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Tipo · heredado de la campaña</p>
         <TipoBadge tipo={value} compact />
       </div>
-      <div className="mt-2 grid grid-cols-1 gap-2">
-        {SUBCAMPANA_TIPO_OPTIONS.map((tipo) => {
-          const meta = TIPO_META?.[tipo];
-          const selected = tipo === value;
-          return (
-            <button
-              key={tipo}
-              type="button"
-              onClick={() => onChange(tipo)}
-              className={`flex items-start gap-3 rounded-2xl px-3 py-3 text-left ring-1 transition ${selected ? 'bg-brand-600 text-white ring-brand-700' : 'bg-white text-brand-800 ring-brand-100 hover:ring-brand-300'}`}>
-              <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${selected ? 'bg-white/15 text-white' : 'bg-brand-50 text-brand-700'}`}>
-                <Icon name={meta?.icon || 'leaf'} className="h-5 w-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-extrabold leading-tight">{meta?.label || tipo}</p>
-                <p className={`mt-0.5 text-[10.5px] font-semibold leading-snug ${selected ? 'text-white/80' : 'text-slate-500'}`}>
-                  {meta?.desc || 'Tipo de sub-campaña'}
-                </p>
-              </div>
-              <div className={`flex h-7 w-7 items-center justify-center rounded-full ${selected ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
-                <Icon name={selected ? 'check' : 'plus'} className="h-4 w-4" />
-              </div>
-            </button>
-          );
-        })}
+      <div className="mt-2 flex items-start gap-3">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+          <Icon name={meta.icon || 'leaf'} className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-extrabold leading-tight text-brand-800">{meta.label}</p>
+          <p className="mt-0.5 text-[10.5px] font-semibold leading-snug text-slate-500">
+            {meta.desc} Todas las sub-campañas comparten el mismo tipo que la campaña paraguas.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -279,7 +268,6 @@ function SubcampanaContextCard({
   generalFechaInicio,
   generalFechaFin,
   generalRange,
-  onTipoChange,
   onCoordinadorChange,
   onFechaChange,
 }) {
@@ -301,10 +289,7 @@ function SubcampanaContextCard({
       </p>
 
       <div className="mt-3 grid grid-cols-1 gap-2">
-        <SubcampanaTipoSelector
-          value={subcampana.tipo || 'REFORESTACION'}
-          onChange={onTipoChange}
-        />
+        <SubcampanaTipoInheritedCard value={subcampana.tipo || 'REFORESTACION'} />
 
         <div className="rounded-2xl bg-[#f8fbf7] px-3 py-2.5">
           <p className="text-[9.5px] font-extrabold uppercase tracking-[0.14em] text-brand-500">Coordinador</p>

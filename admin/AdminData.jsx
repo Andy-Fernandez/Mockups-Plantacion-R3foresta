@@ -91,10 +91,14 @@ const CATALOGO_ESPECIES = [
 // ── Campañas paraguas (metadatos de coordinación) ────────────────────────
 // Solo contienen información estratégica. Todo lo operativo vive en las
 // sub-campañas y se deriva al vuelo en `selectCampanaAgregado()`.
+//
+// `tipo` se define a nivel paraguas: todas las sub-campañas heredan el tipo
+// de su campaña (si la campaña es FORESTACION, todas sus hijas también lo son).
 const CAMPANAS_ADMIN = [
   {
     id: 'CAM-2026-014',
     programaId: 'PRG-PLANTACION-2026',
+    tipo: 'ARBORIZACION',
     nombre: 'Arborización La Paz 2026',
     organizacionIds: ['org-1', 'org-2'],
     descripcion: 'Campaña marco para coordinar comunidades, planificación territorial y metas de plantación urbana.',
@@ -104,6 +108,7 @@ const CAMPANAS_ADMIN = [
   {
     id: 'CAM-2026-007',
     programaId: 'PRG-PLANTACION-2026',
+    tipo: 'REFORESTACION',
     nombre: 'Reforestación Hampaturi F1',
     organizacionIds: ['org-3', 'org-4'],
     descripcion: 'Recuperación de bosque nativo altoandino con especies de Polylepis en cuenca alta.',
@@ -113,6 +118,7 @@ const CAMPANAS_ADMIN = [
   {
     id: 'CAM-2025-022',
     programaId: 'PRG-PLANTACION-2026',
+    tipo: 'ARBORIZACION',
     nombre: 'Achumani Norte',
     organizacionIds: ['org-2', 'org-4'],
     descripcion: 'Arborización de barrio en ladera, frente al parque urbano.',
@@ -122,6 +128,7 @@ const CAMPANAS_ADMIN = [
   {
     id: 'CAM-2025-019',
     programaId: 'PRG-PLANTACION-2026',
+    tipo: 'ARBORIZACION',
     nombre: 'Sopocachi Verde',
     organizacionIds: ['org-1', 'org-3'],
     descripcion: 'Plan de arborización en aceras de barrio céntrico.',
@@ -316,7 +323,7 @@ const SUBCAMPANAS_ADMIN = [
   {
     id: 'SUB-007-C',
     campanaId: 'CAM-2026-007',
-    tipo: 'FORESTACION',
+    tipo: 'REFORESTACION',
     nombre: 'Etapa 2 · Pinar Sur',
     comunidad: 'Hampaturi Sur',
     municipio: 'Hampaturi',

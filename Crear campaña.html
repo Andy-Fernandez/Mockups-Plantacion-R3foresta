@@ -417,8 +417,16 @@ function App() {
         ? s.lotesIds.filter((x) => x !== id)
         : [...s.lotesIds, id],
     }));
-  const onChangeSubcampanaTipo = (tipo) =>
-    updateActiveSubcampana({ tipo });
+  // El tipo se decide a nivel campaña paraguas. Cuando cambia, todas las
+  // sub-campañas existentes se actualizan para mantenerse consistentes.
+  React.useEffect(() => {
+    setSubcampanas((prev) => {
+      if (prev.length === 0) return prev;
+      const needsUpdate = prev.some((s) => s.tipo !== t.tipo);
+      if (!needsUpdate) return prev;
+      return prev.map((s) => ({ ...s, tipo: t.tipo }));
+    });
+  }, [t.tipo]);
   const onChangeSubcampanaCoordinador = (id) => {
     const persona = PERSONAS.find((p) => p.id === id) || null;
     updateActiveSubcampana({
@@ -498,7 +506,6 @@ function App() {
           fechaInicio={CAMPANA_GENERAL_RANGE.inicioLabel} fechaFin={CAMPANA_GENERAL_RANGE.finLabel}
           fechaInicioISO={CAMPANA_GENERAL_RANGE.inicioISO} fechaFinISO={CAMPANA_GENERAL_RANGE.finISO}
           subcampanaActiva={subcampanaActiva}
-          onSubcampanaTipo={onChangeSubcampanaTipo}
           onSubcampanaCoordinador={onChangeSubcampanaCoordinador}
           onSubcampanaFecha={onChangeSubcampanaFecha}
           tieneZona={tieneZonaActiva} hectareas={hectareasActiva}

@@ -152,9 +152,84 @@ function PropositoToggle({ value, onChange, permitidos }) {
   );
 }
 
+// ── Stepper de cantidad a reservar del lote ─────────────────────────────
+// Para PLANTACION_INICIAL el default es todo el saldo (el lote alimenta la
+// meta). Para REPOSICION conviene reservar solo lo que se vaya a usar para
+// reponer árboles muertos — por eso el operador puede ajustar.
+
+function CantidadStepper({ value, max, onChange, proposito }) {
+  const isRepos = proposito === 'REPOSICION';
+  const stepBase = isRepos ? 5 : 10;
+  const presets = isRepos
+    ? [5, 10, 25, 50].filter((n) => n <= max)
+    : [Math.round(max / 4), Math.round(max / 2), max].filter((n, i, a) => n > 0 && a.indexOf(n) === i);
+  const clamp = (v) => Math.max(1, Math.min(max, v));
+  const handleInput = (raw) => {
+    const n = parseInt(raw, 10);
+    onChange(Number.isFinite(n) ? clamp(n) : 1);
+  };
+  return (
+    <div className="rounded-2xl bg-white/10 p-2 ring-1 ring-white/20">
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => onChange(clamp(value - stepBase))}
+          disabled={value <= 1}
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 disabled:opacity-40">
+          <Icon name="minus" className="h-4 w-4" />
+        </button>
+        <div className="flex flex-1 flex-col items-center">
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={max}
+            value={value}
+            onChange={(e) => handleInput(e.target.value)}
+            className="w-full bg-transparent text-center text-[26px] font-extrabold leading-none tracking-tight tabular-nums text-white focus:outline-none"
+          />
+          <p className="mt-0.5 text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-white/75">
+            de {max.toLocaleString('es-BO')} disponibles
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(clamp(value + stepBase))}
+          disabled={value >= max}
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 disabled:opacity-40">
+          <Icon name="plus" className="h-4 w-4" />
+        </button>
+      </div>
+      {presets.length > 0 && (
+        <div className="mt-2 flex items-center gap-1.5">
+          {presets.map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => onChange(clamp(n))}
+              className={`flex-1 rounded-full px-2 py-1 text-[10px] font-extrabold tabular-nums ring-1 transition
+                ${value === n ? 'bg-white text-brand-700 ring-white' : 'bg-white/10 text-white/85 ring-white/20 hover:bg-white/20'}`}>
+              {n.toLocaleString('es-BO')}
+            </button>
+          ))}
+          {!presets.includes(max) && (
+            <button
+              type="button"
+              onClick={() => onChange(max)}
+              className={`flex-1 rounded-full px-2 py-1 text-[10px] font-extrabold tabular-nums ring-1 transition
+                ${value === max ? 'bg-white text-brand-700 ring-white' : 'bg-white/10 text-white/85 ring-white/20 hover:bg-white/20'}`}>
+              Todo
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Lote row ─────────────────────────────────────────────────────────────
 
-function LoteRow({ l, isOn, onToggle, recomendado, proposito, onProposito, propositosPermitidosLote }) {
+function LoteRow({ l, isOn, onToggle, recomendado, proposito, onProposito, propositosPermitidosLote, cantidad, onCantidad }) {
   const propMeta = isOn ? PROPOSITO_ASIGNACION_META[proposito] : null;
   return (
     <li
@@ -190,21 +265,48 @@ function LoteRow({ l, isOn, onToggle, recomendado, proposito, onProposito, propo
           </div>
         </div>
         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-          <p className={`text-lg font-extrabold leading-none tabular-nums ${isOn ? 'text-white' : 'text-brand-800'}`}>{l.saldo}</p>
-          <p className={`text-[9px] font-extrabold uppercase tracking-wider ${isOn ? 'text-white/70' : 'text-slate-400'}`}>plantas</p>
+          {isOn ? (
+            <>
+              <p className="text-lg font-extrabold leading-none tabular-nums text-white">{cantidad.toLocaleString('es-BO')}</p>
+              <p className="text-[9px] font-extrabold uppercase tracking-wider text-white/70">a reservar</p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-extrabold leading-none tabular-nums text-brand-800">{l.saldo}</p>
+              <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">disponibles</p>
+            </>
+          )}
           <div className={`mt-0.5 flex h-7 w-7 items-center justify-center rounded-full ${isOn ? 'bg-white text-brand-700' : 'bg-slate-100 text-slate-400'}`}>
             {isOn ? <Icon name="check" className="h-4 w-4" /> : <Icon name="plus" className="h-4 w-4" />}
           </div>
         </div>
       </button>
       {isOn && (
-        <div className="px-3 pb-3 -mt-1">
-          <p className="mb-1 text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-white/75">Propósito de la asignación</p>
-          <PropositoToggle
-            value={proposito}
-            onChange={(v) => onProposito(l.id, v)}
-            permitidos={propositosPermitidosLote}
-          />
+        <div className="px-3 pb-3 -mt-1 space-y-2">
+          <div>
+            <p className="mb-1 text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-white/75">Propósito de la asignación</p>
+            <PropositoToggle
+              value={proposito}
+              onChange={(v) => onProposito(l.id, v)}
+              permitidos={propositosPermitidosLote}
+            />
+          </div>
+          <div>
+            <div className="mb-1 flex items-baseline justify-between gap-2">
+              <p className="text-[9.5px] font-extrabold uppercase tracking-[0.18em] text-white/75">Cantidad a reservar</p>
+              <p className="text-[10px] font-bold text-white/70">
+                {proposito === 'REPOSICION'
+                  ? 'Solo lo necesario para reposición.'
+                  : 'Todo el lote disponible por defecto.'}
+              </p>
+            </div>
+            <CantidadStepper
+              value={cantidad}
+              max={l.saldo}
+              proposito={proposito}
+              onChange={(v) => onCantidad(l.id, v)}
+            />
+          </div>
         </div>
       )}
     </li>
@@ -247,8 +349,15 @@ function AsignarScreen({
   const permitidosSub = propositosPermitidos(sub.estado);
   const propositoDefault = permitidosSub[0] || 'PLANTACION_INICIAL';
   const [lotesProposito, setLotesProposito] = React.useState({});
+  const [lotesCantidad, setLotesCantidad] = React.useState({});
 
-  // Asegura un propósito válido para cada lote seleccionado.
+  const cantidadDefault = (lote, proposito) => {
+    if (!lote) return 0;
+    if (proposito === 'REPOSICION') return Math.min(lote.saldo, 10);
+    return lote.saldo;
+  };
+
+  // Asegura un propósito + cantidad válidos para cada lote seleccionado.
   React.useEffect(() => {
     setLotesProposito((prev) => {
       const next = { ...prev };
@@ -259,7 +368,29 @@ function AsignarScreen({
           changed = true;
         }
       });
-      // Limpia los que ya no están seleccionados.
+      Object.keys(next).forEach((id) => {
+        if (!lotesSeleccionados.includes(id)) {
+          delete next[id];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+    setLotesCantidad((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      lotesSeleccionados.forEach((id) => {
+        const lote = LOTES_VIVERO.find((l) => l.id === id);
+        if (!lote) return;
+        const propo = lotesProposito[id] || propositoDefault;
+        if (next[id] == null) {
+          next[id] = cantidadDefault(lote, propo);
+          changed = true;
+        } else if (next[id] > lote.saldo) {
+          next[id] = lote.saldo;
+          changed = true;
+        }
+      });
       Object.keys(next).forEach((id) => {
         if (!lotesSeleccionados.includes(id)) {
           delete next[id];
@@ -272,15 +403,34 @@ function AsignarScreen({
 
   const setProposito = (loteId, value) => {
     setLotesProposito((prev) => ({ ...prev, [loteId]: value }));
+    // Al cambiar de propósito, sugiere un default razonable para la nueva intención.
+    setLotesCantidad((prev) => {
+      const lote = LOTES_VIVERO.find((l) => l.id === loteId);
+      if (!lote) return prev;
+      return { ...prev, [loteId]: cantidadDefault(lote, value) };
+    });
+  };
+
+  const setCantidad = (loteId, value) => {
+    const lote = LOTES_VIVERO.find((l) => l.id === loteId);
+    if (!lote) return;
+    const clamped = Math.max(1, Math.min(lote.saldo, Math.round(value || 1)));
+    setLotesCantidad((prev) => ({ ...prev, [loteId]: clamped }));
   };
 
   const tabCounts = { equipo: equipoSeleccionados.length, lotes: lotesSeleccionados.length };
   const totalSeleccionados = tabCounts.equipo + tabCounts.lotes;
   const lotesObjs = LOTES_VIVERO.filter(l => lotesSeleccionados.includes(l.id));
-  const saldoLotes = lotesObjs.reduce((a, l) => a + l.saldo, 0);
+  const totalReservado = lotesObjs.reduce((a, l) => {
+    const propo = lotesProposito[l.id] || propositoDefault;
+    return a + (lotesCantidad[l.id] != null ? lotesCantidad[l.id] : cantidadDefault(l, propo));
+  }, 0);
   const breakdown = lotesObjs.reduce((acc, l) => {
     const p = lotesProposito[l.id] || propositoDefault;
-    acc[p] = (acc[p] || 0) + 1;
+    const cant = lotesCantidad[l.id] != null ? lotesCantidad[l.id] : cantidadDefault(l, p);
+    if (!acc[p]) acc[p] = { count: 0, cantidad: 0 };
+    acc[p].count += 1;
+    acc[p].cantidad += cant;
     return acc;
   }, {});
 
@@ -383,14 +533,18 @@ function AsignarScreen({
                   const especiesSub = (sub.mixPlanificado || []).map(m => m.especie);
                   const recomendado = especiesSub.includes(l.especie) && l.subetapa === 'SOL_DIRECTO';
                   const isOn = lotesSeleccionados.includes(l.id);
+                  const propo = lotesProposito[l.id] || propositoDefault;
+                  const cant = lotesCantidad[l.id] != null ? lotesCantidad[l.id] : cantidadDefault(l, propo);
                   return (
                     <LoteRow key={l.id} l={l}
                       isOn={isOn}
                       onToggle={onToggleLote}
                       recomendado={recomendado}
-                      proposito={lotesProposito[l.id] || propositoDefault}
+                      proposito={propo}
                       onProposito={setProposito}
-                      propositosPermitidosLote={permitidosSub.length ? permitidosSub : ['PLANTACION_INICIAL', 'REPOSICION']} />
+                      propositosPermitidosLote={permitidosSub.length ? permitidosSub : ['PLANTACION_INICIAL', 'REPOSICION']}
+                      cantidad={cant}
+                      onCantidad={setCantidad} />
                   );
                 })}
               </ul>
@@ -410,22 +564,22 @@ function AsignarScreen({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-500">Saldo total</p>
-                  <p className="text-sm font-extrabold text-brand-800 tabular-nums">{saldoLotes} plantas</p>
+                  <p className="text-[10px] font-bold text-slate-500">Plantas reservadas</p>
+                  <p className="text-sm font-extrabold text-brand-800 tabular-nums">{totalReservado.toLocaleString('es-BO')}</p>
                 </div>
               </div>
               {lotesSeleccionados.length > 0 && (breakdown.PLANTACION_INICIAL || breakdown.REPOSICION) && (
                 <div className="mt-2 flex items-center gap-1.5 border-t border-slate-100 pt-2">
-                  {breakdown.PLANTACION_INICIAL > 0 && (
+                  {breakdown.PLANTACION_INICIAL && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-emerald-800 ring-1 ring-emerald-100">
                       <Icon name="sprout" className="h-3 w-3" />
-                      {breakdown.PLANTACION_INICIAL} inicial
+                      {breakdown.PLANTACION_INICIAL.cantidad.toLocaleString('es-BO')} inicial
                     </span>
                   )}
-                  {breakdown.REPOSICION > 0 && (
+                  {breakdown.REPOSICION && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-orange-800 ring-1 ring-orange-100">
                       <Icon name="refresh" className="h-3 w-3" />
-                      {breakdown.REPOSICION} reposición
+                      {breakdown.REPOSICION.cantidad.toLocaleString('es-BO')} reposición
                     </span>
                   )}
                 </div>

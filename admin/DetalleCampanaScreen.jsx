@@ -7,8 +7,8 @@
 //
 // Tabs (preservadas para compatibilidad con el host):
 //   resumen → KPIs agregados + cobertura + lista de sub-campañas + actividad
-//   equipo  → recursos · personas agregadas de todas las hijas
-//   lotes   → recursos · lotes comprometidos + mix agregado
+//   equipo  → personas agregadas de todas las hijas (coordinadores + operarios)
+//   lotes   → lotes comprometidos + mix agregado
 //   mapa    → cobertura geográfica con polígonos por sub-campaña
 
 // ── Atoms locales ───────────────────────────────────────────────────────
@@ -134,7 +134,7 @@ function DCHeader({ campana, onBack, onMore }) {
 function DCTabs({ active, onChange }) {
   const tabs = [
     { k: 'resumen', label: 'Resumen' },
-    { k: 'equipo',  label: 'Recursos' },
+    { k: 'equipo',  label: 'Equipo' },
     { k: 'lotes',   label: 'Lotes' },
     { k: 'mapa',    label: 'Mapa' },
   ];
@@ -186,7 +186,7 @@ function SubcampanaRow({ s, onTap }) {
         <Icon name="chevron-right" className="h-4 w-4 text-slate-400 flex-shrink-0 mt-0.5" />
       </div>
 
-      {/* BORRADOR: mostrar faltantes en lugar de stats */}
+      {/* BORRADOR: mostrar faltantes o CTA de activación en lugar de stats */}
       {isBorrador && guard && !guard.ok ? (
         <div className="mt-2.5 rounded-xl bg-amber-50 px-3 py-2 ring-1 ring-amber-100">
           <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-800">
@@ -196,6 +196,17 @@ function SubcampanaRow({ s, onTap }) {
           <p className="mt-0.5 text-[11.5px] font-bold text-amber-900 leading-snug">
             {guard.faltantes.join(' · ')}
           </p>
+        </div>
+      ) : isBorrador && guard && guard.ok ? (
+        <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 ring-1 ring-emerald-100">
+          <Icon name="check-circle" className="h-4 w-4 text-emerald-700 flex-shrink-0" />
+          <p className="flex-1 text-[11.5px] font-bold text-emerald-900 leading-snug">
+            Configuración completa · lista para activar.
+          </p>
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white">
+            <Icon name="chevron-right" className="h-3 w-3" />
+            Abrir
+          </span>
         </div>
       ) : (
         <>
@@ -229,12 +240,6 @@ function SubcampanaRow({ s, onTap }) {
           <div className="mt-2 text-[10.5px] font-bold text-slate-500">
             {s.equipoIds?.length || 0} pers. · {s.lotesIds?.length || 0} lotes · {s.eventosCount || 0} eventos
           </div>
-
-          {guard && !guard.ok && (
-            <p className="mt-1.5 text-[10.5px] font-bold text-amber-800">
-              Para activar falta: {guard.faltantes.join(', ')}
-            </p>
-          )}
         </>
       )}
     </button>
@@ -457,7 +462,7 @@ function ActividadDeCampana({ campanaId }) {
   );
 }
 
-// ── Tab: Recursos (Equipo agregado) ─────────────────────────────────────
+// ── Tab: Equipo (personas agregadas de todas las hijas) ────────────────
 
 function DCEquipo({ campana }) {
   // Agrupar miembros por sub-campaña y total.
@@ -540,7 +545,7 @@ function DCEquipo({ campana }) {
   );
 }
 
-// ── Tab: Lotes (Recursos · lotes + mix) ─────────────────────────────────
+// ── Tab: Lotes (lotes comprometidos + mix agregado) ────────────────────
 
 function DCLotes({ campana }) {
   const lotes = campana.lotesComprometidos.map(id => LOTES_VIVERO.find(l => l.id === id)).filter(Boolean);

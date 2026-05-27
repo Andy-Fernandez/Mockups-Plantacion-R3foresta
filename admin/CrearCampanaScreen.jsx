@@ -4,7 +4,6 @@ function CrearCampanaScreen({
   paso, onPaso,
   tipo, nombre, organizacion, organizacionesSeleccionadas, descripcion, fechaInicio, fechaFin, fechaInicioISO, fechaFinISO,
   subcampanaActiva,
-  onSubcampanaTipo,
   onSubcampanaCoordinador, onSubcampanaFecha,
   tieneZona, hectareas, onTieneZona,
   meta, especies, onMeta, onTogglePct, onChangeBasic,
@@ -55,7 +54,6 @@ function CrearCampanaScreen({
               generalFechaInicio={fechaInicio}
               generalFechaFin={fechaFin}
               generalRange={{ inicioISO: fechaInicioISO, finISO: fechaFinISO }}
-              onTipoChange={onSubcampanaTipo}
               onCoordinadorChange={onSubcampanaCoordinador}
               onFechaChange={onSubcampanaFecha}
             />

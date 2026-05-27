@@ -122,10 +122,94 @@ function DSCTabs({ active, onChange }) {
   );
 }
 
-function DSCResumen({ sub, campana, onTabMapa }) {
+// Tarjeta de acción de estado: hace visible el cambio BORRADOR → ACTIVA y
+// ACTIVA → FINALIZADA_PARCIAL sin tener que entrar al menú "más opciones".
+// Si la transición no procede aún, muestra los faltantes con un CTA hacia
+// "Asignar equipo y lotes" cuando aplica.
+function DSCEstadoAccion({ sub, onActivar, onFinalizarParcial }) {
+  if (sub.estado === 'BORRADOR') {
+    const guard = puedeTransitionar(sub, 'ACTIVA');
+    return (
+      <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+            <Icon name="sprout" className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Próximo paso</p>
+            <p className="mt-0.5 text-[15px] font-extrabold leading-tight text-brand-800">Activar la sub-campaña</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-slate-500 leading-snug">
+              Pasa de borrador a activa para que el equipo pueda registrar plantaciones.
+            </p>
+          </div>
+        </div>
+        {!guard.ok && (
+          <div className="mt-3 rounded-2xl bg-amber-50 px-3 py-2 ring-1 ring-amber-100">
+            <p className="flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-wide text-amber-800">
+              <Icon name="info" className="h-3.5 w-3.5" />
+              Falta para activar
+            </p>
+            <p className="mt-0.5 text-[11.5px] font-bold text-amber-900 leading-snug">
+              {guard.faltantes.join(' · ')}
+            </p>
+          </div>
+        )}
+        <div className="mt-3 grid grid-cols-1 gap-2">
+          <button
+            onClick={onActivar}
+            disabled={!guard.ok}
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-extrabold text-white shadow-soft transition active:scale-[0.99]
+              ${guard.ok ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-300 cursor-not-allowed'}`}>
+            <Icon name="check-circle" className="h-4 w-4" />
+            Activar sub-campaña
+          </button>
+          {!guard.ok && (
+            <button
+              onClick={() => { window.location.href = `Asignar equipo y lotes.html?subcampanaId=${encodeURIComponent(sub.id)}`; }}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-brand-700 ring-1 ring-brand-100 hover:bg-brand-50">
+              <Icon name="users" className="h-4 w-4" />
+              Completar configuración
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+  if (sub.estado === 'ACTIVA') {
+    return (
+      <div className="rounded-3xl bg-white p-4 shadow-soft ring-1 ring-black/5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+            <Icon name="flag" className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Cierre anticipado</p>
+            <p className="mt-0.5 text-[15px] font-extrabold leading-tight text-brand-800">Finalizar parcialmente</p>
+            <p className="mt-0.5 text-[11px] font-semibold text-slate-500 leading-snug">
+              Si no se va a alcanzar la meta, ciérrala antes con un motivo. El stock disponible queda solo para reposición.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onFinalizarParcial}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-amber-800 ring-1 ring-amber-200 hover:bg-amber-50">
+          <Icon name="flag" className="h-4 w-4" />
+          Finalizar parcialmente
+        </button>
+      </div>
+    );
+  }
+  return null;
+}
+
+function DSCResumen({ sub, campana, onTabMapa, onActivar, onFinalizarParcial }) {
   const equipo = (sub.equipoIds || []).map(personaById).filter(Boolean);
+  const muestraAccion = sub.estado === 'BORRADOR' || sub.estado === 'ACTIVA';
   return (
     <div className="space-y-3">
+      {muestraAccion && (
+        <DSCEstadoAccion sub={sub} onActivar={onActivar} onFinalizarParcial={onFinalizarParcial} />
+      )}
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-3xl bg-white p-3.5 shadow-soft ring-1 ring-black/5">
           <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-brand-500">Supervivencia</p>
@@ -449,6 +533,12 @@ function DetalleSubcampanaScreen({ subcampanaId, tab, onTab, moreOpen, onMoreOpe
   const campana = selectCampanaAgregado(base.campanaId) || CAMPANAS_ADMIN_AGREGADAS[0];
   const sub = { ...base, estado: estadoOverride || base.estado };
 
+  const onActivar = () => {
+    const guard = puedeTransitionar(sub, 'ACTIVA');
+    if (guard.ok) onEstadoOverride('ACTIVA');
+  };
+  const onFinalizarParcial = () => onEstadoOverride('FINALIZADA_PARCIAL');
+
   return (
     <div data-screen-label="Detalle de sub-campaña" className="relative min-h-full bg-[#eef2ed] text-brand-700">
       <div className="mx-auto flex min-h-full w-full max-w-md flex-col pb-28">
@@ -461,7 +551,15 @@ function DetalleSubcampanaScreen({ subcampanaId, tab, onTab, moreOpen, onMoreOpe
 
         <div className="px-5 space-y-4 mt-2">
           <DSCTabs active={tab} onChange={onTab} />
-          {tab === 'resumen' && <DSCResumen sub={sub} campana={campana} onTabMapa={() => onTab('mapa')} />}
+          {tab === 'resumen' && (
+            <DSCResumen
+              sub={sub}
+              campana={campana}
+              onTabMapa={() => onTab('mapa')}
+              onActivar={onActivar}
+              onFinalizarParcial={onFinalizarParcial}
+            />
+          )}
           {tab === 'equipo' && <DSCEquipo sub={sub} />}
           {(tab === 'asignaciones' || tab === 'lotes') && <DSCAsignaciones sub={sub} />}
           {tab === 'mapa' && <DSCMapa sub={sub} />}
